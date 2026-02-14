@@ -2,3 +2,14 @@ node_modules/
 dist/
 .DS_Store
 *.tsbuildinfo
+CLAUDE.md
+
+# Docs (Fumadocs / Next.js)
+docs/.source/
+docs/.next/
+docs/out/
+
+# Example app (Expo)
+apps/example/.expo/
+apps/example/android/
+apps/example/ios/

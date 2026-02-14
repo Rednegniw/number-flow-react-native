@@ -1,52 +1,29 @@
 {
-  "name": "number-flow-react-native",
-  "version": "0.1.0",
-  "description": "Animated number transitions for React Native — View-based and Skia renderers",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
-  "exports": {
-    ".": "./src/index.ts",
-    "./skia": "./src/skia/index.ts",
-    "./native": "./src/native/index.ts"
-  },
-  "files": ["src"],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Rednegniw/number-flow-react-native.git"
-  },
-  "keywords": [
-    "react-native",
-    "animation",
-    "number",
-    "animated-numbers",
-    "reanimated",
-    "skia",
-    "number-flow",
-    "digit-animation"
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "docs"
   ],
-  "author": "Antonín Wingender",
-  "license": "MIT",
   "scripts": {
-    "check-types": "tsc --noEmit"
-  },
-  "peerDependencies": {
-    "react": ">=18",
-    "react-native": ">=0.73",
-    "react-native-reanimated": ">=3.0.0",
-    "@shopify/react-native-skia": ">=2.0.0"
-  },
-  "peerDependenciesMeta": {
-    "@shopify/react-native-skia": {
-      "optional": true
-    }
+    "lib": "bun --cwd packages/number-flow-react-native",
+    "example": "bun --cwd apps/example",
+    "docs": "bun --cwd docs",
+    "check-types": "bun --filter '*' check-types",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "devDependencies": {
-    "@shopify/react-native-skia": "^2.2.12",
-    "@types/react": "^19.2.13",
-    "@types/react-native": "^0.73.0",
-    "react": "^19.0.0",
-    "react-native": "^0.79.0",
-    "react-native-reanimated": "^4.2.0",
-    "typescript": "^5.9.3"
-  }
+    "@changesets/cli": "^2.29.0"
+  },
+  "name": "number-flow-react-native",
+  "version": "1.0.0",
+  "dependencies": {
+    "expo": "~54.0.33",
+    "react": "19.1.0",
+    "react-native": "0.81.5"
+  },
+  "trustedDependencies": [
+    "@shopify/react-native-skia"
+  ]
 }

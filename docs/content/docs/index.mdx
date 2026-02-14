@@ -1,0 +1,42 @@
+---
+title: Getting Started
+description: Install and start using number-flow-react-native
+---
+
+## Installation
+
+```bash
+npm install number-flow-react-native react-native-reanimated
+```
+
+For Skia components, also install:
+
+```bash
+npm install @shopify/react-native-skia
+```
+
+## Quick Start
+
+```tsx
+import { NumberFlow } from 'number-flow-react-native/native';
+
+function PriceDisplay() {
+  const [price, setPrice] = useState(42.99);
+
+  return (
+    <NumberFlow
+      value={price}
+      format={{ minimumFractionDigits: 2 }}
+      style={{ fontFamily: 'System', fontSize: 32, color: '#000' }}
+      prefix="$"
+    />
+  );
+}
+```
+
+## Components
+
+- **NumberFlow** / **SkiaNumberFlow** — Animated number display
+- **TimeFlow** / **SkiaTimeFlow** — Animated time display (HH:MM:SS)
+
+The `native` variants use React Native Animated Views. The `skia` variants render on a Skia Canvas for higher performance.
