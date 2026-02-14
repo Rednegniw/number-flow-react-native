@@ -1,6 +1,6 @@
 import { TimeFlow } from "number-flow-react-native/native";
 import { useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 export const FullClockDemo = () => {
   const [is24Hour, setIs24Hour] = useState(true);
@@ -24,9 +24,23 @@ export const FullClockDemo = () => {
   }, []);
 
   return (
-    <View style={styles.section}>
-      <Text style={styles.label}>Live Clock</Text>
-      <View style={styles.card}>
+    <View style={{ gap: 8 }}>
+      {/* Header */}
+      <Text style={{ fontSize: 14, fontWeight: "600", color: "#333" }}>
+        Live Clock
+      </Text>
+
+      {/* Time display */}
+      <View
+        style={{
+          backgroundColor: "#f5f5f5",
+          borderRadius: 12,
+          padding: 20,
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: 70,
+        }}
+      >
         <TimeFlow
           containerStyle={{ width: 280 }}
           hours={hours}
@@ -37,32 +51,21 @@ export const FullClockDemo = () => {
           textAlign="center"
         />
       </View>
+
+      {/* Action button */}
       <Pressable
-        style={styles.button}
         onPress={() => setIs24Hour((v) => !v)}
+        style={{
+          backgroundColor: "#e8e8e8",
+          borderRadius: 8,
+          padding: 12,
+          alignItems: "center",
+        }}
       >
-        <Text style={styles.buttonText}>Toggle 12h/24h</Text>
+        <Text style={{ fontSize: 14, fontWeight: "500", color: "#333" }}>
+          Toggle 12h/24h
+        </Text>
       </Pressable>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  section: { gap: 8 },
-  label: { fontSize: 14, fontWeight: "600", color: "#333" },
-  card: {
-    backgroundColor: "#f5f5f5",
-    borderRadius: 12,
-    padding: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 70,
-  },
-  button: {
-    backgroundColor: "#e8e8e8",
-    borderRadius: 8,
-    padding: 12,
-    alignItems: "center",
-  },
-  buttonText: { fontSize: 14, fontWeight: "500", color: "#333" },
-});

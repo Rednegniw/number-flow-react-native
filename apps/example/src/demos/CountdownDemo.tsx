@@ -1,6 +1,6 @@
 import { TimeFlow } from "number-flow-react-native/native";
 import { useCallback, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 export const CountdownDemo = () => {
   const [minutes, setMinutes] = useState(5);
@@ -39,9 +39,23 @@ export const CountdownDemo = () => {
   }, []);
 
   return (
-    <View style={styles.section}>
-      <Text style={styles.label}>Countdown</Text>
-      <View style={styles.card}>
+    <View style={{ gap: 8 }}>
+      {/* Header */}
+      <Text style={{ fontSize: 14, fontWeight: "600", color: "#333" }}>
+        Countdown
+      </Text>
+
+      {/* Time display */}
+      <View
+        style={{
+          backgroundColor: "#f5f5f5",
+          borderRadius: 12,
+          padding: 20,
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: 70,
+        }}
+      >
         <TimeFlow
           containerStyle={{ width: 200 }}
           minutes={minutes}
@@ -51,34 +65,39 @@ export const CountdownDemo = () => {
           trend={-1}
         />
       </View>
+
+      {/* Action buttons */}
       <View style={{ flexDirection: "row", gap: 8 }}>
-        <Pressable style={[styles.button, { flex: 1 }]} onPress={toggle}>
-          <Text style={styles.buttonText}>Start / Pause</Text>
+        <Pressable
+          onPress={toggle}
+          style={{
+            flex: 1,
+            backgroundColor: "#e8e8e8",
+            borderRadius: 8,
+            padding: 12,
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ fontSize: 14, fontWeight: "500", color: "#333" }}>
+            Start / Pause
+          </Text>
         </Pressable>
-        <Pressable style={[styles.button, { flex: 1 }]} onPress={reset}>
-          <Text style={styles.buttonText}>Reset</Text>
+
+        <Pressable
+          onPress={reset}
+          style={{
+            flex: 1,
+            backgroundColor: "#e8e8e8",
+            borderRadius: 8,
+            padding: 12,
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ fontSize: 14, fontWeight: "500", color: "#333" }}>
+            Reset
+          </Text>
         </Pressable>
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  section: { gap: 8 },
-  label: { fontSize: 14, fontWeight: "600", color: "#333" },
-  card: {
-    backgroundColor: "#f5f5f5",
-    borderRadius: 12,
-    padding: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 70,
-  },
-  button: {
-    backgroundColor: "#e8e8e8",
-    borderRadius: 8,
-    padding: 12,
-    alignItems: "center",
-  },
-  buttonText: { fontSize: 14, fontWeight: "500", color: "#333" },
-});

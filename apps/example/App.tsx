@@ -1,10 +1,12 @@
 import { useFonts } from "expo-font";
 import { StatusBar } from "expo-status-bar";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Clock12hDemo } from "./src/demos/Clock12hDemo";
 import { Clock24hDemo } from "./src/demos/Clock24hDemo";
 import { ComparisonDemo } from "./src/demos/ComparisonDemo";
+import { ContinuousDemo } from "./src/demos/ContinuousDemo";
+import { ContinuousTimeDemo } from "./src/demos/ContinuousTimeDemo";
 import { CountdownDemo } from "./src/demos/CountdownDemo";
 import { DecimalDemo } from "./src/demos/DecimalDemo";
 import { EdgeCaseDemo } from "./src/demos/EdgeCaseDemo";
@@ -19,20 +21,39 @@ export default function App() {
 
   if (!fontsLoaded) {
     return (
-      <View style={styles.loading}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fff" }}>
         <ActivityIndicator size="large" />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingTop: 20,
+          paddingBottom: 40,
+          gap: 24,
+        }}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.title}>number-flow-react-native</Text>
+        {/* Title */}
+        <Text
+          style={{
+            fontSize: 24,
+            fontWeight: "700",
+            color: "#000",
+            textAlign: "center",
+          }}
+        >
+          number-flow-react-native
+        </Text>
+
+        {/* Demos */}
         <ComparisonDemo />
+        <ContinuousDemo />
+        <ContinuousTimeDemo />
         <DecimalDemo />
         <IntegerDemo />
         <SmallDecimalDemo />
@@ -46,28 +67,3 @@ export default function App() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 40,
-    gap: 24,
-  },
-  loading: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#fff",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#000",
-    textAlign: "center",
-  },
-});

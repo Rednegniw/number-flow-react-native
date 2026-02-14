@@ -76,6 +76,18 @@ export const DEFAULT_OPACITY_TIMING: TimingConfig = {
   easing: Easing.out(Easing.ease),
 };
 
+/**
+ * Vertical mask fade height as a ratio of lineHeight.
+ * Matches web NumberFlow's --number-flow-mask-height: 0.25em
+ */
+export const MASK_HEIGHT_RATIO = 0.25;
+
+/**
+ * Horizontal mask fade width as a ratio of lineHeight.
+ * Matches web NumberFlow's --number-flow-mask-width: 0.5em
+ */
+export const MASK_WIDTH_RATIO = 0.5;
+
 export const ZERO_TIMING: TimingConfig = {
   duration: 0,
   easing: (t: number) => {

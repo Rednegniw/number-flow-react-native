@@ -1,6 +1,6 @@
 import { NumberFlow } from "number-flow-react-native/native";
 import { useCallback, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { pickPrefix, pickSuffix, randomValue } from "./utils";
 
 export const DecimalDemo = () => {
@@ -15,10 +15,26 @@ export const DecimalDemo = () => {
   }, []);
 
   return (
-    <View style={styles.section}>
-      <Text style={styles.label}>Decimal</Text>
-      <Text style={styles.meta}>{`prefix="${prefix}" suffix="${suffix}"`}</Text>
-      <View style={styles.card}>
+    <View style={{ gap: 8 }}>
+      {/* Header */}
+      <Text style={{ fontSize: 14, fontWeight: "600", color: "#333" }}>
+        Decimal
+      </Text>
+      <Text style={{ fontSize: 11, color: "#999" }}>
+        {`prefix="${prefix}" suffix="${suffix}"`}
+      </Text>
+
+      {/* Number display */}
+      <View
+        style={{
+          backgroundColor: "#f5f5f5",
+          borderRadius: 12,
+          padding: 20,
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: 70,
+        }}
+      >
         <NumberFlow
           containerStyle={{ width: 280 }}
           format={{ minimumFractionDigits: 2, maximumFractionDigits: 2 }}
@@ -29,30 +45,21 @@ export const DecimalDemo = () => {
           value={value}
         />
       </View>
-      <Pressable style={styles.button} onPress={randomize}>
-        <Text style={styles.buttonText}>Randomize</Text>
+
+      {/* Action button */}
+      <Pressable
+        onPress={randomize}
+        style={{
+          backgroundColor: "#e8e8e8",
+          borderRadius: 8,
+          padding: 12,
+          alignItems: "center",
+        }}
+      >
+        <Text style={{ fontSize: 14, fontWeight: "500", color: "#333" }}>
+          Randomize
+        </Text>
       </Pressable>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  section: { gap: 8 },
-  label: { fontSize: 14, fontWeight: "600", color: "#333" },
-  meta: { fontSize: 11, color: "#999" },
-  card: {
-    backgroundColor: "#f5f5f5",
-    borderRadius: 12,
-    padding: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 70,
-  },
-  button: {
-    backgroundColor: "#e8e8e8",
-    borderRadius: 8,
-    padding: 12,
-    alignItems: "center",
-  },
-  buttonText: { fontSize: 14, fontWeight: "500", color: "#333" },
-});

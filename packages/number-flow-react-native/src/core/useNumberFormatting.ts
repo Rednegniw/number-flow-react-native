@@ -93,7 +93,7 @@ function detectDecimalSeparator(locales?: Intl.LocalesArgument): string {
   return sep;
 }
 
-function fallbackFormatToParts(
+export function fallbackFormatToParts(
   formatter: Intl.NumberFormat,
   value: number,
   locales?: Intl.LocalesArgument,
@@ -195,7 +195,7 @@ function safeFormatToParts(
  * This keying ensures correct animation behavior when digits are added/removed
  * (e.g., 9→10: ones place spins 9→0, tens place enters as new digit).
  */
-function formatToKeyedParts(
+export function formatToKeyedParts(
   value: number,
   formatter: Intl.NumberFormat,
   locales: Intl.LocalesArgument | undefined,

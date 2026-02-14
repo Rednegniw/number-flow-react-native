@@ -53,6 +53,9 @@ interface DigitSlotProps {
   exitKey?: string;
   onExitComplete?: (key: string) => void;
   workletDigitValue?: SharedValue<number>;
+  digitCount?: number;
+  continuousSpinGeneration?: number;
+  maskHeight?: number;
 }
 
 export const DigitSlot = React.memo(
@@ -72,7 +75,12 @@ export const DigitSlot = React.memo(
     exitKey,
     onExitComplete,
     workletDigitValue,
+    digitCount,
+    continuousSpinGeneration,
+    maskHeight = 0,
   }: DigitSlotProps) => {
+    const resolvedDigitCount = digitCount ?? DIGIT_COUNT;
+
     const { initialDigit, animDelta, currentDigitSV, slotOpacity } =
       useDigitAnimation({
         digitValue,
@@ -84,6 +92,8 @@ export const DigitSlot = React.memo(
         exitKey,
         onExitComplete,
         workletDigitValue,
+        digitCount: resolvedDigitCount,
+        continuousSpinGeneration,
       });
 
     /**
@@ -93,10 +103,10 @@ export const DigitSlot = React.memo(
      */
     const [digitYValues] = useState(() => {
       const lh = metrics.lineHeight;
-      return Array.from({ length: DIGIT_COUNT }, (_, n) => {
-        const offset = signedDigitOffset(n, initialDigit);
+      return Array.from({ length: resolvedDigitCount }, (_, n) => {
+        const offset = signedDigitOffset(n, initialDigit, resolvedDigitCount);
         const clamped = Math.max(-1.5, Math.min(1.5, offset));
-        return makeMutable(clamped * lh);
+        return makeMutable(clamped * lh + maskHeight);
       });
     });
 
@@ -110,13 +120,13 @@ export const DigitSlot = React.memo(
       () => currentDigitSV.value - animDelta.value,
       (c) => {
         const lh = metrics.lineHeight;
-        for (let n = 0; n < DIGIT_COUNT; n++) {
-          const offset = signedDigitOffset(n, c);
+        for (let n = 0; n < resolvedDigitCount; n++) {
+          const offset = signedDigitOffset(n, c, resolvedDigitCount);
           const clamped = Math.max(-1.5, Math.min(1.5, offset));
-          digitYValues[n].value = clamped * lh;
+          digitYValues[n].value = clamped * lh + maskHeight;
         }
       },
-      [metrics.lineHeight],
+      [metrics.lineHeight, resolvedDigitCount, maskHeight],
     );
 
     const animatedX = useAnimatedX(targetX, exiting, transformTiming);
@@ -135,19 +145,24 @@ export const DigitSlot = React.memo(
     }, [charWidth, exiting, transformTiming]);
 
     const animatedStyle = useAnimatedStyle(() => ({
-      transform: [{ translateX: animatedX.value }],
+      transform: [
+        { translateX: animatedX.value },
+        { translateY: -maskHeight },
+      ],
       opacity: slotOpacity.value,
     }));
 
+    const expandedHeight = lineHeight + 2 * maskHeight;
+
     const animatedClipStyle = useAnimatedStyle(() => ({
       overflow: "hidden" as const,
-      height: lineHeight,
+      height: expandedHeight,
       width: animatedClipWidth.value,
     }));
 
     const digitElements = useMemo(
       () =>
-        Array.from({ length: DIGIT_COUNT }, (_, n) => (
+        Array.from({ length: resolvedDigitCount }, (_, n) => (
           <DigitElement
             digitIndex={n}
             key={n}
@@ -155,7 +170,7 @@ export const DigitSlot = React.memo(
             yValue={digitYValues[n]}
           />
         )),
-      [digitYValues, textStyle],
+      [resolvedDigitCount, digitYValues, textStyle],
     );
 
     return (

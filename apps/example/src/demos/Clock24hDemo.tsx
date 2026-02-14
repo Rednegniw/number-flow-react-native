@@ -2,7 +2,7 @@ import { Canvas, useFont } from "@shopify/react-native-skia";
 import { TimeFlow } from "number-flow-react-native/native";
 import { SkiaTimeFlow } from "number-flow-react-native/skia";
 import { useCallback, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { randomInt } from "./utils";
 
 const SKIA_FONT_SIZE = 28;
@@ -34,11 +34,24 @@ export const Clock24hDemo = () => {
   }, []);
 
   return (
-    <View style={styles.section}>
-      <Text style={styles.label}>24h Clock (Skia vs Native)</Text>
+    <View style={{ gap: 8 }}>
+      {/* Header */}
+      <Text style={{ fontSize: 14, fontWeight: "600", color: "#333" }}>
+        24h Clock (Skia vs Native)
+      </Text>
 
-      <View style={styles.card}>
-        <Text style={styles.rendererLabel}>Skia</Text>
+      {/* Skia renderer */}
+      <View
+        style={{
+          backgroundColor: "#f5f5f5",
+          borderRadius: 12,
+          padding: 12,
+          alignItems: "center",
+        }}
+      >
+        <Text style={{ fontSize: 11, color: "#999", marginBottom: 4 }}>
+          Skia
+        </Text>
         <Canvas style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
           <SkiaTimeFlow
             color="#007AFF"
@@ -52,8 +65,18 @@ export const Clock24hDemo = () => {
         </Canvas>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.rendererLabel}>Native</Text>
+      {/* Native renderer */}
+      <View
+        style={{
+          backgroundColor: "#f5f5f5",
+          borderRadius: 12,
+          padding: 12,
+          alignItems: "center",
+        }}
+      >
+        <Text style={{ fontSize: 11, color: "#999", marginBottom: 4 }}>
+          Native
+        </Text>
         <TimeFlow
           containerStyle={{ width: CANVAS_WIDTH }}
           hours={hours}
@@ -67,33 +90,38 @@ export const Clock24hDemo = () => {
         />
       </View>
 
+      {/* Action buttons */}
       <View style={{ flexDirection: "row", gap: 8 }}>
-        <Pressable style={[styles.button, { flex: 1 }]} onPress={increment}>
-          <Text style={styles.buttonText}>+1 Minute</Text>
+        <Pressable
+          onPress={increment}
+          style={{
+            flex: 1,
+            backgroundColor: "#e8e8e8",
+            borderRadius: 8,
+            padding: 12,
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ fontSize: 14, fontWeight: "500", color: "#333" }}>
+            +1 Minute
+          </Text>
         </Pressable>
-        <Pressable style={[styles.button, { flex: 1 }]} onPress={randomize}>
-          <Text style={styles.buttonText}>Random</Text>
+
+        <Pressable
+          onPress={randomize}
+          style={{
+            flex: 1,
+            backgroundColor: "#e8e8e8",
+            borderRadius: 8,
+            padding: 12,
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ fontSize: 14, fontWeight: "500", color: "#333" }}>
+            Random
+          </Text>
         </Pressable>
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  section: { gap: 8 },
-  label: { fontSize: 14, fontWeight: "600", color: "#333" },
-  rendererLabel: { fontSize: 11, color: "#999", marginBottom: 4 },
-  card: {
-    backgroundColor: "#f5f5f5",
-    borderRadius: 12,
-    padding: 12,
-    alignItems: "center",
-  },
-  button: {
-    backgroundColor: "#e8e8e8",
-    borderRadius: 8,
-    padding: 12,
-    alignItems: "center",
-  },
-  buttonText: { fontSize: 14, fontWeight: "500", color: "#333" },
-});

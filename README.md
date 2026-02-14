@@ -11,7 +11,8 @@ Two rendering backends:
 
 ## Features
 
-- Smooth digit rolling with automatic direction detection (or manual control)
+- Smooth digit rolling with automatic direction detection (or manual/function-driven control)
+- Continuous mode — unchanged lower digits spin through a full cycle for a cascading effect
 - Automatic `Intl.NumberFormat` support (currencies, percentages, grouping, locales)
 - `TimeFlow` component for HH:MM:SS displays with 12h/24h support
 - Worklet-driven scrubbing — update digits from the UI thread with zero bridge latency
@@ -164,7 +165,9 @@ When `sharedValue` is provided, digits update directly on the UI thread without 
 | `textAlign` | `"left" \| "right" \| "center"` | `"left"` | Text alignment |
 | `prefix` | `string` | `""` | Static prefix (e.g. `"$"`) |
 | `suffix` | `string` | `""` | Static suffix (e.g. `"%"`) |
-| `trend` | `-1 \| 0 \| 1` | auto | Roll direction. Omit for auto-detection, `0` for shortest path. |
+| `trend` | `Trend \| (prev, next) => Trend` | auto | Roll direction. `-1` (down), `0` (shortest), `1` (up), or a function for custom logic. Omit for auto-detection. |
+| `continuous` | `boolean` | `false` | Unchanged lower-significance digits spin through a full cycle alongside higher digits that changed |
+| `digits` | `Record<number, { max: number }>` | — | Per-position digit constraints. Key = position (0=ones, 1=tens, ...), value = max digit. E.g. `{ 1: { max: 5 } }` for 0-5 tens. |
 | `animated` | `boolean` | `true` | Set `false` to disable animations |
 | `respectMotionPreference` | `boolean` | `true` | Disable animations when device "Reduce Motion" is on |
 | `onAnimationsStart` | `() => void` | — | Called when update animations begin |
@@ -189,7 +192,8 @@ When `sharedValue` is provided, digits update directly on the UI thread without 
 | `style` | `{ fontSize, fontFamily?, color?, ... }` | — | **Required.** Text styling (`fontSize` required) |
 | `textAlign` | `"left" \| "right" \| "center"` | `"left"` | Text alignment |
 | `containerStyle` | `ViewStyle` | — | Container view style |
-| `trend` | `-1 \| 0 \| 1` | auto | Roll direction. Omit for auto-detection, `0` for shortest path. |
+| `trend` | `Trend \| (prev, next) => Trend` | auto | Roll direction. `-1` (down), `0` (shortest), `1` (up), or a function for custom logic. Omit for auto-detection. |
+| `continuous` | `boolean` | `false` | Unchanged lower-significance digits spin through a full cycle alongside higher digits that changed |
 | `animated` | `boolean` | `true` | Set `false` to disable animations |
 | `respectMotionPreference` | `boolean` | `true` | Disable animations when device "Reduce Motion" is on |
 | `onAnimationsStart` | `() => void` | — | Called when update animations begin |

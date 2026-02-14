@@ -25,6 +25,12 @@ export interface AnimationConfig {
  */
 export type Trend = -1 | 0 | 1;
 
+/**
+ * Trend prop accepted by components: either a static direction
+ * or a function that receives (prevValue, nextValue) and returns the direction.
+ */
+export type TrendProp = Trend | ((prev: number, next: number) => Trend);
+
 /** A single character with a stable key from formatToParts RTL/LTR keying */
 export interface KeyedPart {
   /** Stable key: "integer:0" (ones), "integer:1" (tens), "fraction:0" (tenths), "decimal:0", etc. */
@@ -51,6 +57,22 @@ export interface GlyphMetrics {
 }
 
 export type TextAlign = "left" | "right" | "center";
+
+/**
+ * Per-position digit constraint. `max` defines the highest value the
+ * digit can display (inclusive), creating a wheel of (max + 1) values.
+ * Example: { max: 5 } creates a 0-5 wheel (6 elements).
+ */
+export interface DigitConstraint {
+  max: number;
+}
+
+/**
+ * Maps integer positions to their constraints.
+ * Position 0 = ones, 1 = tens, 2 = hundreds, etc.
+ * Positions not listed default to { max: 9 } (standard 0-9 wheel).
+ */
+export type DigitsProp = Record<number, DigitConstraint>;
 
 /** Value props — mutually exclusive: provide `value` (JS-driven) or `sharedValue` (worklet-driven), not both. */
 type SkiaNumberFlowValueProps =
@@ -96,11 +118,25 @@ interface SkiaNumberFlowBaseProps extends AnimationConfig {
    * increasing values spin up, decreasing spin down.
    * Pass `0` explicitly for shortest-path per-digit behavior.
    */
-  trend?: Trend;
+  trend?: TrendProp;
   /** Set to false to disable animations and update instantly. Defaults to true. */
   animated?: boolean;
   /** When true (default), disables animations when the device's "Reduce Motion" setting is on. */
   respectMotionPreference?: boolean;
+
+  /**
+   * When true, unchanged lower-significance digits spin through a full cycle
+   * during transitions, making the number appear to pass through intermediate values.
+   * Defaults to false.
+   */
+  continuous?: boolean;
+
+  /**
+   * Per-position digit constraints. Maps integer position (0=ones, 1=tens, ...)
+   * to { max: N } where N is the highest digit value (inclusive).
+   * Example: { 1: { max: 5 } } for a wheel where tens go 0-5.
+   */
+  digits?: DigitsProp;
 
   /**
    * Controls digit width during worklet-driven scrubbing (when sharedValue is active).
@@ -112,6 +148,9 @@ interface SkiaNumberFlowBaseProps extends AnimationConfig {
    * Only affects digits; symbols like "." keep their natural width.
    */
   scrubDigitWidthPercentile?: number;
+
+  /** Enable edge gradient fade masking on digit slots. Defaults to true. */
+  mask?: boolean;
 
   /** Called when update animations begin */
   onAnimationsStart?: () => void;

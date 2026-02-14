@@ -13,7 +13,7 @@ function symbolPart(key: string, char: string): KeyedPart {
  * Converts 24h hours (0-23) to 12h display value (1-12).
  * 0 → 12 (12 AM), 1-12 → as-is, 13-23 → subtract 12.
  */
-function to12Hour(h: number): number {
+export function to12Hour(h: number): number {
   if (h === 0) return 12;
   if (h > 12) return h - 12;
   return h;
@@ -27,7 +27,7 @@ function to12Hour(h: number): number {
  * behavior — e.g. when hours go from 9→10, the h10 key *enters* (fades in)
  * rather than shifting all existing positions.
  */
-function formatTimeToKeyedParts(
+export function formatTimeToKeyedParts(
   hours: number | undefined,
   minutes: number,
   seconds: number | undefined,

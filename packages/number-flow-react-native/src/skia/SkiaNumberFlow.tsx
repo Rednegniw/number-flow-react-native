@@ -1,4 +1,11 @@
-import { Group, Paint, Text } from "@shopify/react-native-skia";
+import {
+  Group,
+  LinearGradient,
+  Paint,
+  Rect as SkiaRect,
+  Text,
+  vec,
+} from "@shopify/react-native-skia";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AccessibilityInfo } from "react-native";
 import {
@@ -12,18 +19,21 @@ import {
   DEFAULT_OPACITY_TIMING,
   DEFAULT_SPIN_TIMING,
   DEFAULT_TRANSFORM_TIMING,
+  MASK_HEIGHT_RATIO,
+  MASK_WIDTH_RATIO,
   ZERO_TIMING,
 } from "../core/constants";
-import type { Trend } from "../core/types";
 import { useDebouncedWidths } from "../core/useDebouncedWidths";
 import { computeKeyedLayout, computeStringLayout } from "../core/layout";
 import type { SkiaNumberFlowProps } from "../core/types";
+import { useContinuousSpin } from "../core/useContinuousSpin";
 import { useLayoutDiff } from "../core/useLayoutDiff";
 import {
   getFormatCharacters,
   getOrCreateFormatter,
   useNumberFormatting,
 } from "../core/useNumberFormatting";
+import { getDigitCount, resolveTrend } from "../core/utils";
 import { useWorkletFormatting } from "../core/useWorkletFormatting";
 import { warnOnce } from "../core/warnings";
 import { DigitSlot } from "./DigitSlot";
@@ -50,9 +60,12 @@ export const SkiaNumberFlow = ({
   trend,
   animated,
   respectMotionPreference,
+  continuous,
+  digits,
   scrubDigitWidthPercentile = 0.75,
   onAnimationsStart,
   onAnimationsFinish,
+  mask,
 }: SkiaNumberFlowProps) => {
   const formatChars = useMemo(
     () => getFormatCharacters(locales, format, prefix, suffix),
@@ -74,20 +87,8 @@ export const SkiaNumberFlow = ({
     ? (transformTiming ?? DEFAULT_TRANSFORM_TIMING)
     : ZERO_TIMING;
 
-  // Auto-detect trend by comparing value between renders
   const prevValueRef = useRef<number | undefined>(value);
-  let resolvedTrend: Trend;
-  if (trend !== undefined) {
-    resolvedTrend = trend;
-  } else if (
-    value !== undefined &&
-    prevValueRef.current !== undefined &&
-    prevValueRef.current !== value
-  ) {
-    resolvedTrend = Math.sign(value - prevValueRef.current) as Trend;
-  } else {
-    resolvedTrend = 0;
-  }
+  const resolvedTrend = resolveTrend(trend, prevValueRef.current, value);
   prevValueRef.current = value;
 
   if (__DEV__) {
@@ -111,6 +112,16 @@ export const SkiaNumberFlow = ({
         "nf-percentile",
         "scrubDigitWidthPercentile should be between 0 and 1.",
       );
+    }
+    if (digits) {
+      for (const [posStr, constraint] of Object.entries(digits)) {
+        if (constraint.max < 1 || constraint.max > 9) {
+          warnOnce(
+            `skia-nf-digit-max-${posStr}`,
+            `digits[${posStr}].max must be between 1 and 9, got ${constraint.max}.`,
+          );
+        }
+      }
     }
   }
 
@@ -148,6 +159,12 @@ export const SkiaNumberFlow = ({
     sharedValue,
     prefix,
     suffix,
+  );
+
+  const spinGenerations = useContinuousSpin(
+    keyedParts,
+    continuous,
+    resolvedTrend,
   );
 
   const digitWidths = useMemo(() => {
@@ -421,6 +438,20 @@ export const SkiaNumberFlow = ({
   }
 
   const baseY = y;
+  const resolvedMask = mask ?? true;
+  const maskHeight = resolvedMask ? MASK_HEIGHT_RATIO * metrics.lineHeight : 0;
+  const maskWidth = resolvedMask ? MASK_WIDTH_RATIO * metrics.lineHeight : 0;
+
+  // Content bounds in the content group's local coordinate space
+  const contentLeft = layout.reduce(
+    (min, entry) => Math.min(min, entry.x),
+    Infinity,
+  );
+  const contentRight = layout.reduce(
+    (max, entry) => Math.max(max, entry.x + entry.width),
+    0,
+  );
+  const contentWidth = layout.length > 0 ? contentRight - contentLeft : 0;
 
   let digitIndex = 0;
   let slotIndex = 0;
@@ -432,17 +463,23 @@ export const SkiaNumberFlow = ({
         const currentSlotIndex = slotIndex++;
         if (entry.isDigit) {
           const wdv = workletDigitValues?.[digitIndex];
+          const digitCount = getDigitCount(digits, entry.key);
+          const spinGeneration = spinGenerations?.get(entry.key);
+
           digitIndex++;
           return (
             <DigitSlot
               baseY={baseY}
               charWidth={entry.width}
               color={color}
+              continuousSpinGeneration={spinGeneration}
+              digitCount={digitCount}
               digitValue={entry.digitValue}
               entering={isEntering}
               exiting={false}
               font={font}
               key={entry.key}
+              maskHeight={maskHeight}
               metrics={metrics}
               opacityTiming={resolvedOpacityTiming}
               slotIndex={currentSlotIndex}
@@ -475,17 +512,21 @@ export const SkiaNumberFlow = ({
 
       {Array.from(exitingEntries.entries()).map(([key, entry]) => {
         if (entry.isDigit) {
+          const digitCount = getDigitCount(digits, key);
+
           return (
             <DigitSlot
               baseY={baseY}
               charWidth={entry.width}
               color={color}
+              digitCount={digitCount}
               digitValue={entry.digitValue}
               entering={false}
               exitKey={key}
               exiting
               font={font}
               key={key}
+              maskHeight={maskHeight}
               metrics={metrics}
               onExitComplete={onExitComplete}
               opacityTiming={resolvedOpacityTiming}
@@ -516,9 +557,58 @@ export const SkiaNumberFlow = ({
     </Group>
   );
 
+  /**
+   * Container-level 2D gradient mask matching web NumberFlow's vignette.
+   * Two DstIn-blended rects compose independent horizontal and vertical fades:
+   * final_alpha = content_alpha × horizontal_alpha × vertical_alpha.
+   * This produces smooth corners naturally (alpha multiplication).
+   *
+   * Architecture: content draws into a saveLayer, then each gradient rect
+   * composites with DstIn (result = existing_content × gradient_alpha).
+   */
+  // Horizontal: fade extends OUTSIDE text edges (for enter/exit animations)
+  // Vertical: fade is WITHIN the text line height (digits roll through it)
+  const maskLeft = x + contentLeft - maskWidth;
+  const maskRight = x + contentRight + maskWidth;
+  const maskTop = baseY + metrics.ascent;
+  const maskTotalWidth = contentWidth + 2 * maskWidth;
+  const maskTotalHeight = metrics.lineHeight;
+  const hRatio = maskTotalWidth > 0 ? maskWidth / maskTotalWidth : 0;
+  const vRatio = maskTotalHeight > 0 ? maskHeight / maskTotalHeight : 0;
+
+  const maskedContent = resolvedMask ? (
+    <Group layer={<Paint />}>
+      {content}
+
+      {/* Horizontal fade */}
+      <Group layer={<Paint blendMode="dstIn" />}>
+        <SkiaRect height={maskTotalHeight} width={maskTotalWidth} x={maskLeft} y={maskTop}>
+          <LinearGradient
+            colors={["transparent", "black", "black", "transparent"]}
+            end={vec(maskRight, 0)}
+            positions={[0, hRatio, 1 - hRatio, 1]}
+            start={vec(maskLeft, 0)}
+          />
+        </SkiaRect>
+      </Group>
+
+      {/* Vertical fade */}
+      <Group layer={<Paint blendMode="dstIn" />}>
+        <SkiaRect height={maskTotalHeight} width={maskTotalWidth} x={maskLeft} y={maskTop}>
+          <LinearGradient
+            colors={["transparent", "black", "black", "transparent"]}
+            end={vec(0, maskTop + maskTotalHeight)}
+            positions={[0, vRatio, 1 - vRatio, 1]}
+            start={vec(0, maskTop)}
+          />
+        </SkiaRect>
+      </Group>
+    </Group>
+  ) : content;
+
   if (opacity) {
-    return <Group layer={<Paint opacity={opacity} />}>{content}</Group>;
+    return <Group layer={<Paint opacity={opacity} />}>{maskedContent}</Group>;
   }
 
-  return content;
+  return maskedContent;
 };

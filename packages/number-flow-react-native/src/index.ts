@@ -11,6 +11,9 @@ export type {
   AnimationConfig,
   TextAlign,
   Trend,
+  TrendProp,
+  DigitConstraint,
+  DigitsProp,
   KeyedPart,
 } from "./core/types";
 

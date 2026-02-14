@@ -6,6 +6,7 @@ import {
   useAnimatedReaction,
   withTiming,
 } from "react-native-reanimated";
+import { DIGIT_COUNT } from "./constants";
 import type { TimingConfig, Trend } from "./types";
 import { useSlotOpacity } from "./useSlotOpacity";
 import { computeRollDelta } from "./utils";
@@ -26,6 +27,10 @@ interface UseDigitAnimationParams {
   exitKey?: string;
   onExitComplete?: (key: string) => void;
   workletDigitValue?: SharedValue<number>;
+  /** Number of values in this digit's wheel. Defaults to 10 (0-9). */
+  digitCount?: number;
+  /** Incrementing counter from useContinuousSpin; triggers a full-wheel rotation when changed. */
+  continuousSpinGeneration?: number;
 }
 
 interface UseDigitAnimationResult {
@@ -52,7 +57,10 @@ export function useDigitAnimation({
   exitKey,
   onExitComplete,
   workletDigitValue,
+  digitCount,
+  continuousSpinGeneration,
 }: UseDigitAnimationParams): UseDigitAnimationResult {
+  const resolvedDigitCount = digitCount ?? DIGIT_COUNT;
   const initialDigit = entering ? 0 : digitValue;
   const prevDigitRef = useRef(initialDigit);
 
@@ -66,7 +74,7 @@ export function useDigitAnimation({
 
   const handleExitingStart = useCallback(() => {
     if (prevDigitRef.current !== 0) {
-      const delta = computeRollDelta(prevDigitRef.current, 0, trend);
+      const delta = computeRollDelta(prevDigitRef.current, 0, trend, resolvedDigitCount);
       prevDigitRef.current = 0;
       currentDigitSV.value = 0;
       animDelta.value = delta;
@@ -90,7 +98,7 @@ export function useDigitAnimation({
     const workletActive =
       workletDigitValue !== undefined && workletDigitValue.value >= 0;
     if (!exiting && !workletActive && prevDigitRef.current !== digitValue) {
-      const delta = computeRollDelta(prevDigitRef.current, digitValue, trend);
+      const delta = computeRollDelta(prevDigitRef.current, digitValue, trend, resolvedDigitCount);
       prevDigitRef.current = digitValue;
       currentDigitSV.value = digitValue;
       animDelta.value = delta;
@@ -100,6 +108,38 @@ export function useDigitAnimation({
       });
     }
   }, [digitValue, exiting, workletDigitValue, trend, spinTiming]);
+
+  /**
+   * Continuous spin: when the generation counter increments, this digit's
+   * value didn't change but a higher-significance digit did. Perform a
+   * full-wheel rotation so the digit appears to "carry" through.
+   *
+   * Example: 100 → 200 with trend=1 — the ones digit (0→0) spins through
+   * all 10 values upward while the hundreds digit rolls 1→2 normally.
+   */
+  const prevSpinGenRef = useRef(continuousSpinGeneration ?? 0);
+
+  useLayoutEffect(() => {
+    const currentGen = continuousSpinGeneration ?? 0;
+
+    // Generation unchanged — no continuous spin needed
+    if (currentGen === prevSpinGenRef.current) return;
+    prevSpinGenRef.current = currentGen;
+
+    // Don't spin digits that are entering or exiting — they animate via opacity
+    if (exiting || entering) return;
+
+    // Full wheel rotation: e.g. 10 * 1 = spin up 10, or 6 * -1 = spin down 6 (for s10)
+    const delta = resolvedDigitCount * trend;
+    if (delta === 0) return;
+
+    // Accumulate onto any in-flight animation, then ease back to 0
+    animDelta.value = animDelta.value + delta;
+    animDelta.value = withTiming(0, {
+      duration: spinTiming.duration,
+      easing: spinTiming.easing,
+    });
+  }, [continuousSpinGeneration, exiting, entering, trend, spinTiming, resolvedDigitCount]);
 
   const syncFromWorklet = useCallback((digit: number) => {
     prevDigitRef.current = digit;
@@ -113,7 +153,7 @@ export function useDigitAnimation({
       const prev = currentDigitSV.value;
       if (prev === current) return;
 
-      const delta = computeRollDelta(prev, current, trend);
+      const delta = computeRollDelta(prev, current, trend, resolvedDigitCount);
       currentDigitSV.value = current;
 
       /**

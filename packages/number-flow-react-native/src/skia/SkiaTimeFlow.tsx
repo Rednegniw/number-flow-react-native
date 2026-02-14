@@ -1,4 +1,10 @@
-import { Group, Paint } from "@shopify/react-native-skia";
+import {
+  Group,
+  LinearGradient,
+  Paint,
+  Rect as SkiaRect,
+  vec,
+} from "@shopify/react-native-skia";
 import { useEffect, useMemo, useRef } from "react";
 import { AccessibilityInfo } from "react-native";
 import { useReducedMotion } from "react-native-reanimated";
@@ -6,14 +12,17 @@ import {
   DEFAULT_OPACITY_TIMING,
   DEFAULT_SPIN_TIMING,
   DEFAULT_TRANSFORM_TIMING,
+  MASK_HEIGHT_RATIO,
+  MASK_WIDTH_RATIO,
   ZERO_TIMING,
 } from "../core/constants";
-import type { Trend } from "../core/types";
 import { computeKeyedLayout } from "../core/layout";
 import { computeTimeStringLayout } from "../core/timeLayout";
 import type { SkiaTimeFlowProps } from "../core/timeTypes";
+import { useContinuousSpin } from "../core/useContinuousSpin";
 import { useLayoutDiff } from "../core/useLayoutDiff";
 import { useTimeFormatting } from "../core/useTimeFormatting";
+import { resolveTrend, TIME_DIGIT_COUNTS } from "../core/utils";
 import { useWorkletFormatting } from "../core/useWorkletFormatting";
 import { warnOnce } from "../core/warnings";
 import { DigitSlot } from "./DigitSlot";
@@ -42,6 +51,8 @@ export const SkiaTimeFlow = ({
   trend,
   animated,
   respectMotionPreference,
+  continuous,
+  mask,
   onAnimationsStart,
   onAnimationsFinish,
 }: SkiaTimeFlowProps) => {
@@ -80,20 +91,13 @@ export const SkiaTimeFlow = ({
   const hasHours = resolvedHours !== undefined;
   const hasSeconds = resolvedSeconds !== undefined;
 
-  // Auto-detect trend by comparing total seconds between renders
   const totalSeconds =
     (resolvedHours ?? 0) * 3600 +
     (resolvedMinutes ?? 0) * 60 +
     (resolvedSeconds ?? 0);
+
   const prevTotalRef = useRef(totalSeconds);
-  let resolvedTrend: Trend;
-  if (trend !== undefined) {
-    resolvedTrend = trend;
-  } else if (prevTotalRef.current !== totalSeconds) {
-    resolvedTrend = Math.sign(totalSeconds - prevTotalRef.current) as Trend;
-  } else {
-    resolvedTrend = 0;
-  }
+  const resolvedTrend = resolveTrend(trend, prevTotalRef.current, totalSeconds);
   prevTotalRef.current = totalSeconds;
 
   if (__DEV__) {
@@ -124,6 +128,12 @@ export const SkiaTimeFlow = ({
   );
 
   const workletDigitValues = useWorkletFormatting(sharedValue, "", "");
+
+  const spinGenerations = useContinuousSpin(
+    keyedParts,
+    continuous,
+    resolvedTrend,
+  );
 
   const layout = useMemo(() => {
     if (!metrics) return [];
@@ -224,6 +234,20 @@ export const SkiaTimeFlow = ({
   }
 
   const baseY = y;
+  const resolvedMask = mask ?? true;
+  const maskHeight = resolvedMask ? MASK_HEIGHT_RATIO * metrics.lineHeight : 0;
+  const maskWidth = resolvedMask ? MASK_WIDTH_RATIO * metrics.lineHeight : 0;
+
+  // Content bounds from layout (in local coordinate space before translateX)
+  const contentLeft = layout.reduce(
+    (min, entry) => Math.min(min, entry.x),
+    Infinity,
+  );
+  const contentRight = layout.reduce(
+    (max, entry) => Math.max(max, entry.x + entry.width),
+    0,
+  );
+  const contentWidth = layout.length > 0 ? contentRight - contentLeft : 0;
 
   let digitIndex = 0;
 
@@ -233,17 +257,23 @@ export const SkiaTimeFlow = ({
         const isEntering = !isInitialRender && !prevMap.has(entry.key);
         if (entry.isDigit) {
           const wdv = workletDigitValues?.[digitIndex];
+          const digitCount = TIME_DIGIT_COUNTS[entry.key];
+          const spinGeneration = spinGenerations?.get(entry.key);
+
           digitIndex++;
           return (
             <DigitSlot
               baseY={baseY}
               charWidth={entry.width}
               color={color}
+              continuousSpinGeneration={spinGeneration}
+              digitCount={digitCount}
               digitValue={entry.digitValue}
               entering={isEntering}
               exiting={false}
               font={font}
               key={entry.key}
+              maskHeight={maskHeight}
               metrics={metrics}
               opacityTiming={resolvedOpacityTiming}
               spinTiming={resolvedSpinTiming}
@@ -272,17 +302,21 @@ export const SkiaTimeFlow = ({
 
       {Array.from(exitingEntries.entries()).map(([key, entry]) => {
         if (entry.isDigit) {
+          const digitCount = TIME_DIGIT_COUNTS[entry.key];
+
           return (
             <DigitSlot
               baseY={baseY}
               charWidth={entry.width}
               color={color}
+              digitCount={digitCount}
               digitValue={entry.digitValue}
               entering={false}
               exitKey={key}
               exiting
               font={font}
               key={key}
+              maskHeight={maskHeight}
               metrics={metrics}
               onExitComplete={onExitComplete}
               opacityTiming={resolvedOpacityTiming}
@@ -313,9 +347,53 @@ export const SkiaTimeFlow = ({
     </Group>
   );
 
+  /**
+   * Container-level 2D gradient mask matching web NumberFlow's vignette.
+   * Horizontal: fade extends outside text edges (for enter/exit animations).
+   * Vertical: fade is within the text line height (digits roll through it).
+   * Two DstIn layers compose: final_alpha = content × h_alpha × v_alpha.
+   */
+  const maskLeft = x + contentLeft - maskWidth;
+  const maskRight = x + contentRight + maskWidth;
+  const maskTop = baseY + metrics.ascent;
+  const maskTotalWidth = contentWidth + 2 * maskWidth;
+  const maskTotalHeight = metrics.lineHeight;
+  const hRatio = maskTotalWidth > 0 ? maskWidth / maskTotalWidth : 0;
+  const vRatio = maskTotalHeight > 0 ? maskHeight / maskTotalHeight : 0;
+
+  const maskedContent = resolvedMask ? (
+    <Group layer={<Paint />}>
+      {content}
+
+      {/* Horizontal fade */}
+      <Group layer={<Paint blendMode="dstIn" />}>
+        <SkiaRect height={maskTotalHeight} width={maskTotalWidth} x={maskLeft} y={maskTop}>
+          <LinearGradient
+            colors={["transparent", "black", "black", "transparent"]}
+            end={vec(maskRight, 0)}
+            positions={[0, hRatio, 1 - hRatio, 1]}
+            start={vec(maskLeft, 0)}
+          />
+        </SkiaRect>
+      </Group>
+
+      {/* Vertical fade */}
+      <Group layer={<Paint blendMode="dstIn" />}>
+        <SkiaRect height={maskTotalHeight} width={maskTotalWidth} x={maskLeft} y={maskTop}>
+          <LinearGradient
+            colors={["transparent", "black", "black", "transparent"]}
+            end={vec(0, maskTop + maskTotalHeight)}
+            positions={[0, vRatio, 1 - vRatio, 1]}
+            start={vec(0, maskTop)}
+          />
+        </SkiaRect>
+      </Group>
+    </Group>
+  ) : content;
+
   if (opacity) {
-    return <Group layer={<Paint opacity={opacity} />}>{content}</Group>;
+    return <Group layer={<Paint opacity={opacity} />}>{maskedContent}</Group>;
   }
 
-  return content;
+  return maskedContent;
 };
