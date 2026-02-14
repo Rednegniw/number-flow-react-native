@@ -1,3 +1,4 @@
+import MaskedView from "@rednegniw/masked-view";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View, type LayoutChangeEvent } from "react-native";
 import { useReducedMotion } from "react-native-reanimated";
@@ -5,14 +6,16 @@ import {
   DEFAULT_OPACITY_TIMING,
   DEFAULT_SPIN_TIMING,
   DEFAULT_TRANSFORM_TIMING,
+  MASK_HEIGHT_RATIO,
   ZERO_TIMING,
 } from "../core/constants";
-import type { Trend } from "../core/types";
 import { computeKeyedLayout } from "../core/layout";
 import { computeTimeStringLayout } from "../core/timeLayout";
 import type { TimeFlowProps } from "../core/timeTypes";
+import { useContinuousSpin } from "../core/useContinuousSpin";
 import { useLayoutDiff } from "../core/useLayoutDiff";
 import { useTimeFormatting } from "../core/useTimeFormatting";
+import { resolveTrend, TIME_DIGIT_COUNTS } from "../core/utils";
 import { useWorkletFormatting } from "../core/useWorkletFormatting";
 import { warnOnce } from "../core/warnings";
 import { DigitSlot } from "./DigitSlot";
@@ -36,9 +39,11 @@ export const TimeFlow = ({
   trend,
   animated,
   respectMotionPreference,
+  continuous,
   onAnimationsStart,
   onAnimationsFinish,
   containerStyle,
+  mask,
 }: TimeFlowProps) => {
   const { metrics, MeasureElement } = useGlyphMetrics(nfStyle);
 
@@ -75,20 +80,13 @@ export const TimeFlow = ({
   const hasHours = resolvedHours !== undefined;
   const hasSeconds = resolvedSeconds !== undefined;
 
-  // Auto-detect trend by comparing total seconds between renders
   const totalSeconds =
     (resolvedHours ?? 0) * 3600 +
     (resolvedMinutes ?? 0) * 60 +
     (resolvedSeconds ?? 0);
+
   const prevTotalRef = useRef(totalSeconds);
-  let resolvedTrend: Trend;
-  if (trend !== undefined) {
-    resolvedTrend = trend;
-  } else if (prevTotalRef.current !== totalSeconds) {
-    resolvedTrend = Math.sign(totalSeconds - prevTotalRef.current) as Trend;
-  } else {
-    resolvedTrend = 0;
-  }
+  const resolvedTrend = resolveTrend(trend, prevTotalRef.current, totalSeconds);
   prevTotalRef.current = totalSeconds;
 
   if (__DEV__) {
@@ -119,6 +117,12 @@ export const TimeFlow = ({
   );
 
   const workletDigitValues = useWorkletFormatting(sharedValue, "", "");
+
+  const spinGenerations = useContinuousSpin(
+    keyedParts,
+    continuous,
+    resolvedTrend,
+  );
 
   const [containerWidth, setContainerWidth] = useState(0);
   const handleContainerLayout = useCallback((e: LayoutChangeEvent) => {
@@ -212,6 +216,42 @@ export const TimeFlow = ({
     return keyedParts.map((p) => p.char).join("");
   }, [keyedParts, sharedValue]);
 
+  const resolvedMask = mask ?? true;
+  const lineHeight = metrics?.lineHeight ?? 0;
+  const maskHeight = resolvedMask ? MASK_HEIGHT_RATIO * lineHeight : 0;
+  const MASK_STEPS = 12;
+  const stepHeight = maskHeight / MASK_STEPS;
+
+  const gradientMaskElement = useMemo(() => {
+    if (!resolvedMask || lineHeight === 0) return null;
+    return (
+      <View style={{ flex: 1, flexDirection: "column" }}>
+        {/* Top fade: transparent → opaque */}
+        {Array.from({ length: MASK_STEPS }, (_, i) => (
+          <View
+            key={`t${i}`}
+            style={{
+              height: stepHeight,
+              backgroundColor: `rgba(0,0,0,${i / (MASK_STEPS - 1)})`,
+            }}
+          />
+        ))}
+        {/* Middle: fully opaque */}
+        <View style={{ flex: 1, backgroundColor: "black" }} />
+        {/* Bottom fade: opaque → transparent */}
+        {Array.from({ length: MASK_STEPS }, (_, i) => (
+          <View
+            key={`b${i}`}
+            style={{
+              height: stepHeight,
+              backgroundColor: `rgba(0,0,0,${1 - i / (MASK_STEPS - 1)})`,
+            }}
+          />
+        ))}
+      </View>
+    );
+  }, [resolvedMask, lineHeight, stepHeight]);
+
   if (!metrics) {
     return (
       <View onLayout={handleContainerLayout} style={containerStyle}>
@@ -230,32 +270,27 @@ export const TimeFlow = ({
 
   let digitIndex = 0;
 
-  return (
-    <View
-      accessible
-      accessibilityRole="text"
-      accessibilityLabel={accessibilityLabel}
-      onLayout={handleContainerLayout}
-      style={[
-        containerStyle,
-        { height: metrics.lineHeight, position: "relative" },
-      ]}
-    >
-      {MeasureElement}
-
+  const slots = (
+    <>
       {layout.map((entry) => {
         const isEntering = !isInitialRender && !prevMap.has(entry.key);
         if (entry.isDigit) {
           const wdv = workletDigitValues?.[digitIndex];
+          const digitCount = TIME_DIGIT_COUNTS[entry.key];
+          const spinGeneration = spinGenerations?.get(entry.key);
+
           digitIndex++;
           return (
             <DigitSlot
               charWidth={entry.width}
+              continuousSpinGeneration={spinGeneration}
+              digitCount={digitCount}
               digitValue={entry.digitValue}
               entering={isEntering}
               exiting={false}
               key={entry.key}
               lineHeight={metrics.lineHeight}
+              maskHeight={maskHeight}
               metrics={metrics}
               opacityTiming={resolvedOpacityTiming}
               spinTiming={resolvedSpinTiming}
@@ -284,15 +319,19 @@ export const TimeFlow = ({
 
       {Array.from(exitingEntries.entries()).map(([key, entry]) => {
         if (entry.isDigit) {
+          const digitCount = TIME_DIGIT_COUNTS[entry.key];
+
           return (
             <DigitSlot
               charWidth={entry.width}
+              digitCount={digitCount}
               digitValue={entry.digitValue}
               entering={false}
               exitKey={key}
               exiting
               key={key}
               lineHeight={metrics.lineHeight}
+              maskHeight={maskHeight}
               metrics={metrics}
               onExitComplete={onExitComplete}
               opacityTiming={resolvedOpacityTiming}
@@ -320,6 +359,42 @@ export const TimeFlow = ({
           />
         );
       })}
+    </>
+  );
+
+  // Optionally wrap in MaskedView for gradient edge fade.
+  // Content must be inside a single wrapper View so MaskedView's native
+  // didUpdateReactSubviews always sees one stable child — avoids Fabric
+  // "Attempt to recycle a mounted view" crash from dynamic slot churn.
+  const maskedContent = resolvedMask && gradientMaskElement ? (
+    <MaskedView
+      maskElement={gradientMaskElement}
+      style={{ flex: 1 }}
+    >
+      <View style={{ flex: 1, position: "relative" }}>
+        {MeasureElement}
+        {slots}
+      </View>
+    </MaskedView>
+  ) : (
+    <>
+      {MeasureElement}
+      {slots}
+    </>
+  );
+
+  return (
+    <View
+      accessible
+      accessibilityRole="text"
+      accessibilityLabel={accessibilityLabel}
+      onLayout={handleContainerLayout}
+      style={[
+        containerStyle,
+        { height: metrics.lineHeight, position: "relative" },
+      ]}
+    >
+      {maskedContent}
     </View>
   );
 };

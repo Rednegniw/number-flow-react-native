@@ -45,7 +45,8 @@
   "author": "Antonin Wingender",
   "license": "MIT",
   "scripts": {
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "jest"
   },
   "peerDependencies": {
     "react": ">=18",
@@ -58,8 +59,14 @@
       "optional": true
     }
   },
+  "dependencies": {
+    "@rednegniw/masked-view": "^0.4.0"
+  },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/react": "~19.1.0",
+    "jest": "^30.0.0",
+    "ts-jest": "^29.4.6",
     "typescript": "~5.9.2"
   }
 }

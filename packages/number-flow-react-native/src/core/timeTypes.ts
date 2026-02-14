@@ -1,7 +1,7 @@
 import type { SkFont } from "@shopify/react-native-skia";
 import type { ViewStyle } from "react-native";
 import type { SharedValue } from "react-native-reanimated";
-import type { AnimationConfig, TextAlign, Trend } from "./types";
+import type { AnimationConfig, TextAlign, TrendProp } from "./types";
 import type { NumberFlowStyle } from "../native/types";
 
 interface TimeFlowBaseProps extends AnimationConfig {
@@ -22,11 +22,21 @@ interface TimeFlowBaseProps extends AnimationConfig {
    * increasing time spins up, decreasing spins down.
    * Pass `0` explicitly for shortest-path per-digit behavior.
    */
-  trend?: Trend;
+  trend?: TrendProp;
   /** Set to false to disable animations and update instantly. Defaults to true. */
   animated?: boolean;
   /** When true (default), disables animations when the device's "Reduce Motion" setting is on. */
   respectMotionPreference?: boolean;
+
+  /**
+   * When true, unchanged lower-significance digits spin through a full cycle
+   * during transitions. Example: 1:00 → 2:00 makes minute digits cycle.
+   * Defaults to false.
+   */
+  continuous?: boolean;
+
+  /** Enable edge gradient fade masking on digit slots. Requires @rednegniw/masked-view for native components. Defaults to true. */
+  mask?: boolean;
 
   /** Called when update animations begin */
   onAnimationsStart?: () => void;
@@ -96,11 +106,21 @@ interface SkiaTimeFlowBaseProps extends AnimationConfig {
    * increasing time spins up, decreasing spins down.
    * Pass `0` explicitly for shortest-path per-digit behavior.
    */
-  trend?: Trend;
+  trend?: TrendProp;
   /** Set to false to disable animations and update instantly. Defaults to true. */
   animated?: boolean;
   /** When true (default), disables animations when the device's "Reduce Motion" setting is on. */
   respectMotionPreference?: boolean;
+
+  /**
+   * When true, unchanged lower-significance digits spin through a full cycle
+   * during transitions. Example: 1:00 → 2:00 makes minute digits cycle.
+   * Defaults to false.
+   */
+  continuous?: boolean;
+
+  /** Enable edge gradient fade masking on digit slots. Defaults to true. */
+  mask?: boolean;
 
   /** Called when update animations begin */
   onAnimationsStart?: () => void;

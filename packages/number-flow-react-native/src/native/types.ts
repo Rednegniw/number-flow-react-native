@@ -1,6 +1,6 @@
 import type { TextStyle, ViewStyle } from "react-native";
 import type { SharedValue } from "react-native-reanimated";
-import type { AnimationConfig, TextAlign, Trend } from "../core/types";
+import type { AnimationConfig, DigitsProp, TextAlign, TrendProp } from "../core/types";
 
 /** Text style for NumberFlow/TimeFlow. Requires fontSize; fontFamily defaults to the system font when omitted. */
 export type NumberFlowStyle = TextStyle & {
@@ -41,11 +41,28 @@ interface NumberFlowBaseProps extends AnimationConfig {
    * increasing values spin up, decreasing spin down.
    * Pass `0` explicitly for shortest-path per-digit behavior.
    */
-  trend?: Trend;
+  trend?: TrendProp;
   /** Set to false to disable animations and update instantly. Defaults to true. */
   animated?: boolean;
   /** When true (default), disables animations when the device's "Reduce Motion" setting is on. */
   respectMotionPreference?: boolean;
+
+  /**
+   * When true, unchanged lower-significance digits spin through a full cycle
+   * during transitions, making the number appear to pass through intermediate values.
+   * Defaults to false.
+   */
+  continuous?: boolean;
+
+  /**
+   * Per-position digit constraints. Maps integer position (0=ones, 1=tens, ...)
+   * to { max: N } where N is the highest digit value (inclusive).
+   * Example: { 1: { max: 5 } } for a wheel where tens go 0-5.
+   */
+  digits?: DigitsProp;
+
+  /** Enable edge gradient fade masking on digit slots. Requires @rednegniw/masked-view. Defaults to true. */
+  mask?: boolean;
 
   /** Called when update animations begin */
   onAnimationsStart?: () => void;

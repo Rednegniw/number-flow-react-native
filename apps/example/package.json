@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@rednegniw/masked-view": "^0.4.0",
     "@shopify/react-native-skia": "^2.2.12",
     "expo": "~54.0.33",
     "expo-font": "^14.0.11",
