@@ -7,21 +7,20 @@ import {
 } from "@shopify/react-native-skia";
 import { useEffect, useMemo, useRef } from "react";
 import { AccessibilityInfo } from "react-native";
-import { useReducedMotion } from "react-native-reanimated";
+import { MASK_HEIGHT_RATIO, MASK_WIDTH_RATIO } from "../core/constants";
 import {
   DEFAULT_OPACITY_TIMING,
   DEFAULT_SPIN_TIMING,
   DEFAULT_TRANSFORM_TIMING,
-  MASK_HEIGHT_RATIO,
-  MASK_WIDTH_RATIO,
   ZERO_TIMING,
-} from "../core/constants";
+} from "../core/timing";
 import { computeKeyedLayout } from "../core/layout";
 import { computeTimeStringLayout } from "../core/timeLayout";
 import type { SkiaTimeFlowProps } from "../core/timeTypes";
 import { useContinuousSpin } from "../core/useContinuousSpin";
 import { useLayoutDiff } from "../core/useLayoutDiff";
 import { useTimeFormatting } from "../core/useTimeFormatting";
+import { useCanAnimate } from "../core/useCanAnimate";
 import { resolveTrend, TIME_DIGIT_COUNTS } from "../core/utils";
 import { useWorkletFormatting } from "../core/useWorkletFormatting";
 import { warnOnce } from "../core/warnings";
@@ -58,9 +57,8 @@ export const SkiaTimeFlow = ({
 }: SkiaTimeFlowProps) => {
   const metrics = useGlyphMetrics(font);
 
-  const reducedMotion = useReducedMotion();
-  const shouldAnimate =
-    (animated ?? true) && !(respectMotionPreference !== false && reducedMotion);
+  const canAnimate = useCanAnimate(respectMotionPreference);
+  const shouldAnimate = (animated ?? true) && canAnimate;
 
   const resolvedSpinTiming = shouldAnimate
     ? (spinTiming ?? DEFAULT_SPIN_TIMING)

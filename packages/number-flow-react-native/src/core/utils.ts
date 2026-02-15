@@ -94,6 +94,9 @@ export function resolveTrend(
 export function parseDigitPosition(key: string): number | undefined {
   "worklet";
 
+  // Exponent digits are a separate domain — they don't cascade in continuous spin
+  if (key.startsWith("exponentInteger:")) return undefined;
+
   if (key.startsWith("integer:")) {
     return parseInt(key.slice(8), 10);
   }

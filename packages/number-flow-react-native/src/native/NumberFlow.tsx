@@ -1,14 +1,13 @@
 import MaskedView from "@rednegniw/masked-view";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View, type LayoutChangeEvent } from "react-native";
-import { useReducedMotion } from "react-native-reanimated";
+import { MASK_HEIGHT_RATIO } from "../core/constants";
 import {
   DEFAULT_OPACITY_TIMING,
   DEFAULT_SPIN_TIMING,
   DEFAULT_TRANSFORM_TIMING,
-  MASK_HEIGHT_RATIO,
   ZERO_TIMING,
-} from "../core/constants";
+} from "../core/timing";
 import { computeKeyedLayout, computeStringLayout } from "../core/layout";
 import { useContinuousSpin } from "../core/useContinuousSpin";
 import { useLayoutDiff } from "../core/useLayoutDiff";
@@ -17,6 +16,7 @@ import {
   useNumberFormatting,
 } from "../core/useNumberFormatting";
 import { useWorkletFormatting } from "../core/useWorkletFormatting";
+import { useCanAnimate } from "../core/useCanAnimate";
 import { getDigitCount, resolveTrend } from "../core/utils";
 import { warnOnce } from "../core/warnings";
 import { DigitSlot } from "./DigitSlot";
@@ -53,9 +53,8 @@ export const NumberFlow = ({
   const { metrics, MeasureElement } = useGlyphMetrics(nfStyle, formatChars);
 
   // Animated + reduced motion
-  const reducedMotion = useReducedMotion();
-  const shouldAnimate =
-    (animated ?? true) && !(respectMotionPreference !== false && reducedMotion);
+  const canAnimate = useCanAnimate(respectMotionPreference);
+  const shouldAnimate = (animated ?? true) && canAnimate;
 
   const resolvedSpinTiming = shouldAnimate
     ? (spinTiming ?? DEFAULT_SPIN_TIMING)
@@ -206,7 +205,10 @@ export const NumberFlow = ({
 
   const resolvedMask = mask ?? true;
   const lineHeight = metrics?.lineHeight ?? 0;
-  const maskHeight = resolvedMask ? MASK_HEIGHT_RATIO * lineHeight : 0;
+  // Always use maskHeight as a buffer zone so neighboring digits never touch
+  // the clip boundary (prevents sub-pixel overflow artifacts on Android).
+  // The MaskedView gradient is only rendered when mask={true}.
+  const maskHeight = MASK_HEIGHT_RATIO * lineHeight;
   const MASK_STEPS = 12;
   const stepHeight = maskHeight / MASK_STEPS;
 
@@ -282,6 +284,7 @@ export const NumberFlow = ({
               metrics={metrics}
               opacityTiming={resolvedOpacityTiming}
               spinTiming={resolvedSpinTiming}
+              superscript={entry.superscript}
               targetX={entry.x}
               textStyle={textStyle}
               transformTiming={resolvedTransformTiming}
@@ -298,6 +301,7 @@ export const NumberFlow = ({
             key={entry.key}
             lineHeight={metrics.lineHeight}
             opacityTiming={resolvedOpacityTiming}
+            superscript={entry.superscript}
             targetX={entry.x}
             textStyle={textStyle}
             transformTiming={resolvedTransformTiming}
@@ -324,6 +328,7 @@ export const NumberFlow = ({
               onExitComplete={onExitComplete}
               opacityTiming={resolvedOpacityTiming}
               spinTiming={resolvedSpinTiming}
+              superscript={entry.superscript}
               targetX={entry.x}
               textStyle={textStyle}
               transformTiming={resolvedTransformTiming}
@@ -341,6 +346,7 @@ export const NumberFlow = ({
             lineHeight={metrics.lineHeight}
             onExitComplete={onExitComplete}
             opacityTiming={resolvedOpacityTiming}
+            superscript={entry.superscript}
             targetX={entry.x}
             textStyle={textStyle}
             transformTiming={resolvedTransformTiming}
@@ -379,7 +385,7 @@ export const NumberFlow = ({
       onLayout={handleContainerLayout}
       style={[
         containerStyle,
-        { height: metrics.lineHeight, position: "relative" },
+        { height: metrics.lineHeight, position: "relative", overflow: "hidden" },
       ]}
     >
       {maskedContent}

@@ -3,6 +3,8 @@ dist/
 .DS_Store
 *.tsbuildinfo
 CLAUDE.md
+COOL_RECS.md
+QUALITY_ASSESSMENT.md
 
 # Docs (Fumadocs / Next.js)
 docs/.source/

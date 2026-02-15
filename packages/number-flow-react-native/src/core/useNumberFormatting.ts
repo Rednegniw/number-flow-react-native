@@ -49,6 +49,11 @@ export function getFormatCharacters(
       if (ch < "0" || ch > "9") chars.add(ch);
     }
   }
+  // Scientific/engineering notation replaces E with ×10 in our display
+  if (format?.notation === "scientific" || format?.notation === "engineering") {
+    chars.add("\u00D7"); // × (multiplication sign)
+  }
+
   for (const ch of prefix) chars.add(ch);
   for (const ch of suffix) chars.add(ch);
 
@@ -93,26 +98,125 @@ function detectDecimalSeparator(locales?: Intl.LocalesArgument): string {
   return sep;
 }
 
+/**
+ * Parses a formatted number string (with optional E exponent) into typed parts.
+ * Separated from fallbackFormatToParts so it can be reused for polyfill strings.
+ */
+function parseNumberString(
+  formatted: string,
+  decimalSep: string,
+): Intl.NumberFormatPart[] {
+  // Detect exponent separator (E or e) — split into mantissa + exponent
+  let exponentPos = -1;
+  for (let i = 0; i < formatted.length; i++) {
+    if (formatted[i] === "E" || formatted[i] === "e") {
+      exponentPos = i;
+      break;
+    }
+  }
+
+  const mantissa = exponentPos >= 0 ? formatted.slice(0, exponentPos) : formatted;
+  const parts: Intl.NumberFormatPart[] = [];
+
+  parseMantissa(mantissa, decimalSep, parts);
+
+  if (exponentPos >= 0) {
+    parts.push({ type: "exponentSeparator" as string, value: formatted[exponentPos] } as Intl.NumberFormatPart);
+
+    let expBuf = "";
+    for (let i = exponentPos + 1; i < formatted.length; i++) {
+      const ch = formatted[i];
+
+      if (ch === "-") {
+        parts.push({ type: "exponentMinusSign" as string, value: ch } as Intl.NumberFormatPart);
+      } else if (ch === "+") {
+        parts.push({ type: "exponentPlusSign" as string, value: ch } as Intl.NumberFormatPart);
+      } else if (ch >= "0" && ch <= "9") {
+        expBuf += ch;
+      }
+    }
+
+    if (expBuf) {
+      parts.push({ type: "exponentInteger" as string, value: expBuf } as Intl.NumberFormatPart);
+    }
+  }
+
+  return parts;
+}
+
 export function fallbackFormatToParts(
   formatter: Intl.NumberFormat,
   value: number,
   locales?: Intl.LocalesArgument,
 ): Intl.NumberFormatPart[] {
-  const formatted = formatter.format(value);
-  const decimalSep = detectDecimalSeparator(locales);
+  return parseNumberString(formatter.format(value), detectDecimalSeparator(locales));
+}
 
-  const parts: Intl.NumberFormatPart[] = [];
+/**
+ * Manually computes an engineering notation string for values where the
+ * platform's Intl.NumberFormat doesn't support notation: "engineering"
+ * (notably iOS Hermes, which uses NSNumberFormatter under the hood).
+ *
+ * Engineering notation: exponent is always a multiple of 3, mantissa has 1-3 integer digits.
+ */
+function computeEngineeringString(
+  value: number,
+  resolved: Intl.ResolvedNumberFormatOptions,
+): string {
+  if (value === 0) return "0E0";
 
+  const negative = value < 0;
+  const abs = Math.abs(value);
+  const logFloor = Math.floor(Math.log10(abs));
+  const exp = 3 * Math.floor(logFloor / 3);
+  const mantissa = abs / Math.pow(10, exp);
+
+  const maxFrac = resolved.maximumFractionDigits;
+  const minFrac = resolved.minimumFractionDigits;
+
+  let mantissaStr = mantissa.toFixed(maxFrac);
+
+  // Trim trailing zeros beyond minFrac
+  const dotIdx = mantissaStr.indexOf(".");
+  if (dotIdx >= 0) {
+    let end = mantissaStr.length;
+    const minEnd = dotIdx + 1 + minFrac;
+
+    while (end > minEnd && mantissaStr[end - 1] === "0") {
+      end--;
+    }
+
+    // Remove the dot if no fraction digits remain
+    if (end <= dotIdx + 1 && minFrac === 0) {
+      end = dotIdx;
+    }
+
+    mantissaStr = mantissaStr.slice(0, end);
+  }
+
+  const sign = negative ? "-" : "";
+  return `${sign}${mantissaStr}E${exp}`;
+}
+
+/**
+ * Parses the mantissa portion of a formatted number string into typed parts.
+ * Handles integer digits, fraction digits, decimal separators, signs, and group separators.
+ */
+function parseMantissa(
+  mantissa: string,
+  decimalSep: string,
+  parts: Intl.NumberFormatPart[],
+): void {
   /**
    * Search from right — in some locales the decimal sep char is also
    * used as a group separator, so leftmost match could be wrong.
    */
   let decimalPos = -1;
-  for (let i = formatted.length - 1; i >= 0; i--) {
-    if (formatted[i] === decimalSep) {
+  for (let i = mantissa.length - 1; i >= 0; i--) {
+    if (mantissa[i] === decimalSep) {
       let hasDigitAfter = false;
-      for (let j = i + 1; j < formatted.length; j++) {
-        if (formatted[j] >= "0" && formatted[j] <= "9") {
+      for (let j = i + 1; j < mantissa.length; j++) {
+        if (mantissa[j] >= "0" && mantissa[j] <= "9") {
           hasDigitAfter = true;
           break;
         }
@@ -134,8 +238,8 @@ export function fallbackFormatToParts(
     }
   };
 
-  for (let i = 0; i < formatted.length; i++) {
-    const ch = formatted[i];
+  for (let i = 0; i < mantissa.length; i++) {
+    const ch = mantissa[i];
 
     if (i === decimalPos) {
       flush();
@@ -155,11 +259,11 @@ export function fallbackFormatToParts(
     } else if (!inFraction) {
       flush();
       const prevDigit =
-        i > 0 && formatted[i - 1] >= "0" && formatted[i - 1] <= "9";
+        i > 0 && mantissa[i - 1] >= "0" && mantissa[i - 1] <= "9";
       const nextDigit =
-        i < formatted.length - 1 &&
-        formatted[i + 1] >= "0" &&
-        formatted[i + 1] <= "9";
+        i < mantissa.length - 1 &&
+        mantissa[i + 1] >= "0" &&
+        mantissa[i + 1] <= "9";
       parts.push({
         type: prevDigit && nextDigit ? "group" : "literal",
         value: ch,
@@ -169,9 +273,8 @@ export function fallbackFormatToParts(
       parts.push({ type: "literal", value: ch });
     }
   }
-  flush();
 
-  return parts;
+  flush();
 }
 
 function safeFormatToParts(
@@ -179,10 +282,29 @@ function safeFormatToParts(
   value: number,
   locales?: Intl.LocalesArgument,
 ): Intl.NumberFormatPart[] {
+  let parts: Intl.NumberFormatPart[];
+
   if (typeof formatter.formatToParts === "function") {
-    return formatter.formatToParts(value);
+    parts = formatter.formatToParts(value);
+  } else {
+    parts = fallbackFormatToParts(formatter, value, locales);
   }
-  return fallbackFormatToParts(formatter, value, locales);
+
+  // iOS Hermes uses NSNumberFormatter which doesn't support engineering notation.
+  // It silently falls back to decimal formatting, producing no exponent parts.
+  // Detect this and manually compute the engineering representation.
+  const hasExponent = parts.some((p) => (p.type as string) === "exponentSeparator");
+
+  if (!hasExponent && isFinite(value)) {
+    const notation = (formatter.resolvedOptions() as unknown as Record<string, unknown>).notation;
+
+    if (notation === "engineering") {
+      const str = computeEngineeringString(value, formatter.resolvedOptions());
+      return parseNumberString(str, ".");
+    }
+  }
+
+  return parts;
 }
 
 /**
@@ -217,13 +339,27 @@ export function formatToKeyedParts(
   }
 
   for (const part of rawParts) {
-    // Merge minusSign and plusSign into a unified "sign" type
+    // Merge signs into unified types.
+    // The fallback parser emits extended types (exponentMinusSign, etc.)
+    // that aren't in Intl.NumberFormatPart["type"], so we widen to string.
+    const partType = part.type as string;
     const type =
-      part.type === "minusSign" || part.type === "plusSign"
+      partType === "minusSign" || partType === "plusSign"
         ? "sign"
-        : part.type;
+        : partType === "exponentMinusSign" || partType === "exponentPlusSign"
+          ? "exponentSign"
+          : partType;
 
-    if (type === "integer" || type === "fraction") {
+    // Replace exponentSeparator "E" with ×10 display
+    if (type === "exponentSeparator") {
+      flatChars.push({ sourceType: "exponentSeparator", char: "\u00D7" });
+      flatChars.push({ sourceType: "exponentSeparator", char: "1" });
+      flatChars.push({ sourceType: "exponentSeparator", char: "0" });
+      continue;
+    }
+
+    // Flatten digit sequences into individual characters
+    if (type === "integer" || type === "fraction" || type === "exponentInteger") {
       for (const char of part.value) {
         flatChars.push({ sourceType: type, char });
       }
@@ -270,9 +406,28 @@ export function formatToKeyedParts(
     };
   }
 
-  // Key everything else LTR (fraction digits, decimal, prefix, suffix, currency, etc.)
+  // Find all exponent integer indices (key RTL, same logic as mantissa integers)
+  const exponentIntegerIndices: number[] = [];
   for (let i = 0; i < flatChars.length; i++) {
-    if (result[i]) continue; // already keyed (integer or group)
+    if (flatChars[i].sourceType === "exponentInteger") {
+      exponentIntegerIndices.push(i);
+    }
+  }
+
+  for (let i = exponentIntegerIndices.length - 1; i >= 0; i--) {
+    const idx = exponentIntegerIndices[i];
+    const fc = flatChars[idx];
+    result[idx] = {
+      key: nextKey("exponentInteger"),
+      type: "digit",
+      char: fc.char,
+      digitValue: fc.char.charCodeAt(0) - 48,
+    };
+  }
+
+  // Key everything else LTR (fraction, decimal, prefix, suffix, exponentSeparator, exponentSign, etc.)
+  for (let i = 0; i < flatChars.length; i++) {
+    if (result[i]) continue; // already keyed (integer, group, or exponentInteger)
     const fc = flatChars[i];
     const isDigit = fc.sourceType === "fraction";
     result[i] = {

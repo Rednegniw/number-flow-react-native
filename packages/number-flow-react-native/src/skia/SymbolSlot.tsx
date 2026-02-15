@@ -8,6 +8,7 @@ import {
   useDerivedValue,
   withTiming,
 } from "react-native-reanimated";
+import { SUPERSCRIPT_SCALE } from "../core/constants";
 import type { SkiaNumberFlowProps, TimingConfig } from "../core/types";
 import { useAnimatedX } from "../core/useAnimatedX";
 import { useSlotOpacity } from "../core/useSlotOpacity";
@@ -29,6 +30,7 @@ interface SymbolSlotProps {
   onExitComplete?: (key: string) => void;
   workletLayout?: SharedValue<{ x: number; width: number }[]>;
   slotIndex?: number;
+  superscript?: boolean;
 }
 
 export const SymbolSlot = React.memo(
@@ -46,6 +48,7 @@ export const SymbolSlot = React.memo(
     onExitComplete,
     workletLayout,
     slotIndex,
+    superscript,
   }: SymbolSlotProps) => {
     const slotOpacity = useSlotOpacity({
       entering,
@@ -91,14 +94,34 @@ export const SymbolSlot = React.memo(
       return [{ translateX: animatedX.value }];
     });
 
+    const superscriptTransform = useMemo(() => {
+      if (!superscript) return undefined;
+
+      const textTop = baseY + font.getMetrics().ascent;
+
+      return [
+        { translateY: textTop },
+        { scale: SUPERSCRIPT_SCALE },
+        { translateY: -textTop },
+      ];
+    }, [superscript, baseY, font]);
+
     const opacityPaint = useMemo(
       () => <Paint opacity={slotOpacity} />,
       [slotOpacity],
     );
 
+    const textElement = (
+      <SkiaText color={color} font={font} text={char} x={0} y={baseY} />
+    );
+
     return (
       <Group layer={opacityPaint} transform={groupTransform}>
-        <SkiaText color={color} font={font} text={char} x={0} y={baseY} />
+        {superscriptTransform ? (
+          <Group transform={superscriptTransform}>{textElement}</Group>
+        ) : (
+          textElement
+        )}
       </Group>
     );
   },

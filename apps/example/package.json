@@ -17,11 +17,13 @@
     "number-flow-react-native": "workspace:*",
     "react": "19.1.0",
     "react-native": "0.81.5",
+    "react-native-gesture-handler": "~2.28.0",
     "react-native-reanimated": "~4.1.1",
     "react-native-safe-area-context": "^5.6.2"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "expo-mcp": "~0.2.1",
     "typescript": "~5.9.2"
   },
   "private": true

@@ -3,6 +3,7 @@ export { SkiaTimeFlow } from "./skia";
 export { NumberFlow } from "./native";
 export { TimeFlow } from "./native";
 export { useFormattedValue } from "./core/useFormattedValue";
+export { useCanAnimate } from "./core/useCanAnimate";
 
 export type {
   SkiaNumberFlowProps,

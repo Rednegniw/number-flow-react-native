@@ -13,16 +13,14 @@ import {
   runOnJS,
   useAnimatedReaction,
   useDerivedValue,
-  useReducedMotion,
 } from "react-native-reanimated";
+import { MASK_HEIGHT_RATIO, MASK_WIDTH_RATIO } from "../core/constants";
 import {
   DEFAULT_OPACITY_TIMING,
   DEFAULT_SPIN_TIMING,
   DEFAULT_TRANSFORM_TIMING,
-  MASK_HEIGHT_RATIO,
-  MASK_WIDTH_RATIO,
   ZERO_TIMING,
-} from "../core/constants";
+} from "../core/timing";
 import { useDebouncedWidths } from "../core/useDebouncedWidths";
 import { computeKeyedLayout, computeStringLayout } from "../core/layout";
 import type { SkiaNumberFlowProps } from "../core/types";
@@ -33,6 +31,7 @@ import {
   getOrCreateFormatter,
   useNumberFormatting,
 } from "../core/useNumberFormatting";
+import { useCanAnimate } from "../core/useCanAnimate";
 import { getDigitCount, resolveTrend } from "../core/utils";
 import { useWorkletFormatting } from "../core/useWorkletFormatting";
 import { warnOnce } from "../core/warnings";
@@ -73,9 +72,8 @@ export const SkiaNumberFlow = ({
   );
   const metrics = useGlyphMetrics(font, formatChars);
 
-  const reducedMotion = useReducedMotion();
-  const shouldAnimate =
-    (animated ?? true) && !(respectMotionPreference !== false && reducedMotion);
+  const canAnimate = useCanAnimate(respectMotionPreference);
+  const shouldAnimate = (animated ?? true) && canAnimate;
 
   const resolvedSpinTiming = shouldAnimate
     ? (spinTiming ?? DEFAULT_SPIN_TIMING)
@@ -484,6 +482,7 @@ export const SkiaNumberFlow = ({
               opacityTiming={resolvedOpacityTiming}
               slotIndex={currentSlotIndex}
               spinTiming={resolvedSpinTiming}
+              superscript={entry.superscript}
               targetX={entry.x}
               transformTiming={resolvedTransformTiming}
               trend={resolvedTrend}
@@ -501,8 +500,10 @@ export const SkiaNumberFlow = ({
             exiting={false}
             font={font}
             key={entry.key}
+
             opacityTiming={resolvedOpacityTiming}
             slotIndex={currentSlotIndex}
+            superscript={entry.superscript}
             targetX={entry.x}
             transformTiming={resolvedTransformTiming}
             workletLayout={workletLayout}
@@ -531,6 +532,7 @@ export const SkiaNumberFlow = ({
               onExitComplete={onExitComplete}
               opacityTiming={resolvedOpacityTiming}
               spinTiming={resolvedSpinTiming}
+              superscript={entry.superscript}
               targetX={entry.x}
               transformTiming={resolvedTransformTiming}
               trend={resolvedTrend}
@@ -547,8 +549,10 @@ export const SkiaNumberFlow = ({
             exiting
             font={font}
             key={key}
+
             onExitComplete={onExitComplete}
             opacityTiming={resolvedOpacityTiming}
+            superscript={entry.superscript}
             targetX={entry.x}
             transformTiming={resolvedTransformTiming}
           />

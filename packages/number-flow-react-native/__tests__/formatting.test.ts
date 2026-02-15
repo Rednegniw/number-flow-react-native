@@ -211,3 +211,92 @@ describe("formatToKeyedParts", () => {
     expect(result).toBe("$" + fmt.format(1234.56) + "!");
   });
 });
+
+// ─── Scientific / Engineering notation ───
+
+describe("formatToKeyedParts — scientific notation", () => {
+  const sciFmt = new Intl.NumberFormat("en-US", { notation: "scientific" });
+
+  test("replaces E with ×10 display", () => {
+    const parts = formatToKeyedParts(1500, sciFmt, "en-US");
+    const chars = parts.map((p) => p.char).join("");
+
+    expect(chars).toContain("\u00D710");
+    expect(chars).not.toContain("E");
+  });
+
+  test("exponent digits are keyed RTL under exponentInteger:", () => {
+    const parts = formatToKeyedParts(1e12, sciFmt, "en-US");
+    const expDigits = parts.filter((p) => p.key.startsWith("exponentInteger:"));
+
+    // 1E12 → exponent "12" → two digits keyed RTL
+    expect(expDigits.length).toBe(2);
+    expect(expDigits[0].key).toBe("exponentInteger:1"); // tens
+    expect(expDigits[1].key).toBe("exponentInteger:0"); // ones
+  });
+
+  test("single-digit exponent has exponentInteger:0", () => {
+    const parts = formatToKeyedParts(1500, sciFmt, "en-US");
+    const expDigits = parts.filter((p) => p.key.startsWith("exponentInteger:"));
+
+    expect(expDigits.length).toBe(1);
+    expect(expDigits[0].key).toBe("exponentInteger:0");
+    expect(expDigits[0].digitValue).toBe(3);
+  });
+
+  test("×10 symbols are keyed as exponentSeparator", () => {
+    const parts = formatToKeyedParts(1500, sciFmt, "en-US");
+    const sepParts = parts.filter((p) =>
+      p.key.startsWith("exponentSeparator:"),
+    );
+
+    expect(sepParts.length).toBe(3);
+    expect(sepParts.map((p) => p.char).join("")).toBe("\u00D710");
+  });
+
+  test("negative exponent produces exponentSign part", () => {
+    const parts = formatToKeyedParts(0.001, sciFmt, "en-US");
+    const signParts = parts.filter((p) => p.key.startsWith("exponentSign:"));
+
+    expect(signParts.length).toBe(1);
+  });
+
+  test("all parts are single characters", () => {
+    const parts = formatToKeyedParts(123456, sciFmt, "en-US");
+
+    for (const part of parts) {
+      expect(part.char.length).toBe(1);
+    }
+  });
+});
+
+describe("fallbackFormatToParts — scientific notation", () => {
+  test("detects exponent separator and integer", () => {
+    const fmt = new Intl.NumberFormat("en-US", { notation: "scientific" });
+    const parts = fallbackFormatToParts(fmt, 1500, "en-US");
+
+    const types = parts.map((p) => p.type);
+    expect(types).toContain("exponentSeparator");
+    expect(types).toContain("exponentInteger");
+  });
+
+  test("negative exponent has exponentMinusSign", () => {
+    const fmt = new Intl.NumberFormat("en-US", { notation: "scientific" });
+    const parts = fallbackFormatToParts(fmt, 0.001, "en-US");
+
+    const types = parts.map((p) => p.type);
+    expect(types).toContain("exponentMinusSign");
+  });
+});
+
+describe("getFormatCharacters — scientific notation", () => {
+  test("includes × for scientific notation", () => {
+    const chars = getFormatCharacters("en-US", { notation: "scientific" });
+    expect(chars).toContain("\u00D7");
+  });
+
+  test("includes × for engineering notation", () => {
+    const chars = getFormatCharacters("en-US", { notation: "engineering" });
+    expect(chars).toContain("\u00D7");
+  });
+});

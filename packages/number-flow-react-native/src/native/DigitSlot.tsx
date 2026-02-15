@@ -7,7 +7,11 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from "react-native-reanimated";
-import { DIGIT_COUNT, DIGIT_STRINGS } from "../core/constants";
+import {
+  DIGIT_COUNT,
+  DIGIT_STRINGS,
+  SUPERSCRIPT_SCALE,
+} from "../core/constants";
 import type { GlyphMetrics, TimingConfig, Trend } from "../core/types";
 import { useAnimatedX } from "../core/useAnimatedX";
 import { useDigitAnimation } from "../core/useDigitAnimation";
@@ -56,6 +60,7 @@ interface DigitSlotProps {
   digitCount?: number;
   continuousSpinGeneration?: number;
   maskHeight?: number;
+  superscript?: boolean;
 }
 
 export const DigitSlot = React.memo(
@@ -78,8 +83,26 @@ export const DigitSlot = React.memo(
     digitCount,
     continuousSpinGeneration,
     maskHeight = 0,
+    superscript,
   }: DigitSlotProps) => {
     const resolvedDigitCount = digitCount ?? DIGIT_COUNT;
+
+    // Superscript scaling — exponent digits/signs render smaller at the top of the line.
+    // Mask height is zeroed for superscript: the container-level gradient doesn't cover
+    // the superscript position, so any buffer would show unmasked neighboring digits.
+    const scale = superscript ? SUPERSCRIPT_SCALE : 1;
+    const effectiveLH = metrics.lineHeight * scale;
+    const effectiveMaskHeight = superscript ? 0 : maskHeight;
+
+    const effectiveTextStyle = useMemo(() => {
+      if (!superscript) return textStyle;
+
+      return {
+        ...textStyle,
+        fontSize: (textStyle.fontSize ?? 16) * SUPERSCRIPT_SCALE,
+        lineHeight: effectiveLH,
+      };
+    }, [textStyle, superscript, effectiveLH]);
 
     const { initialDigit, animDelta, currentDigitSV, slotOpacity } =
       useDigitAnimation({
@@ -101,14 +124,13 @@ export const DigitSlot = React.memo(
      * Each digit independently positions itself based on its signed
      * modular distance from the virtual scroll position.
      */
-    const [digitYValues] = useState(() => {
-      const lh = metrics.lineHeight;
-      return Array.from({ length: resolvedDigitCount }, (_, n) => {
+    const [digitYValues] = useState(() =>
+      Array.from({ length: resolvedDigitCount }, (_, n) => {
         const offset = signedDigitOffset(n, initialDigit, resolvedDigitCount);
         const clamped = Math.max(-1.5, Math.min(1.5, offset));
-        return makeMutable(clamped * lh + maskHeight);
-      });
-    });
+        return makeMutable(clamped * effectiveLH + effectiveMaskHeight);
+      }),
+    );
 
     /**
      * Mirrors NumberFlow's CSS mod(): each digit n computes its signed
@@ -119,14 +141,13 @@ export const DigitSlot = React.memo(
     useAnimatedReaction(
       () => currentDigitSV.value - animDelta.value,
       (c) => {
-        const lh = metrics.lineHeight;
         for (let n = 0; n < resolvedDigitCount; n++) {
           const offset = signedDigitOffset(n, c, resolvedDigitCount);
           const clamped = Math.max(-1.5, Math.min(1.5, offset));
-          digitYValues[n].value = clamped * lh + maskHeight;
+          digitYValues[n].value = clamped * effectiveLH + effectiveMaskHeight;
         }
       },
-      [metrics.lineHeight, resolvedDigitCount, maskHeight],
+      [effectiveLH, resolvedDigitCount, effectiveMaskHeight],
     );
 
     const animatedX = useAnimatedX(targetX, exiting, transformTiming);
@@ -147,12 +168,12 @@ export const DigitSlot = React.memo(
     const animatedStyle = useAnimatedStyle(() => ({
       transform: [
         { translateX: animatedX.value },
-        { translateY: -maskHeight },
+        { translateY: -effectiveMaskHeight },
       ],
       opacity: slotOpacity.value,
     }));
 
-    const expandedHeight = lineHeight + 2 * maskHeight;
+    const expandedHeight = effectiveLH + 2 * effectiveMaskHeight;
 
     const animatedClipStyle = useAnimatedStyle(() => ({
       overflow: "hidden" as const,
@@ -166,11 +187,11 @@ export const DigitSlot = React.memo(
           <DigitElement
             digitIndex={n}
             key={n}
-            textStyle={textStyle}
+            textStyle={effectiveTextStyle}
             yValue={digitYValues[n]}
           />
         )),
-      [resolvedDigitCount, digitYValues, textStyle],
+      [resolvedDigitCount, digitYValues, effectiveTextStyle],
     );
 
     return (

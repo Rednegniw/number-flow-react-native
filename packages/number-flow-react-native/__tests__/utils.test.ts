@@ -180,6 +180,11 @@ describe("parseDigitPosition", () => {
     expect(parseDigitPosition("sep")).toBeUndefined();
     expect(parseDigitPosition("ampm:AM:0")).toBeUndefined();
   });
+
+  test("exponent digit keys return undefined (excluded from continuous spin)", () => {
+    expect(parseDigitPosition("exponentInteger:0")).toBeUndefined();
+    expect(parseDigitPosition("exponentInteger:1")).toBeUndefined();
+  });
 });
 
 // ─── getDigitCount ───

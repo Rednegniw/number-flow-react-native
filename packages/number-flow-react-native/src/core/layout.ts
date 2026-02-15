@@ -1,3 +1,4 @@
+import { SUPERSCRIPT_SCALE } from "./constants";
 import type { GlyphMetrics, KeyedPart, TextAlign } from "./types";
 import { isDigitChar } from "./utils";
 
@@ -8,6 +9,7 @@ export interface CharLayout {
   digitValue: number;
   x: number;
   width: number;
+  superscript?: boolean;
 }
 
 export function computeKeyedLayout(
@@ -20,7 +22,13 @@ export function computeKeyedLayout(
   let contentWidth = 0;
 
   for (const part of parts) {
-    const width = metrics.charWidths[part.char] ?? metrics.maxDigitWidth;
+    const isSuperscript =
+      part.key.startsWith("exponentInteger:") ||
+      part.key.startsWith("exponentSign:");
+
+    const rawWidth = metrics.charWidths[part.char] ?? metrics.maxDigitWidth;
+    const width = isSuperscript ? rawWidth * SUPERSCRIPT_SCALE : rawWidth;
+
     contentWidth += width;
     chars.push({
       key: part.key,
@@ -29,6 +37,7 @@ export function computeKeyedLayout(
       digitValue: part.digitValue,
       x: 0,
       width,
+      superscript: isSuperscript,
     });
   }
 

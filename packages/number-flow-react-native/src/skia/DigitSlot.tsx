@@ -11,7 +11,11 @@ import {
   useAnimatedReaction,
   useDerivedValue,
 } from "react-native-reanimated";
-import { DIGIT_COUNT, DIGIT_STRINGS } from "../core/constants";
+import {
+  DIGIT_COUNT,
+  DIGIT_STRINGS,
+  SUPERSCRIPT_SCALE,
+} from "../core/constants";
 import type {
   GlyphMetrics,
   SkiaNumberFlowProps,
@@ -44,6 +48,7 @@ interface DigitSlotProps {
   digitCount?: number;
   continuousSpinGeneration?: number;
   maskHeight?: number;
+  superscript?: boolean;
 }
 
 export const DigitSlot = React.memo(
@@ -69,6 +74,7 @@ export const DigitSlot = React.memo(
     digitCount,
     continuousSpinGeneration,
     maskHeight = 0,
+    superscript,
   }: DigitSlotProps) => {
     const resolvedDigitCount = digitCount ?? DIGIT_COUNT;
 
@@ -127,15 +133,20 @@ export const DigitSlot = React.memo(
     /**
      * Group transform absorbs clipX (centering offset within slot width).
      * This makes clipRect and digitXOffsets static (font-metric only).
+     * For superscript slots the visual clip is scaled, so cx accounts for that.
      */
+    const visualClipWidth = superscript
+      ? metrics.maxDigitWidth * SUPERSCRIPT_SCALE
+      : metrics.maxDigitWidth;
+
     const groupTransform = useDerivedValue(() => {
       const wl = workletLayout?.value;
       if (wl && slotIndex !== undefined && slotIndex < wl.length) {
         const slotWidth = wl[slotIndex].width;
-        const cx = slotWidth / 2 - metrics.maxDigitWidth / 2;
+        const cx = slotWidth / 2 - visualClipWidth / 2;
         return [{ translateX: wl[slotIndex].x + cx }];
       }
-      const cx = charWidth / 2 - metrics.maxDigitWidth / 2;
+      const cx = charWidth / 2 - visualClipWidth / 2;
       return [{ translateX: animatedX.value + cx }];
     });
 
@@ -149,15 +160,19 @@ export const DigitSlot = React.memo(
       return offsets;
     }, [metrics]);
 
+    // Superscript digits use a tight clip (no mask buffer) — the container-level
+    // gradient doesn't cover the superscript position, so buffer would leak neighbors.
+    const effectiveMaskHeight = superscript ? 0 : maskHeight;
+
     const clipRect = useMemo(
       () =>
         rect(
           0,
-          baseY + metrics.ascent - maskHeight,
+          baseY + metrics.ascent - effectiveMaskHeight,
           metrics.maxDigitWidth,
-          metrics.lineHeight + 2 * maskHeight,
+          metrics.lineHeight + 2 * effectiveMaskHeight,
         ),
-      [baseY, metrics, maskHeight],
+      [baseY, metrics, effectiveMaskHeight],
     );
 
     const opacityPaint = useMemo(
@@ -186,9 +201,30 @@ export const DigitSlot = React.memo(
       [resolvedDigitCount, baseY, color, font, digitXOffsets, digitYTransforms],
     );
 
+    // Superscript: pivot-scale around text top so the digit shrinks downward
+    // within the mask region. No explicit raise needed — the smaller glyph
+    // naturally sits at the top of the line, producing a superscript appearance.
+    const superscriptTransform = useMemo(() => {
+      if (!superscript) return undefined;
+
+      const textTop = baseY + metrics.ascent;
+
+      return [
+        { translateY: textTop },
+        { scale: SUPERSCRIPT_SCALE },
+        { translateY: -textTop },
+      ];
+    }, [superscript, baseY, metrics]);
+
+    const clipContent = <Group clip={clipRect}>{digitElements}</Group>;
+
     return (
       <Group layer={opacityPaint} transform={groupTransform}>
-        <Group clip={clipRect}>{digitElements}</Group>
+        {superscriptTransform ? (
+          <Group transform={superscriptTransform}>{clipContent}</Group>
+        ) : (
+          clipContent
+        )}
       </Group>
     );
   },

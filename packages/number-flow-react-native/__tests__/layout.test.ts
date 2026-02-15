@@ -73,6 +73,32 @@ describe("computeKeyedLayout", () => {
     expect(layout[0].width).toBe(10);
     expect(layout[1].width).toBe(12);
   });
+
+  test("superscript flag set for exponent keys", () => {
+    const parts = [
+      digit("integer:0", 1),
+      symbol("exponentSeparator:0", "\u00D7"),
+      digit("exponentInteger:0", 3),
+      symbol("exponentSign:0", "-"),
+    ];
+    const layout = computeKeyedLayout(parts, metrics, 200, "left");
+
+    expect(layout[0].superscript).toBe(false);
+    expect(layout[1].superscript).toBe(false);
+    expect(layout[2].superscript).toBe(true);
+    expect(layout[3].superscript).toBe(true);
+  });
+
+  test("superscript widths are scaled by SUPERSCRIPT_SCALE", () => {
+    const parts = [
+      digit("integer:0", 1),
+      digit("exponentInteger:0", 3),
+    ];
+    const layout = computeKeyedLayout(parts, metrics, 200, "left");
+
+    expect(layout[0].width).toBe(12);
+    expect(layout[1].width).toBeCloseTo(12 * 0.6);
+  });
 });
 
 // ─── computeStringLayout ───
