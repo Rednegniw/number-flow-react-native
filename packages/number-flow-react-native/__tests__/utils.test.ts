@@ -228,4 +228,16 @@ describe("isDigitChar", () => {
     expect(isDigitChar("a")).toBe(false);
     expect(isDigitChar(" ")).toBe(false);
   });
+
+  test("recognizes Arabic-Indic digits with custom zeroCodePoint", () => {
+    const arabZero = 0x0660;
+    for (let i = 0; i <= 9; i++) {
+      expect(isDigitChar(String.fromCharCode(arabZero + i), arabZero)).toBe(true);
+    }
+  });
+
+  test("Latin digits rejected when using Arabic zeroCodePoint", () => {
+    expect(isDigitChar("0", 0x0660)).toBe(false);
+    expect(isDigitChar("9", 0x0660)).toBe(false);
+  });
 });

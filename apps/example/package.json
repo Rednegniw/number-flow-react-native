@@ -9,6 +9,8 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@react-navigation/native": "^7.1.28",
+    "@react-navigation/native-stack": "^7.12.0",
     "@rednegniw/masked-view": "^0.4.0",
     "@shopify/react-native-skia": "^2.2.12",
     "expo": "~54.0.33",
@@ -19,7 +21,8 @@
     "react-native": "0.81.5",
     "react-native-gesture-handler": "~2.28.0",
     "react-native-reanimated": "~4.1.1",
-    "react-native-safe-area-context": "^5.6.2"
+    "react-native-safe-area-context": "^5.6.2",
+    "react-native-screens": "~4.16.0"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",

@@ -1,8 +1,16 @@
+import { Canvas, useFont } from "@shopify/react-native-skia";
 import { TimeFlow } from "number-flow-react-native/native";
-import { useEffect, useRef, useState } from "react";
+import { SkiaTimeFlow } from "number-flow-react-native/skia";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, Text, View } from "react-native";
+import { colors } from "../theme/colors";
+import { FONT_REGULAR, INTER_FONT_ASSET } from "../theme/fonts";
 
-export const FullClockDemo = () => {
+const FONT_SIZE = 30;
+const CANVAS_WIDTH = 280;
+const CANVAS_HEIGHT = 44;
+
+function useFullClockDemoState() {
   const [is24Hour, setIs24Hour] = useState(true);
   const [hours, setHours] = useState(() => new Date().getHours());
   const [minutes, setMinutes] = useState(() => new Date().getMinutes());
@@ -23,17 +31,22 @@ export const FullClockDemo = () => {
     };
   }, []);
 
+  const toggle24h = useCallback(() => {
+    setIs24Hour((v) => !v);
+  }, []);
+
+  return { hours, minutes, seconds, is24Hour, toggle24h };
+}
+
+export const FullClockDemoNative = () => {
+  const { hours, minutes, seconds, is24Hour, toggle24h } = useFullClockDemoState();
+
   return (
     <View style={{ gap: 8 }}>
-      {/* Header */}
-      <Text style={{ fontSize: 14, fontWeight: "600", color: "#333" }}>
-        Live Clock
-      </Text>
-
       {/* Time display */}
       <View
         style={{
-          backgroundColor: "#f5f5f5",
+          backgroundColor: colors.demoBackground,
           borderRadius: 12,
           padding: 20,
           alignItems: "center",
@@ -42,27 +55,77 @@ export const FullClockDemo = () => {
         }}
       >
         <TimeFlow
-          containerStyle={{ width: 280 }}
+          containerStyle={{ width: CANVAS_WIDTH }}
           hours={hours}
           is24Hour={is24Hour}
           minutes={minutes}
           seconds={seconds}
-          style={{ fontFamily: "System", fontSize: 30, color: "#007AFF" }}
+          style={{ fontFamily: FONT_REGULAR, fontSize: FONT_SIZE, color: colors.accent }}
           textAlign="center"
         />
       </View>
 
       {/* Action button */}
       <Pressable
-        onPress={() => setIs24Hour((v) => !v)}
+        onPress={toggle24h}
         style={{
-          backgroundColor: "#e8e8e8",
+          backgroundColor: colors.buttonBackground,
           borderRadius: 8,
           padding: 12,
           alignItems: "center",
         }}
       >
-        <Text style={{ fontSize: 14, fontWeight: "500", color: "#333" }}>
+        <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
+          Toggle 12h/24h
+        </Text>
+      </Pressable>
+    </View>
+  );
+};
+
+export const FullClockDemoSkia = () => {
+  const skiaFont = useFont(INTER_FONT_ASSET, FONT_SIZE);
+  const { hours, minutes, seconds, is24Hour, toggle24h } = useFullClockDemoState();
+
+  return (
+    <View style={{ gap: 8 }}>
+      {/* Time display */}
+      <View
+        style={{
+          backgroundColor: colors.demoBackground,
+          borderRadius: 12,
+          padding: 20,
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: 70,
+        }}
+      >
+        <Canvas style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
+          <SkiaTimeFlow
+            color={colors.accent}
+            font={skiaFont}
+            hours={hours}
+            is24Hour={is24Hour}
+            minutes={minutes}
+            seconds={seconds}
+            textAlign="center"
+            width={CANVAS_WIDTH}
+            y={FONT_SIZE}
+          />
+        </Canvas>
+      </View>
+
+      {/* Action button */}
+      <Pressable
+        onPress={toggle24h}
+        style={{
+          backgroundColor: colors.buttonBackground,
+          borderRadius: 8,
+          padding: 12,
+          alignItems: "center",
+        }}
+      >
+        <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
           Toggle 12h/24h
         </Text>
       </Pressable>

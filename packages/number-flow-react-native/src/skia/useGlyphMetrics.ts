@@ -18,6 +18,7 @@ import type { GlyphMetrics } from "../core/types";
 export function useGlyphMetrics(
   font: SkFont | null,
   additionalChars?: string,
+  localeDigitStrings?: string[],
 ): GlyphMetrics | null {
   return useMemo(() => {
     if (!font) return null;
@@ -46,8 +47,9 @@ export function useGlyphMetrics(
     }
 
     let maxDigitWidth = 0;
-    for (let d = 0; d <= 9; d++) {
-      const w = charWidths[String(d)];
+    const digitChars = localeDigitStrings ?? Array.from({ length: 10 }, (_, d) => String(d));
+    for (const dc of digitChars) {
+      const w = charWidths[dc] ?? 0;
       if (w > maxDigitWidth) maxDigitWidth = w;
     }
 
@@ -55,12 +57,23 @@ export function useGlyphMetrics(
     // ascent is negative (above baseline), descent is positive (below baseline)
     const lineHeight = Math.ceil(metrics.descent - metrics.ascent);
 
+    // Per-character tight vertical bounds from measureText SkRect.
+    // rect.y = top of glyph (negative = above baseline),
+    // rect.y + rect.height = bottom of glyph (positive = below baseline).
+    const charBounds: Record<string, { top: number; bottom: number }> = {};
+    for (let i = 0; i < charsToMeasure.length; i++) {
+      const char = charsToMeasure[i];
+      const rect = font.measureText(char);
+      charBounds[char] = { top: rect.y, bottom: rect.y + rect.height };
+    }
+
     return {
       charWidths,
       maxDigitWidth,
       lineHeight,
       ascent: metrics.ascent,
       descent: metrics.descent,
+      charBounds,
     };
-  }, [font, additionalChars]);
+  }, [font, additionalChars, localeDigitStrings]);
 }

@@ -6,6 +6,7 @@ import {
   withTiming,
 } from "react-native-reanimated";
 import { MAX_SLOTS } from "./constants";
+import { workletDigitValue } from "./utils";
 
 const WIDTH_ANIM_MS = 200;
 
@@ -29,6 +30,7 @@ export function useDebouncedWidths(
   sharedValue: SharedValue<string> | undefined,
   prefix: string,
   suffix: string,
+  zeroCodePoint = 48,
 ): SharedValue<number>[] {
   const [debouncedWidths] = useState(() =>
     Array.from({ length: MAX_SLOTS }, () => makeMutable(-1)),
@@ -73,8 +75,8 @@ export function useDebouncedWidths(
 
       for (let i = 0; i < len && digitIndex < MAX_SLOTS; i++) {
         const code = fullText.charCodeAt(i);
-        if (code >= 48 && code <= 57) {
-          const dv = code - 48;
+        const dv = workletDigitValue(code, zeroCodePoint);
+        if (dv >= 0) {
           prevDigits[digitIndex].value = dv;
           debouncedWidths[digitIndex].value = scrubDigitWidth;
           digitIndex++;
@@ -86,7 +88,7 @@ export function useDebouncedWidths(
         prevDigits[i].value = -1;
       }
     },
-    [prefix, suffix, digitWidths, scrubDigitWidth],
+    [prefix, suffix, digitWidths, scrubDigitWidth, zeroCodePoint],
   );
 
   return debouncedWidths;

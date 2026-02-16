@@ -6,22 +6,16 @@ import {
   Text,
   vec,
 } from "@shopify/react-native-skia";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { AccessibilityInfo } from "react-native";
-import {
-  makeMutable,
-  runOnJS,
-  useAnimatedReaction,
-  useDerivedValue,
-} from "react-native-reanimated";
-import { MASK_HEIGHT_RATIO, MASK_WIDTH_RATIO } from "../core/constants";
+import { MASK_WIDTH_RATIO } from "../core/constants";
+import { computeAdaptiveMaskHeights } from "../core/mask";
 import {
   DEFAULT_OPACITY_TIMING,
   DEFAULT_SPIN_TIMING,
   DEFAULT_TRANSFORM_TIMING,
   ZERO_TIMING,
 } from "../core/timing";
-import { useDebouncedWidths } from "../core/useDebouncedWidths";
 import { computeKeyedLayout, computeStringLayout } from "../core/layout";
 import type { SkiaNumberFlowProps } from "../core/types";
 import { useContinuousSpin } from "../core/useContinuousSpin";
@@ -32,12 +26,17 @@ import {
   useNumberFormatting,
 } from "../core/useNumberFormatting";
 import { useCanAnimate } from "../core/useCanAnimate";
+import {
+  detectNumberingSystem,
+  getDigitStrings,
+  getZeroCodePoint,
+} from "../core/numerals";
 import { getDigitCount, resolveTrend } from "../core/utils";
-import { useWorkletFormatting } from "../core/useWorkletFormatting";
 import { warnOnce } from "../core/warnings";
 import { DigitSlot } from "./DigitSlot";
 import { SymbolSlot } from "./SymbolSlot";
 import { useGlyphMetrics } from "./useGlyphMetrics";
+import { useScrubbingBridge, useScrubbingLayout } from "./useScrubbing";
 
 export const SkiaNumberFlow = ({
   value,
@@ -70,7 +69,16 @@ export const SkiaNumberFlow = ({
     () => getFormatCharacters(locales, format, prefix, suffix),
     [locales, format, prefix, suffix],
   );
-  const metrics = useGlyphMetrics(font, formatChars);
+  const numberingSystem = useMemo(
+    () => detectNumberingSystem(locales, format),
+    [locales, format],
+  );
+  const zeroCodePoint = getZeroCodePoint(numberingSystem);
+  const digitStringsArr = useMemo(
+    () => getDigitStrings(numberingSystem),
+    [numberingSystem],
+  );
+  const metrics = useGlyphMetrics(font, formatChars, digitStringsArr);
 
   const canAnimate = useCanAnimate(respectMotionPreference);
   const shouldAnimate = (animated ?? true) && canAnimate;
@@ -125,25 +133,14 @@ export const SkiaNumberFlow = ({
 
   const clampedPercentile = Math.max(0, Math.min(1, scrubDigitWidthPercentile));
 
-  /**
-   * Digit-count bridging: When the worklet-driven sharedValue crosses a
-   * digit boundary (e.g. 99.9→100.0), the layout must have the correct number
-   * of digit slots. We track the worklet's digit count and update a local
-   * state to trigger a React re-render with the right slot count.
-   * The enter/exit animation system handles the transition naturally.
-   */
-  const [scrubbingValue, setScrubbingValue] = useState<number | undefined>(
-    undefined,
-  );
-  const handleScrubbingValueUpdate = useCallback((numericValue: number) => {
-    if (numericValue < 0) {
-      setScrubbingValue(undefined);
-    } else {
-      setScrubbingValue(numericValue);
-    }
-  }, []);
-
-  const effectiveValue = scrubbingValue !== undefined ? scrubbingValue : value;
+  // Scrubbing bridge: digit-count bridging between worklet and JS thread
+  const { effectiveValue } = useScrubbingBridge({
+    sharedValue,
+    value,
+    prefix,
+    suffix,
+    zeroCodePoint,
+  });
 
   const keyedParts = useNumberFormatting(
     effectiveValue,
@@ -153,48 +150,10 @@ export const SkiaNumberFlow = ({
     suffix,
   );
 
-  const workletDigitValues = useWorkletFormatting(
-    sharedValue,
-    prefix,
-    suffix,
-  );
-
   const spinGenerations = useContinuousSpin(
     keyedParts,
     continuous,
     resolvedTrend,
-  );
-
-  const digitWidths = useMemo(() => {
-    if (!metrics) return null;
-    return Array.from(
-      { length: 10 },
-      (_, d) => metrics.charWidths[String(d)] ?? metrics.maxDigitWidth,
-    );
-  }, [metrics]);
-
-  /**
-   * Compute tabular digit width for scrubbing mode.
-   * Uses clampedPercentile to interpolate between min and max digit width.
-   * 0 = narrowest digit, 0.5 = midpoint, 1 = widest digit.
-   */
-  const scrubDigitWidth = useMemo(() => {
-    if (!digitWidths) return 0;
-    let minWidth = Infinity;
-    let maxWidth = 0;
-    for (let i = 0; i < 10; i++) {
-      if (digitWidths[i] < minWidth) minWidth = digitWidths[i];
-      if (digitWidths[i] > maxWidth) maxWidth = digitWidths[i];
-    }
-    return minWidth + (maxWidth - minWidth) * clampedPercentile;
-  }, [digitWidths, clampedPercentile]);
-
-  const debouncedWidths = useDebouncedWidths(
-    digitWidths,
-    scrubDigitWidth,
-    sharedValue,
-    prefix,
-    suffix,
   );
 
   const layout = useMemo(() => {
@@ -206,7 +165,7 @@ export const SkiaNumberFlow = ({
     }
 
     if (keyedParts.length === 0) return [];
-    return computeKeyedLayout(keyedParts, metrics, width, textAlign);
+    return computeKeyedLayout(keyedParts, metrics, width, textAlign, digitStringsArr);
   }, [
     metrics,
     keyedParts,
@@ -216,6 +175,7 @@ export const SkiaNumberFlow = ({
     suffix,
     sharedValue,
     value,
+    digitStringsArr,
   ]);
 
   const layoutDigitCount = useMemo(() => {
@@ -226,99 +186,19 @@ export const SkiaNumberFlow = ({
     return count;
   }, [layout]);
 
-  /**
-   * Track digit count changes from worklet-driven scrubbing.
-   * When the worklet's digit count differs from the layout's, schedule a
-   * JS-side update to re-render with the correct number of digit slots.
-   */
-  const [prevWorkletDigitCount] = useState(() => makeMutable(-1));
-
-  useAnimatedReaction(
-    () => sharedValue?.value ?? "",
-    (current, previous) => {
-      if (current === previous) return;
-
-      if (!current) {
-        if (prevWorkletDigitCount.value !== -1) {
-          prevWorkletDigitCount.value = -1;
-          runOnJS(handleScrubbingValueUpdate)(-1);
-        }
-        return;
-      }
-
-      const fullText = prefix + current + suffix;
-      let digitCount = 0;
-      for (let i = 0; i < fullText.length; i++) {
-        const c = fullText.charCodeAt(i);
-        if (c >= 48 && c <= 57) digitCount++;
-      }
-
-      if (digitCount !== prevWorkletDigitCount.value) {
-        prevWorkletDigitCount.value = digitCount;
-        const numericValue = parseFloat(current);
-        if (!isNaN(numericValue)) {
-          runOnJS(handleScrubbingValueUpdate)(numericValue);
-        }
-      }
-    },
-    [prefix, suffix, handleScrubbingValueUpdate],
-  );
-
-  /**
-   * Worklet-computed layout for proportional per-digit widths during scrubbing.
-   * Uses the prop layout's slot structure but substitutes digit widths based on
-   * the actual workletDigitValues. This ensures the worklet layout always has
-   * the same number of entries as the prop layout (no slotIndex mismatch).
-   */
-  const workletLayout = useDerivedValue((): { x: number; width: number }[] => {
-    if (!sharedValue || !digitWidths || layout.length === 0) return [];
-    if (!sharedValue.value) return [];
-
-    /**
-     * Verify digit count alignment — during the 1-frame gap between
-     * a worklet digit-count change and the React re-render, the layout
-     * slot count doesn't match the worklet's digits. Fall back to prop
-     * layout positions to avoid index misalignment artifacts.
-     */
-    const fullText = prefix + sharedValue.value + suffix;
-    let workletDigitCount = 0;
-    for (let i = 0; i < fullText.length; i++) {
-      const c = fullText.charCodeAt(i);
-      if (c >= 48 && c <= 57) workletDigitCount++;
-    }
-    if (workletDigitCount !== layoutDigitCount) return [];
-
-    const entries: { x: number; width: number }[] = [];
-    let contentWidth = 0;
-    let digitIdx = 0;
-
-    for (let i = 0; i < layout.length; i++) {
-      const slot = layout[i];
-      let slotWidth: number;
-
-      if (slot.isDigit) {
-        const dw = debouncedWidths[digitIdx].value;
-        slotWidth = dw > 0 ? dw : slot.width;
-        digitIdx++;
-      } else {
-        slotWidth = slot.width;
-      }
-
-      contentWidth += slotWidth;
-      entries.push({ x: 0, width: slotWidth });
-    }
-
-    let startX = 0;
-    if (textAlign === "right") startX = width - contentWidth;
-    else if (textAlign === "center") startX = (width - contentWidth) / 2;
-
-    let currentX = startX;
-    for (const entry of entries) {
-      entry.x = currentX;
-      currentX += entry.width;
-    }
-
-    return entries;
+  // Scrubbing layout: worklet-driven digit values and per-slot positioning
+  const { workletDigitValues, workletLayout } = useScrubbingLayout({
+    sharedValue,
+    prefix,
+    suffix,
+    zeroCodePoint,
+    metrics,
+    digitStringsArr,
+    scrubDigitWidthPercentile: clampedPercentile,
+    layout,
+    layoutDigitCount,
+    width,
+    textAlign,
   });
 
   // Store callbacks in refs so the setTimeout always calls the latest version
@@ -437,7 +317,10 @@ export const SkiaNumberFlow = ({
 
   const baseY = y;
   const resolvedMask = mask ?? true;
-  const maskHeight = resolvedMask ? MASK_HEIGHT_RATIO * metrics.lineHeight : 0;
+
+  const adaptiveMask = computeAdaptiveMaskHeights(layout, exitingEntries, metrics);
+  const maskTopHeight = resolvedMask ? adaptiveMask.top : 0;
+  const maskBottomHeight = resolvedMask ? adaptiveMask.bottom : 0;
   const maskWidth = resolvedMask ? MASK_WIDTH_RATIO * metrics.lineHeight : 0;
 
   // Content bounds in the content group's local coordinate space
@@ -472,12 +355,14 @@ export const SkiaNumberFlow = ({
               color={color}
               continuousSpinGeneration={spinGeneration}
               digitCount={digitCount}
+              digitStrings={digitStringsArr}
               digitValue={entry.digitValue}
               entering={isEntering}
               exiting={false}
               font={font}
               key={entry.key}
-              maskHeight={maskHeight}
+              maskTop={maskTopHeight}
+              maskBottom={maskBottomHeight}
               metrics={metrics}
               opacityTiming={resolvedOpacityTiming}
               slotIndex={currentSlotIndex}
@@ -521,13 +406,15 @@ export const SkiaNumberFlow = ({
               charWidth={entry.width}
               color={color}
               digitCount={digitCount}
+              digitStrings={digitStringsArr}
               digitValue={entry.digitValue}
               entering={false}
               exitKey={key}
               exiting
               font={font}
               key={key}
-              maskHeight={maskHeight}
+              maskTop={maskTopHeight}
+              maskBottom={maskBottomHeight}
               metrics={metrics}
               onExitComplete={onExitComplete}
               opacityTiming={resolvedOpacityTiming}
@@ -574,11 +461,12 @@ export const SkiaNumberFlow = ({
   // Vertical: fade is WITHIN the text line height (digits roll through it)
   const maskLeft = x + contentLeft - maskWidth;
   const maskRight = x + contentRight + maskWidth;
-  const maskTop = baseY + metrics.ascent;
+  const maskY = baseY + metrics.ascent;
   const maskTotalWidth = contentWidth + 2 * maskWidth;
   const maskTotalHeight = metrics.lineHeight;
   const hRatio = maskTotalWidth > 0 ? maskWidth / maskTotalWidth : 0;
-  const vRatio = maskTotalHeight > 0 ? maskHeight / maskTotalHeight : 0;
+  const vRatioTop = maskTotalHeight > 0 ? maskTopHeight / maskTotalHeight : 0;
+  const vRatioBottom = maskTotalHeight > 0 ? maskBottomHeight / maskTotalHeight : 0;
 
   const maskedContent = resolvedMask ? (
     <Group layer={<Paint />}>
@@ -586,7 +474,7 @@ export const SkiaNumberFlow = ({
 
       {/* Horizontal fade */}
       <Group layer={<Paint blendMode="dstIn" />}>
-        <SkiaRect height={maskTotalHeight} width={maskTotalWidth} x={maskLeft} y={maskTop}>
+        <SkiaRect height={maskTotalHeight} width={maskTotalWidth} x={maskLeft} y={maskY}>
           <LinearGradient
             colors={["transparent", "black", "black", "transparent"]}
             end={vec(maskRight, 0)}
@@ -598,12 +486,12 @@ export const SkiaNumberFlow = ({
 
       {/* Vertical fade */}
       <Group layer={<Paint blendMode="dstIn" />}>
-        <SkiaRect height={maskTotalHeight} width={maskTotalWidth} x={maskLeft} y={maskTop}>
+        <SkiaRect height={maskTotalHeight} width={maskTotalWidth} x={maskLeft} y={maskY}>
           <LinearGradient
             colors={["transparent", "black", "black", "transparent"]}
-            end={vec(0, maskTop + maskTotalHeight)}
-            positions={[0, vRatio, 1 - vRatio, 1]}
-            start={vec(0, maskTop)}
+            end={vec(0, maskY + maskTotalHeight)}
+            positions={[0, vRatioTop, 1 - vRatioBottom, 1]}
+            start={vec(0, maskY)}
           />
         </SkiaRect>
       </Group>

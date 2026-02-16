@@ -44,38 +44,18 @@ interface TimeFlowBaseProps extends AnimationConfig {
   onAnimationsFinish?: () => void;
 }
 
-/**
- * Value props — mutually exclusive:
- * - Direct time values (hours/minutes/seconds)
- * - Timestamp (extracts h/m/s automatically)
- * - sharedValue (worklet-driven pre-formatted string)
- *
- * Note: hours/minutes/seconds and timestamp can coexist (timestamp takes priority),
- * but sharedValue is mutually exclusive with all of them.
- */
-type TimeFlowValueProps =
-  | {
-      /** Hours value (0-23). Omit to hide the hours segment (countdown MM:SS mode). */
-      hours?: number;
-      /** Minutes value (0-59). Required when using direct time values. */
-      minutes: number;
-      /** Seconds value (0-59). Omit to hide the seconds segment. */
-      seconds?: number;
-      /** Unix timestamp in ms. Extracts hours/minutes/seconds automatically. */
-      timestamp?: number;
-      /** Timezone offset in ms for timestamp mode. */
-      timezoneOffset?: number;
-      sharedValue?: never;
-    }
-  | {
-      hours?: never;
-      minutes?: never;
-      seconds?: never;
-      timestamp?: never;
-      timezoneOffset?: never;
-      /** Worklet-driven pre-formatted time string (e.g. "14:30", "2:30 PM"). */
-      sharedValue: SharedValue<string>;
-    };
+interface TimeFlowValueProps {
+  /** Hours value (0-23). Omit to hide the hours segment (countdown MM:SS mode). */
+  hours?: number;
+  /** Minutes value (0-59). Required. */
+  minutes: number;
+  /** Seconds value (0-59). Omit to hide the seconds segment. */
+  seconds?: number;
+  /** Unix timestamp in ms. Extracts hours/minutes/seconds automatically. Takes priority over direct values. */
+  timestamp?: number;
+  /** Timezone offset in ms for timestamp mode. */
+  timezoneOffset?: number;
+}
 
 /** Props for TimeFlow. Accessibility is built-in: accessibilityRole="text" and accessibilityLabel are set automatically. */
 export type TimeFlowProps = TimeFlowBaseProps & TimeFlowValueProps;

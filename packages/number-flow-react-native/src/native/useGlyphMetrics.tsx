@@ -37,14 +37,47 @@ function cacheKey(
  * containing the advance width of that single character.
  */
 
+// ASCII characters known to have no descender (bottom = 0)
+const NO_DESCENDER = new Set(
+  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ.:%+-~°!^*×/$€£¥₩ \u00A0",
+);
+
+/**
+ * Estimates per-character vertical bounds using font-level metrics.
+ * Top: -capHeight for all chars (precise for digits, safe overestimate for smaller glyphs).
+ * Bottom: 0 for known no-descender chars (+ locale digits), full descent otherwise.
+ */
+function estimateCharBounds(
+  charSet: string,
+  descent: number,
+  capHeight: number,
+  localeDigitStrings?: string[],
+): Record<string, { top: number; bottom: number }> {
+  const noDescender = new Set(NO_DESCENDER);
+  if (localeDigitStrings) {
+    for (const d of localeDigitStrings) noDescender.add(d);
+  }
+
+  const bounds: Record<string, { top: number; bottom: number }> = {};
+  const top = -capHeight;
+
+  for (let i = 0; i < charSet.length; i++) {
+    const bottom = noDescender.has(charSet[i]) ? 0 : descent;
+    bounds[charSet[i]] = { top, bottom };
+  }
+
+  return bounds;
+}
+
 interface MeasureComponentProps {
   nfStyle: NumberFlowStyle;
   charSet: string;
+  localeDigitStrings?: string[];
   onComplete: (metrics: GlyphMetrics) => void;
 }
 
 const MeasureComponent = React.memo(
-  ({ nfStyle, charSet, onComplete }: MeasureComponentProps) => {
+  ({ nfStyle, charSet, localeDigitStrings, onComplete }: MeasureComponentProps) => {
     const completedRef = useRef(false);
 
     /**
@@ -73,18 +106,37 @@ const MeasureComponent = React.memo(
         }
 
         let maxDigitWidth = 0;
-        for (let d = 0; d <= 9; d++) {
-          const w = charWidths[String(d)];
+        const digitChars = localeDigitStrings ?? Array.from({ length: 10 }, (_, d) => String(d));
+        for (const dc of digitChars) {
+          const w = charWidths[dc] ?? 0;
           if (w > maxDigitWidth) maxDigitWidth = w;
         }
 
-        const line = lines[0];
+        let tallestLine = lines[0];
+        for (let i = 1; i < charSet.length; i++) {
+          if (lines[i].height > tallestLine.height) tallestLine = lines[i];
+        }
+
+        // Negate ascender to match Skia convention (negative = above baseline).
+        const ascent = -tallestLine.ascender;
+        const descent = tallestLine.descender;
+        // Fallback 0.72 × |ascent| matches typical system font cap-height ratio.
+        const capHeight = (tallestLine as unknown as Record<string, number>).capHeight || -ascent * 0.72;
+
+        const charBounds = estimateCharBounds(
+          charSet,
+          descent,
+          capHeight,
+          localeDigitStrings,
+        );
+
         onComplete({
           charWidths,
           maxDigitWidth,
-          lineHeight: Math.ceil(line.height),
-          ascent: -line.ascender,
-          descent: line.descender,
+          lineHeight: Math.ceil(tallestLine.height),
+          ascent,
+          descent,
+          charBounds,
         });
       },
       [onComplete],
@@ -112,6 +164,7 @@ MeasureComponent.displayName = "NumberFlowMeasure";
 export function useGlyphMetrics(
   style: NumberFlowStyle,
   additionalChars?: string,
+  localeDigitStrings?: string[],
 ): {
   metrics: GlyphMetrics | null;
   MeasureElement: React.ReactElement | null;
@@ -163,6 +216,7 @@ export function useGlyphMetrics(
     MeasureElement: React.createElement(MeasureComponent, {
       nfStyle: style,
       charSet,
+      localeDigitStrings,
       onComplete: handleComplete,
     }),
   };

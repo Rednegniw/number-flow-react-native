@@ -54,6 +54,12 @@ export interface GlyphMetrics {
   ascent: number;
   /** Font descent (positive value — distance below baseline) */
   descent: number;
+  /**
+   * Per-character tight vertical bounds relative to the baseline.
+   * `top` is negative (above baseline), `bottom` is positive (below baseline).
+   * Used by the adaptive mask to avoid fading into visible glyph content.
+   */
+  charBounds: Record<string, { top: number; bottom: number }>;
 }
 
 export type TextAlign = "left" | "right" | "center";

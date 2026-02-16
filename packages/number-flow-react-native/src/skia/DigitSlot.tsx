@@ -13,7 +13,6 @@ import {
 } from "react-native-reanimated";
 import {
   DIGIT_COUNT,
-  DIGIT_STRINGS,
   SUPERSCRIPT_SCALE,
 } from "../core/constants";
 import type {
@@ -47,8 +46,10 @@ interface DigitSlotProps {
   slotIndex?: number;
   digitCount?: number;
   continuousSpinGeneration?: number;
-  maskHeight?: number;
+  maskTop?: number;
+  maskBottom?: number;
   superscript?: boolean;
+  digitStrings?: string[];
 }
 
 export const DigitSlot = React.memo(
@@ -73,10 +74,13 @@ export const DigitSlot = React.memo(
     slotIndex,
     digitCount,
     continuousSpinGeneration,
-    maskHeight = 0,
+    maskTop = 0,
+    maskBottom = 0,
     superscript,
+    digitStrings,
   }: DigitSlotProps) => {
     const resolvedDigitCount = digitCount ?? DIGIT_COUNT;
+    const resolvedDigitStrings = digitStrings ?? Array.from({ length: resolvedDigitCount }, (_, i) => String(i));
 
     const { initialDigit, animDelta, currentDigitSV, slotOpacity } =
       useDigitAnimation({
@@ -153,26 +157,27 @@ export const DigitSlot = React.memo(
     // Digit centering within the maxDigitWidth clip (font-metric only, static)
     const digitXOffsets = useMemo(() => {
       const offsets: number[] = [];
-      for (let d = 0; d <= 9; d++) {
-        const w = metrics.charWidths[DIGIT_STRINGS[d]];
+      for (let d = 0; d < resolvedDigitCount; d++) {
+        const w = metrics.charWidths[resolvedDigitStrings[d]] ?? metrics.maxDigitWidth;
         offsets.push((metrics.maxDigitWidth - w) / 2);
       }
       return offsets;
-    }, [metrics]);
+    }, [metrics, resolvedDigitCount, resolvedDigitStrings]);
 
     // Superscript digits use a tight clip (no mask buffer) — the container-level
     // gradient doesn't cover the superscript position, so buffer would leak neighbors.
-    const effectiveMaskHeight = superscript ? 0 : maskHeight;
+    const effectiveMaskTop = superscript ? 0 : maskTop;
+    const effectiveMaskBottom = superscript ? 0 : maskBottom;
 
     const clipRect = useMemo(
       () =>
         rect(
           0,
-          baseY + metrics.ascent - effectiveMaskHeight,
+          baseY + metrics.ascent - effectiveMaskTop,
           metrics.maxDigitWidth,
-          metrics.lineHeight + 2 * effectiveMaskHeight,
+          metrics.lineHeight + effectiveMaskTop + effectiveMaskBottom,
         ),
-      [baseY, metrics, effectiveMaskHeight],
+      [baseY, metrics, effectiveMaskTop, effectiveMaskBottom],
     );
 
     const opacityPaint = useMemo(
@@ -192,13 +197,13 @@ export const DigitSlot = React.memo(
             <SkiaText
               color={color}
               font={font}
-              text={DIGIT_STRINGS[n]}
+              text={resolvedDigitStrings[n]}
               x={digitXOffsets[n]}
               y={baseY}
             />
           </Group>
         )),
-      [resolvedDigitCount, baseY, color, font, digitXOffsets, digitYTransforms],
+      [resolvedDigitCount, resolvedDigitStrings, baseY, color, font, digitXOffsets, digitYTransforms],
     );
 
     // Superscript: pivot-scale around text top so the digit shrinks downward

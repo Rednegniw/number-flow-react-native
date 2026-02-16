@@ -1,11 +1,18 @@
+import { Canvas, useFont } from "@shopify/react-native-skia";
 import { NumberFlow } from "number-flow-react-native/native";
+import { SkiaNumberFlow } from "number-flow-react-native/skia";
 import { useCallback, useState } from "react";
 import { Pressable, Text, View } from "react-native";
+import { colors } from "../theme/colors";
+import { INTER_FONT_ASSET, FONT_REGULAR } from "../theme/fonts";
 import { pick, pickSuffix, randomInt } from "./utils";
 
+const FONT_SIZE = 36;
+const CANVAS_WIDTH = 280;
+const CANVAS_HEIGHT = 52;
 const PREFIXES = ["", "$", "~", "+", "-"];
 
-export const IntegerDemo = () => {
+function useIntegerDemoState() {
   const [value, setValue] = useState(314159);
   const [suffix, setSuffix] = useState("");
   const [prefix, setPrefix] = useState("$");
@@ -16,20 +23,23 @@ export const IntegerDemo = () => {
     setPrefix(pick(PREFIXES));
   }, []);
 
+  return { value, suffix, prefix, randomize };
+}
+
+export const IntegerDemoNative = () => {
+  const { value, suffix, prefix, randomize } = useIntegerDemoState();
+
   return (
     <View style={{ gap: 8 }}>
-      {/* Header */}
-      <Text style={{ fontSize: 14, fontWeight: "600", color: "#333" }}>
-        Integer
-      </Text>
-      <Text style={{ fontSize: 11, color: "#999" }}>
+      {/* State info */}
+      <Text style={{ fontSize: 11, color: colors.textSecondary }}>
         {`prefix="${prefix}" suffix="${suffix}"`}
       </Text>
 
       {/* Number display */}
       <View
         style={{
-          backgroundColor: "#f5f5f5",
+          backgroundColor: colors.demoBackground,
           borderRadius: 12,
           padding: 20,
           alignItems: "center",
@@ -38,11 +48,11 @@ export const IntegerDemo = () => {
         }}
       >
         <NumberFlow
-          containerStyle={{ width: 280 }}
+          containerStyle={{ width: CANVAS_WIDTH }}
           format={{ useGrouping: true }}
           mask={false}
           prefix={prefix}
-          style={{ fontFamily: "System", fontSize: 36, color: "#000" }}
+          style={{ fontFamily: FONT_REGULAR, fontSize: FONT_SIZE, color: colors.text }}
           suffix={suffix}
           textAlign="center"
           value={value}
@@ -53,13 +63,69 @@ export const IntegerDemo = () => {
       <Pressable
         onPress={randomize}
         style={{
-          backgroundColor: "#e8e8e8",
+          backgroundColor: colors.buttonBackground,
           borderRadius: 8,
           padding: 12,
           alignItems: "center",
         }}
       >
-        <Text style={{ fontSize: 14, fontWeight: "500", color: "#333" }}>
+        <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
+          Randomize
+        </Text>
+      </Pressable>
+    </View>
+  );
+};
+
+export const IntegerDemoSkia = () => {
+  const skiaFont = useFont(INTER_FONT_ASSET, FONT_SIZE);
+  const { value, suffix, prefix, randomize } = useIntegerDemoState();
+
+  return (
+    <View style={{ gap: 8 }}>
+      {/* State info */}
+      <Text style={{ fontSize: 11, color: colors.textSecondary }}>
+        {`prefix="${prefix}" suffix="${suffix}"`}
+      </Text>
+
+      {/* Number display */}
+      <View
+        style={{
+          backgroundColor: colors.demoBackground,
+          borderRadius: 12,
+          padding: 20,
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: 70,
+        }}
+      >
+        <Canvas style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
+          <SkiaNumberFlow
+            color={colors.text}
+            font={skiaFont}
+            format={{ useGrouping: true }}
+            mask={false}
+            prefix={prefix}
+            suffix={suffix}
+            textAlign="center"
+            value={value}
+            width={CANVAS_WIDTH}
+            y={FONT_SIZE}
+          />
+        </Canvas>
+      </View>
+
+      {/* Action button */}
+      <Pressable
+        onPress={randomize}
+        style={{
+          backgroundColor: colors.buttonBackground,
+          borderRadius: 8,
+          padding: 12,
+          alignItems: "center",
+        }}
+      >
+        <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
           Randomize
         </Text>
       </Pressable>

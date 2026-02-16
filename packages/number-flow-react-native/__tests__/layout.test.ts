@@ -15,6 +15,7 @@ const metrics: GlyphMetrics = {
   lineHeight: 20,
   ascent: 16,
   descent: 4,
+  charBounds: {},
 };
 
 function digit(key: string, value: number): KeyedPart {

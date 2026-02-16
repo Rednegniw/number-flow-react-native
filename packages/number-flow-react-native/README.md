@@ -149,7 +149,7 @@ const scrubbedValue = useSharedValue("");
 />;
 ```
 
-When `sharedValue` is provided, digits update directly on the UI thread without crossing the JS bridge.
+When `sharedValue` is provided, digits update directly on the UI thread without crossing the JS bridge. This prop is only available on Skia components (`SkiaNumberFlow`, `SkiaTimeFlow`).
 
 ## API
 
@@ -157,10 +157,9 @@ When `sharedValue` is provided, digits update directly on the UI thread without 
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `value` | `number` | — | Numeric value to display |
+| `value` | `number` | — | **Required.** Numeric value to display |
 | `format` | `Intl.NumberFormatOptions` | — | Number format options |
 | `locales` | `Intl.LocalesArgument` | — | Locale(s) for formatting |
-| `sharedValue` | `SharedValue<string>` | — | Worklet-driven pre-formatted string |
 | `style` | `{ fontSize, fontFamily?, color?, ... }` | — | **Required.** Text styling (`fontSize` required) |
 | `textAlign` | `"left" \| "right" \| "center"` | `"left"` | Text alignment |
 | `prefix` | `string` | `""` | Static prefix (e.g. `"$"`) |
@@ -186,7 +185,6 @@ When `sharedValue` is provided, digits update directly on the UI thread without 
 | `seconds` | `number` | — | Seconds (0-59). Omit to hide. |
 | `timestamp` | `number` | — | Unix timestamp (ms). Extracts h/m/s. |
 | `timezoneOffset` | `number` | — | Timezone offset (ms) for timestamp mode |
-| `sharedValue` | `SharedValue<string>` | — | Worklet-driven time string |
 | `is24Hour` | `boolean` | `true` | 24-hour format |
 | `padHours` | `boolean` | `true` | Pad hours with leading zero |
 | `style` | `{ fontSize, fontFamily?, color?, ... }` | — | **Required.** Text styling (`fontSize` required) |
@@ -204,10 +202,12 @@ When `sharedValue` is provided, digits update directly on the UI thread without 
 
 ### SkiaNumberFlow Props
 
-Same as `NumberFlow` plus Skia-specific props:
+Same as `NumberFlow` (except `value` is optional when `sharedValue` is used), plus Skia-specific props:
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
+| `value` | `number` | — | Numeric value. Mutually exclusive with `sharedValue`. |
+| `sharedValue` | `SharedValue<string>` | — | Worklet-driven pre-formatted string. Mutually exclusive with `value`. |
 | `font` | `SkFont \| null` | — | **Required.** Skia font from `useFont()` |
 | `color` | `string` | `"#000000"` | Text color |
 | `x` | `number` | `0` | X position in Canvas |
@@ -218,7 +218,7 @@ Same as `NumberFlow` plus Skia-specific props:
 
 ### SkiaTimeFlow Props
 
-Same as `TimeFlow` plus Skia-specific props (`font`, `color`, `x`, `y`, `width`, `opacity`).
+Same as `TimeFlow` (except time values are optional when `sharedValue` is used), plus Skia-specific props (`font`, `color`, `x`, `y`, `width`, `opacity`, `sharedValue`).
 
 ### TimingConfig
 

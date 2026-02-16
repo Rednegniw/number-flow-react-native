@@ -289,6 +289,44 @@ describe("fallbackFormatToParts — scientific notation", () => {
   });
 });
 
+// ─── Non-Latin numeral systems ───
+
+describe("formatToKeyedParts — non-Latin numerals", () => {
+  test("Arabic-Indic: digits have correct digitValues 0-9", () => {
+    const fmt = new Intl.NumberFormat("ar-EG", { minimumFractionDigits: 2 });
+    const parts = formatToKeyedParts(42.5, fmt, "ar-EG");
+    const digits = parts.filter((p) => p.type === "digit");
+
+    for (const d of digits) {
+      expect(d.digitValue).toBeGreaterThanOrEqual(0);
+      expect(d.digitValue).toBeLessThanOrEqual(9);
+    }
+  });
+
+  test("Bengali: digits use Bengali script characters", () => {
+    const fmt = new Intl.NumberFormat("bn-BD", { minimumFractionDigits: 2 });
+    const parts = formatToKeyedParts(42.5, fmt, "bn-BD");
+    const digits = parts.filter((p) => p.type === "digit");
+
+    for (const d of digits) {
+      expect(d.digitValue).toBeGreaterThanOrEqual(0);
+      expect(d.digitValue).toBeLessThanOrEqual(9);
+    }
+  });
+
+  test("Devanagari: digitValues are numeric 0-9", () => {
+    const fmt = new Intl.NumberFormat("ne-NP", { minimumFractionDigits: 2 });
+    const parts = formatToKeyedParts(123.45, fmt, "ne-NP");
+    const digits = parts.filter((p) => p.type === "digit");
+
+    expect(digits.length).toBeGreaterThanOrEqual(5);
+    for (const d of digits) {
+      expect(d.digitValue).toBeGreaterThanOrEqual(0);
+      expect(d.digitValue).toBeLessThanOrEqual(9);
+    }
+  });
+});
+
 describe("getFormatCharacters — scientific notation", () => {
   test("includes × for scientific notation", () => {
     const chars = getFormatCharacters("en-US", { notation: "scientific" });

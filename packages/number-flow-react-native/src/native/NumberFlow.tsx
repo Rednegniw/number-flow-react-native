@@ -1,22 +1,25 @@
 import MaskedView from "@rednegniw/masked-view";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View, type LayoutChangeEvent } from "react-native";
-import { MASK_HEIGHT_RATIO } from "../core/constants";
 import {
   DEFAULT_OPACITY_TIMING,
   DEFAULT_SPIN_TIMING,
   DEFAULT_TRANSFORM_TIMING,
   ZERO_TIMING,
 } from "../core/timing";
-import { computeKeyedLayout, computeStringLayout } from "../core/layout";
+import { computeKeyedLayout } from "../core/layout";
+import { computeAdaptiveMaskHeights } from "../core/mask";
 import { useContinuousSpin } from "../core/useContinuousSpin";
 import { useLayoutDiff } from "../core/useLayoutDiff";
 import {
   getFormatCharacters,
   useNumberFormatting,
 } from "../core/useNumberFormatting";
-import { useWorkletFormatting } from "../core/useWorkletFormatting";
 import { useCanAnimate } from "../core/useCanAnimate";
+import {
+  detectNumberingSystem,
+  getDigitStrings,
+} from "../core/numerals";
 import { getDigitCount, resolveTrend } from "../core/utils";
 import { warnOnce } from "../core/warnings";
 import { DigitSlot } from "./DigitSlot";
@@ -28,7 +31,6 @@ export const NumberFlow = ({
   value,
   format,
   locales,
-  sharedValue,
   style: nfStyle,
   textAlign = "left",
   prefix = "",
@@ -50,7 +52,15 @@ export const NumberFlow = ({
     () => getFormatCharacters(locales, format, prefix, suffix),
     [locales, format, prefix, suffix],
   );
-  const { metrics, MeasureElement } = useGlyphMetrics(nfStyle, formatChars);
+  const numberingSystem = useMemo(
+    () => detectNumberingSystem(locales, format),
+    [locales, format],
+  );
+  const digitStrings = useMemo(
+    () => getDigitStrings(numberingSystem),
+    [numberingSystem],
+  );
+  const { metrics, MeasureElement } = useGlyphMetrics(nfStyle, formatChars, digitStrings);
 
   // Animated + reduced motion
   const canAnimate = useCanAnimate(respectMotionPreference);
@@ -78,18 +88,6 @@ export const NumberFlow = ({
         "style.fontSize is required for NumberFlow to measure glyphs.",
       );
     }
-    if (value !== undefined && sharedValue !== undefined) {
-      warnOnce(
-        "nf-both",
-        "Both value and sharedValue provided. Use one or the other.",
-      );
-    }
-    if (value === undefined && sharedValue === undefined) {
-      warnOnce(
-        "nf-neither",
-        "Neither value nor sharedValue provided.",
-      );
-    }
     if (digits) {
       for (const [posStr, constraint] of Object.entries(digits)) {
         if (constraint.max < 1 || constraint.max > 9) {
@@ -110,12 +108,6 @@ export const NumberFlow = ({
     suffix,
   );
 
-  const workletDigitValues = useWorkletFormatting(
-    sharedValue,
-    prefix,
-    suffix,
-  );
-
   const spinGenerations = useContinuousSpin(
     keyedParts,
     continuous,
@@ -132,22 +124,19 @@ export const NumberFlow = ({
   const layout = useMemo(() => {
     if (!metrics) return [];
 
-    if (sharedValue && value === undefined) {
-      const text = `${prefix}${sharedValue.value}${suffix}`;
-      return computeStringLayout(text, metrics, effectiveWidth, textAlign);
-    }
+    // Skip layout when container hasn't measured yet and alignment needs width.
+    // Without this guard, center/right alignment computes with width=0,
+    // then re-computes after onLayout — causing a visible slide-in animation.
+    if (effectiveWidth === 0 && textAlign !== "left") return [];
 
     if (keyedParts.length === 0) return [];
-    return computeKeyedLayout(keyedParts, metrics, effectiveWidth, textAlign);
+    return computeKeyedLayout(keyedParts, metrics, effectiveWidth, textAlign, digitStrings);
   }, [
     metrics,
     keyedParts,
     effectiveWidth,
     textAlign,
-    prefix,
-    suffix,
-    sharedValue,
-    value,
+    digitStrings,
   ]);
 
   // Animation lifecycle callbacks — use refs to avoid stale closures in setTimeout
@@ -196,51 +185,55 @@ export const NumberFlow = ({
     [nfStyle],
   );
 
-  // Accessibility label
   const accessibilityLabel = useMemo(() => {
-    if (sharedValue) return sharedValue.value;
     if (keyedParts.length === 0) return undefined;
     return keyedParts.map((p) => p.char).join("");
-  }, [keyedParts, sharedValue]);
+  }, [keyedParts]);
 
   const resolvedMask = mask ?? true;
-  const lineHeight = metrics?.lineHeight ?? 0;
-  // Always use maskHeight as a buffer zone so neighboring digits never touch
-  // the clip boundary (prevents sub-pixel overflow artifacts on Android).
-  // The MaskedView gradient is only rendered when mask={true}.
-  const maskHeight = MASK_HEIGHT_RATIO * lineHeight;
-  const MASK_STEPS = 12;
-  const stepHeight = maskHeight / MASK_STEPS;
+
+  const adaptiveMask = useMemo(() => {
+    if (!metrics || !resolvedMask) return { top: 0, bottom: 0, expansionTop: 0, expansionBottom: 0 };
+    return computeAdaptiveMaskHeights(layout, exitingEntries, metrics);
+  }, [metrics, resolvedMask, layout, exitingEntries]);
+
+  const maskTop = adaptiveMask.top;
+  const maskBottom = adaptiveMask.bottom;
+  const { expansionTop, expansionBottom } = adaptiveMask;
+
+  // Step count scales with mask height — each step must be ≥1px (sub-pixel Views collapse to 0).
+  const topSteps = Math.max(2, Math.round(maskTop));
+  const bottomSteps = Math.max(2, Math.round(maskBottom));
 
   const gradientMaskElement = useMemo(() => {
-    if (!resolvedMask || lineHeight === 0) return null;
+    if (!resolvedMask || !metrics) return null;
     return (
       <View style={{ flex: 1, flexDirection: "column" }}>
         {/* Top fade: transparent → opaque */}
-        {Array.from({ length: MASK_STEPS }, (_, i) => (
+        {Array.from({ length: topSteps }, (_, i) => (
           <View
             key={`t${i}`}
             style={{
-              height: stepHeight,
-              backgroundColor: `rgba(0,0,0,${i / (MASK_STEPS - 1)})`,
+              height: maskTop / topSteps,
+              backgroundColor: `rgba(0,0,0,${i / (topSteps - 1)})`,
             }}
           />
         ))}
         {/* Middle: fully opaque */}
         <View style={{ flex: 1, backgroundColor: "black" }} />
         {/* Bottom fade: opaque → transparent */}
-        {Array.from({ length: MASK_STEPS }, (_, i) => (
+        {Array.from({ length: bottomSteps }, (_, i) => (
           <View
             key={`b${i}`}
             style={{
-              height: stepHeight,
-              backgroundColor: `rgba(0,0,0,${1 - i / (MASK_STEPS - 1)})`,
+              height: maskBottom / bottomSteps,
+              backgroundColor: `rgba(0,0,0,${1 - i / (bottomSteps - 1)})`,
             }}
           />
         ))}
       </View>
     );
-  }, [resolvedMask, lineHeight, stepHeight]);
+  }, [resolvedMask, metrics, maskTop, maskBottom, topSteps, bottomSteps]);
 
   if (!metrics) {
     return (
@@ -265,7 +258,6 @@ export const NumberFlow = ({
       {layout.map((entry) => {
         const isEntering = !isInitialRender && !prevMap.has(entry.key);
         if (entry.isDigit) {
-          const wdv = workletDigitValues?.[digitIndex];
           const digitCount = getDigitCount(digits, entry.key);
           const spinGeneration = spinGenerations?.get(entry.key);
 
@@ -275,12 +267,14 @@ export const NumberFlow = ({
               charWidth={entry.width}
               continuousSpinGeneration={spinGeneration}
               digitCount={digitCount}
+              digitStrings={digitStrings}
               digitValue={entry.digitValue}
               entering={isEntering}
               exiting={false}
               key={entry.key}
               lineHeight={metrics.lineHeight}
-              maskHeight={maskHeight}
+              maskTop={maskTop}
+              maskBottom={maskBottom}
               metrics={metrics}
               opacityTiming={resolvedOpacityTiming}
               spinTiming={resolvedSpinTiming}
@@ -289,7 +283,6 @@ export const NumberFlow = ({
               textStyle={textStyle}
               transformTiming={resolvedTransformTiming}
               trend={resolvedTrend}
-              workletDigitValue={wdv}
             />
           );
         }
@@ -317,13 +310,15 @@ export const NumberFlow = ({
             <DigitSlot
               charWidth={entry.width}
               digitCount={digitCount}
+              digitStrings={digitStrings}
               digitValue={entry.digitValue}
               entering={false}
               exitKey={key}
               exiting
               key={key}
               lineHeight={metrics.lineHeight}
-              maskHeight={maskHeight}
+              maskTop={maskTop}
+              maskBottom={maskBottom}
               metrics={metrics}
               onExitComplete={onExitComplete}
               opacityTiming={resolvedOpacityTiming}
@@ -365,16 +360,16 @@ export const NumberFlow = ({
       maskElement={gradientMaskElement}
       style={{ flex: 1 }}
     >
-      <View style={{ flex: 1, position: "relative" }}>
+      <View style={{ flex: 1, position: "relative", top: expansionTop }}>
         {MeasureElement}
         {slots}
       </View>
     </MaskedView>
   ) : (
-    <>
+    <View style={{ flex: 1, position: "relative", top: expansionTop }}>
       {MeasureElement}
       {slots}
-    </>
+    </View>
   );
 
   return (
@@ -385,7 +380,13 @@ export const NumberFlow = ({
       onLayout={handleContainerLayout}
       style={[
         containerStyle,
-        { height: metrics.lineHeight, position: "relative", overflow: "hidden" },
+        {
+          height: metrics.lineHeight + expansionTop + expansionBottom,
+          marginTop: -expansionTop,
+          marginBottom: -expansionBottom,
+          position: "relative",
+          overflow: "hidden",
+        },
       ]}
     >
       {maskedContent}

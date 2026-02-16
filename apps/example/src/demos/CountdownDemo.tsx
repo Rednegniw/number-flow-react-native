@@ -1,8 +1,16 @@
+import { Canvas, useFont } from "@shopify/react-native-skia";
 import { TimeFlow } from "number-flow-react-native/native";
+import { SkiaTimeFlow } from "number-flow-react-native/skia";
 import { useCallback, useRef, useState } from "react";
 import { Pressable, Text, View } from "react-native";
+import { colors } from "../theme/colors";
+import { FONT_REGULAR, INTER_FONT_ASSET } from "../theme/fonts";
 
-export const CountdownDemo = () => {
+const FONT_SIZE = 40;
+const CANVAS_WIDTH = 200;
+const CANVAS_HEIGHT = 56;
+
+function useCountdownDemoState() {
   const [minutes, setMinutes] = useState(5);
   const [seconds, setSeconds] = useState(30);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -38,17 +46,18 @@ export const CountdownDemo = () => {
     setSeconds(30);
   }, []);
 
+  return { minutes, seconds, toggle, reset };
+}
+
+export const CountdownDemoNative = () => {
+  const { minutes, seconds, toggle, reset } = useCountdownDemoState();
+
   return (
     <View style={{ gap: 8 }}>
-      {/* Header */}
-      <Text style={{ fontSize: 14, fontWeight: "600", color: "#333" }}>
-        Countdown
-      </Text>
-
       {/* Time display */}
       <View
         style={{
-          backgroundColor: "#f5f5f5",
+          backgroundColor: colors.demoBackground,
           borderRadius: 12,
           padding: 20,
           alignItems: "center",
@@ -57,10 +66,10 @@ export const CountdownDemo = () => {
         }}
       >
         <TimeFlow
-          containerStyle={{ width: 200 }}
+          containerStyle={{ width: CANVAS_WIDTH }}
           minutes={minutes}
           seconds={seconds}
-          style={{ fontFamily: "System", fontSize: 40, color: "#FF3B30" }}
+          style={{ fontFamily: FONT_REGULAR, fontSize: FONT_SIZE, color: "#FF3B30" }}
           textAlign="center"
           trend={-1}
         />
@@ -72,13 +81,13 @@ export const CountdownDemo = () => {
           onPress={toggle}
           style={{
             flex: 1,
-            backgroundColor: "#e8e8e8",
+            backgroundColor: colors.buttonBackground,
             borderRadius: 8,
             padding: 12,
             alignItems: "center",
           }}
         >
-          <Text style={{ fontSize: 14, fontWeight: "500", color: "#333" }}>
+          <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
             Start / Pause
           </Text>
         </Pressable>
@@ -87,13 +96,80 @@ export const CountdownDemo = () => {
           onPress={reset}
           style={{
             flex: 1,
-            backgroundColor: "#e8e8e8",
+            backgroundColor: colors.buttonBackground,
             borderRadius: 8,
             padding: 12,
             alignItems: "center",
           }}
         >
-          <Text style={{ fontSize: 14, fontWeight: "500", color: "#333" }}>
+          <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
+            Reset
+          </Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+};
+
+export const CountdownDemoSkia = () => {
+  const skiaFont = useFont(INTER_FONT_ASSET, FONT_SIZE);
+  const { minutes, seconds, toggle, reset } = useCountdownDemoState();
+
+  return (
+    <View style={{ gap: 8 }}>
+      {/* Time display */}
+      <View
+        style={{
+          backgroundColor: colors.demoBackground,
+          borderRadius: 12,
+          padding: 20,
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: 70,
+        }}
+      >
+        <Canvas style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
+          <SkiaTimeFlow
+            color="#FF3B30"
+            font={skiaFont}
+            minutes={minutes}
+            seconds={seconds}
+            textAlign="center"
+            trend={-1}
+            width={CANVAS_WIDTH}
+            y={FONT_SIZE}
+          />
+        </Canvas>
+      </View>
+
+      {/* Action buttons */}
+      <View style={{ flexDirection: "row", gap: 8 }}>
+        <Pressable
+          onPress={toggle}
+          style={{
+            flex: 1,
+            backgroundColor: colors.buttonBackground,
+            borderRadius: 8,
+            padding: 12,
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
+            Start / Pause
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={reset}
+          style={{
+            flex: 1,
+            backgroundColor: colors.buttonBackground,
+            borderRadius: 8,
+            padding: 12,
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
             Reset
           </Text>
         </Pressable>

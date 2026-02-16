@@ -1,5 +1,5 @@
 import MaskedView from "@rednegniw/masked-view";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View, type LayoutChangeEvent } from "react-native";
 import { MASK_HEIGHT_RATIO } from "../core/constants";
 import {
@@ -9,14 +9,12 @@ import {
   ZERO_TIMING,
 } from "../core/timing";
 import { computeKeyedLayout } from "../core/layout";
-import { computeTimeStringLayout } from "../core/timeLayout";
 import type { TimeFlowProps } from "../core/timeTypes";
 import { useContinuousSpin } from "../core/useContinuousSpin";
 import { useLayoutDiff } from "../core/useLayoutDiff";
 import { useTimeFormatting } from "../core/useTimeFormatting";
 import { useCanAnimate } from "../core/useCanAnimate";
 import { resolveTrend, TIME_DIGIT_COUNTS } from "../core/utils";
-import { useWorkletFormatting } from "../core/useWorkletFormatting";
 import { warnOnce } from "../core/warnings";
 import { DigitSlot } from "./DigitSlot";
 import { SymbolSlot } from "./SymbolSlot";
@@ -28,7 +26,6 @@ export const TimeFlow = ({
   seconds,
   timestamp,
   timezoneOffset,
-  sharedValue,
   is24Hour = true,
   padHours = true,
   style: nfStyle,
@@ -76,9 +73,6 @@ export const TimeFlow = ({
   const resolvedMinutes = resolved.minutes;
   const resolvedSeconds = resolved.seconds;
 
-  const hasHours = resolvedHours !== undefined;
-  const hasSeconds = resolvedSeconds !== undefined;
-
   const totalSeconds =
     (resolvedHours ?? 0) * 3600 +
     (resolvedMinutes ?? 0) * 60 +
@@ -108,14 +102,11 @@ export const TimeFlow = ({
 
   const keyedParts = useTimeFormatting(
     resolvedHours,
-    // Fallback for sharedValue mode where minutes is undefined (unused — layout comes from string path)
-    resolvedMinutes ?? 0,
+    resolvedMinutes,
     resolvedSeconds,
     is24Hour,
     padHours,
   );
-
-  const workletDigitValues = useWorkletFormatting(sharedValue, "", "");
 
   const spinGenerations = useContinuousSpin(
     keyedParts,
@@ -132,35 +123,9 @@ export const TimeFlow = ({
 
   const layout = useMemo(() => {
     if (!metrics) return [];
-
-    if (
-      sharedValue &&
-      resolvedHours === undefined &&
-      resolvedMinutes === undefined
-    ) {
-      return computeTimeStringLayout(
-        sharedValue.value,
-        metrics,
-        effectiveWidth,
-        textAlign,
-        hasHours,
-        hasSeconds,
-      );
-    }
-
     if (keyedParts.length === 0) return [];
     return computeKeyedLayout(keyedParts, metrics, effectiveWidth, textAlign);
-  }, [
-    metrics,
-    keyedParts,
-    effectiveWidth,
-    textAlign,
-    sharedValue,
-    resolvedHours,
-    resolvedMinutes,
-    hasHours,
-    hasSeconds,
-  ]);
+  }, [metrics, keyedParts, effectiveWidth, textAlign]);
 
   // Store callbacks in refs so the setTimeout in the effect always calls the latest version
   const onAnimationsStartRef = useRef(onAnimationsStart);
@@ -210,10 +175,9 @@ export const TimeFlow = ({
   );
 
   const accessibilityLabel = useMemo(() => {
-    if (sharedValue) return sharedValue.value;
     if (keyedParts.length === 0) return undefined;
     return keyedParts.map((p) => p.char).join("");
-  }, [keyedParts, sharedValue]);
+  }, [keyedParts]);
 
   const resolvedMask = mask ?? true;
   const lineHeight = metrics?.lineHeight ?? 0;
@@ -267,18 +231,14 @@ export const TimeFlow = ({
     );
   }
 
-  let digitIndex = 0;
-
   const slots = (
     <>
       {layout.map((entry) => {
         const isEntering = !isInitialRender && !prevMap.has(entry.key);
         if (entry.isDigit) {
-          const wdv = workletDigitValues?.[digitIndex];
           const digitCount = TIME_DIGIT_COUNTS[entry.key];
           const spinGeneration = spinGenerations?.get(entry.key);
 
-          digitIndex++;
           return (
             <DigitSlot
               charWidth={entry.width}
@@ -289,7 +249,8 @@ export const TimeFlow = ({
               exiting={false}
               key={entry.key}
               lineHeight={metrics.lineHeight}
-              maskHeight={maskHeight}
+              maskTop={maskHeight}
+              maskBottom={maskHeight}
               metrics={metrics}
               opacityTiming={resolvedOpacityTiming}
               spinTiming={resolvedSpinTiming}
@@ -297,7 +258,6 @@ export const TimeFlow = ({
               textStyle={textStyle}
               transformTiming={resolvedTransformTiming}
               trend={resolvedTrend}
-              workletDigitValue={wdv}
             />
           );
         }
@@ -330,7 +290,8 @@ export const TimeFlow = ({
               exiting
               key={key}
               lineHeight={metrics.lineHeight}
-              maskHeight={maskHeight}
+              maskTop={maskHeight}
+              maskBottom={maskHeight}
               metrics={metrics}
               onExitComplete={onExitComplete}
               opacityTiming={resolvedOpacityTiming}

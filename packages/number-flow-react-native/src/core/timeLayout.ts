@@ -1,6 +1,6 @@
 import type { CharLayout } from "./layout";
 import type { GlyphMetrics, TextAlign } from "./types";
-import { isDigitChar } from "./utils";
+import { isDigitChar, workletDigitValue } from "./utils";
 
 /**
  * Keys for each digit position within a time segment.
@@ -15,14 +15,15 @@ function pushChar(
   key: string,
   char: string,
   metrics: GlyphMetrics,
+  zeroCodePoint = 48,
 ): void {
-  const isDigit = isDigitChar(char);
+  const isDigit = isDigitChar(char, zeroCodePoint);
   const width = metrics.charWidths[char] ?? metrics.maxDigitWidth;
   chars.push({
     key,
     char,
     isDigit,
-    digitValue: isDigit ? char.charCodeAt(0) - 48 : -1,
+    digitValue: isDigit ? workletDigitValue(char.charCodeAt(0), zeroCodePoint) : -1,
     x: 0,
     width,
   });

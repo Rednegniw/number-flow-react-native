@@ -9,7 +9,6 @@ import Animated, {
 } from "react-native-reanimated";
 import {
   DIGIT_COUNT,
-  DIGIT_STRINGS,
   SUPERSCRIPT_SCALE,
 } from "../core/constants";
 import type { GlyphMetrics, TimingConfig, Trend } from "../core/types";
@@ -21,19 +20,20 @@ import { useLayoutEffect, useRef } from "react";
 // Extracted as its own component so useAnimatedStyle respects Rules of Hooks
 interface DigitElementProps {
   digitIndex: number;
+  digitString: string;
   yValue: SharedValue<number>;
   textStyle: DigitSlotProps["textStyle"];
 }
 
 const DigitElement = React.memo(
-  ({ digitIndex, yValue, textStyle }: DigitElementProps) => {
+  ({ digitString, yValue, textStyle }: DigitElementProps) => {
     const animatedStyle = useAnimatedStyle(() => ({
       transform: [{ translateY: yValue.value }],
     }));
 
     return (
       <Animated.View style={[styles.digitView, animatedStyle]}>
-        <Text style={textStyle}>{DIGIT_STRINGS[digitIndex]}</Text>
+        <Text style={textStyle}>{digitString}</Text>
       </Animated.View>
     );
   },
@@ -56,11 +56,12 @@ interface DigitSlotProps {
   exiting: boolean;
   exitKey?: string;
   onExitComplete?: (key: string) => void;
-  workletDigitValue?: SharedValue<number>;
   digitCount?: number;
   continuousSpinGeneration?: number;
-  maskHeight?: number;
+  maskTop?: number;
+  maskBottom?: number;
   superscript?: boolean;
+  digitStrings?: string[];
 }
 
 export const DigitSlot = React.memo(
@@ -79,20 +80,23 @@ export const DigitSlot = React.memo(
     exiting,
     exitKey,
     onExitComplete,
-    workletDigitValue,
     digitCount,
     continuousSpinGeneration,
-    maskHeight = 0,
+    maskTop = 0,
+    maskBottom = 0,
     superscript,
+    digitStrings,
   }: DigitSlotProps) => {
     const resolvedDigitCount = digitCount ?? DIGIT_COUNT;
+    const resolvedDigitStrings = digitStrings ?? Array.from({ length: resolvedDigitCount }, (_, i) => String(i));
 
     // Superscript scaling — exponent digits/signs render smaller at the top of the line.
-    // Mask height is zeroed for superscript: the container-level gradient doesn't cover
+    // Mask heights are zeroed for superscript: the container-level gradient doesn't cover
     // the superscript position, so any buffer would show unmasked neighboring digits.
     const scale = superscript ? SUPERSCRIPT_SCALE : 1;
     const effectiveLH = metrics.lineHeight * scale;
-    const effectiveMaskHeight = superscript ? 0 : maskHeight;
+    const effectiveMaskTop = superscript ? 0 : maskTop;
+    const effectiveMaskBottom = superscript ? 0 : maskBottom;
 
     const effectiveTextStyle = useMemo(() => {
       if (!superscript) return textStyle;
@@ -114,7 +118,6 @@ export const DigitSlot = React.memo(
         opacityTiming,
         exitKey,
         onExitComplete,
-        workletDigitValue,
         digitCount: resolvedDigitCount,
         continuousSpinGeneration,
       });
@@ -128,7 +131,7 @@ export const DigitSlot = React.memo(
       Array.from({ length: resolvedDigitCount }, (_, n) => {
         const offset = signedDigitOffset(n, initialDigit, resolvedDigitCount);
         const clamped = Math.max(-1.5, Math.min(1.5, offset));
-        return makeMutable(clamped * effectiveLH + effectiveMaskHeight);
+        return makeMutable(clamped * effectiveLH + effectiveMaskTop);
       }),
     );
 
@@ -144,10 +147,10 @@ export const DigitSlot = React.memo(
         for (let n = 0; n < resolvedDigitCount; n++) {
           const offset = signedDigitOffset(n, c, resolvedDigitCount);
           const clamped = Math.max(-1.5, Math.min(1.5, offset));
-          digitYValues[n].value = clamped * effectiveLH + effectiveMaskHeight;
+          digitYValues[n].value = clamped * effectiveLH + effectiveMaskTop;
         }
       },
-      [effectiveLH, resolvedDigitCount, effectiveMaskHeight],
+      [effectiveLH, resolvedDigitCount, effectiveMaskTop],
     );
 
     const animatedX = useAnimatedX(targetX, exiting, transformTiming);
@@ -168,12 +171,12 @@ export const DigitSlot = React.memo(
     const animatedStyle = useAnimatedStyle(() => ({
       transform: [
         { translateX: animatedX.value },
-        { translateY: -effectiveMaskHeight },
+        { translateY: -effectiveMaskTop },
       ],
       opacity: slotOpacity.value,
     }));
 
-    const expandedHeight = effectiveLH + 2 * effectiveMaskHeight;
+    const expandedHeight = effectiveLH + effectiveMaskTop + effectiveMaskBottom;
 
     const animatedClipStyle = useAnimatedStyle(() => ({
       overflow: "hidden" as const,
@@ -186,12 +189,13 @@ export const DigitSlot = React.memo(
         Array.from({ length: resolvedDigitCount }, (_, n) => (
           <DigitElement
             digitIndex={n}
+            digitString={resolvedDigitStrings[n]}
             key={n}
             textStyle={effectiveTextStyle}
             yValue={digitYValues[n]}
           />
         )),
-      [resolvedDigitCount, digitYValues, effectiveTextStyle],
+      [resolvedDigitCount, resolvedDigitStrings, digitYValues, effectiveTextStyle],
     );
 
     return (

@@ -1,5 +1,4 @@
 import type { TextStyle, ViewStyle } from "react-native";
-import type { SharedValue } from "react-native-reanimated";
 import type { AnimationConfig, DigitsProp, TextAlign, TrendProp } from "../core/types";
 
 /** Text style for NumberFlow/TimeFlow. Requires fontSize; fontFamily defaults to the system font when omitted. */
@@ -7,24 +6,14 @@ export type NumberFlowStyle = TextStyle & {
   fontSize: number;
 };
 
-/** Value props — mutually exclusive: provide `value` (JS-driven) or `sharedValue` (worklet-driven), not both. */
-type NumberFlowValueProps =
-  | {
-      /** JS-thread numeric value. Mutually exclusive with sharedValue. */
-      value: number;
-      /** Intl.NumberFormatOptions for value formatting */
-      format?: Intl.NumberFormatOptions;
-      /** Locale(s) for Intl.NumberFormat */
-      locales?: Intl.LocalesArgument;
-      sharedValue?: never;
-    }
-  | {
-      value?: never;
-      format?: never;
-      locales?: never;
-      /** Worklet-driven pre-formatted string. Mutually exclusive with value. */
-      sharedValue: SharedValue<string>;
-    };
+interface NumberFlowValueProps {
+  /** Numeric value to display */
+  value: number;
+  /** Intl.NumberFormatOptions for value formatting */
+  format?: Intl.NumberFormatOptions;
+  /** Locale(s) for Intl.NumberFormat */
+  locales?: Intl.LocalesArgument;
+}
 
 interface NumberFlowBaseProps extends AnimationConfig {
   /** Text styling. fontSize is required; fontFamily defaults to the platform system font. */

@@ -1,5 +1,13 @@
 import { useMemo } from "react";
 import { MEASURABLE_CHARS } from "./constants";
+import {
+  detectNumberingSystem,
+  detectOutputZeroCp,
+  getDigitStrings,
+  getZeroCodePoint,
+  isLocaleDigit,
+  localeDigitValue,
+} from "./numerals";
 import type { KeyedPart } from "./types";
 
 /**
@@ -40,19 +48,30 @@ export function getFormatCharacters(
   if (cached !== undefined) return cached;
 
   const formatter = getOrCreateFormatter(locales, format);
+  const numberingSystem = detectNumberingSystem(locales, format);
+  const zeroCP = getZeroCodePoint(numberingSystem);
+
   // Sample that exercises: group separators, decimal, sign, large integers
   const probes = [1234567.89, -1234567.89];
   const chars = new Set<string>();
 
   for (const probe of probes) {
     for (const ch of formatter.format(probe)) {
-      if (ch < "0" || ch > "9") chars.add(ch);
+      const code = ch.charCodeAt(0);
+      // Skip digits in both Latin and the locale's numbering system
+      const isLatinDigit = code >= 48 && code <= 57;
+      const isLocale = isLocaleDigit(code, zeroCP);
+      if (!isLatinDigit && !isLocale) chars.add(ch);
     }
   }
   // Scientific/engineering notation replaces E with ×10 in our display
   if (format?.notation === "scientific" || format?.notation === "engineering") {
     chars.add("\u00D7"); // × (multiplication sign)
   }
+
+  // Add locale digit strings so they get measured
+  const digitStrings = getDigitStrings(numberingSystem);
+  for (const ds of digitStrings) chars.add(ds);
 
   for (const ch of prefix) chars.add(ch);
   for (const ch of suffix) chars.add(ch);
@@ -81,13 +100,16 @@ function detectDecimalSeparator(locales?: Intl.LocalesArgument): string {
 
   let sep = ".";
   try {
-    const str = new Intl.NumberFormat(locales ?? undefined, {
+    const fmt = new Intl.NumberFormat(locales ?? undefined, {
       minimumFractionDigits: 1,
       maximumFractionDigits: 1,
       useGrouping: false,
-    }).format(1.5);
+    });
+    const str = fmt.format(1.5);
+    const zeroCP = detectOutputZeroCp(str);
     for (const ch of str) {
-      if (ch < "0" || ch > "9") {
+      const code = ch.charCodeAt(0);
+      if (!isLocaleDigit(code, zeroCP) && !(code >= 48 && code <= 57)) {
         sep = ch;
         break;
       }
@@ -105,6 +127,7 @@ function detectDecimalSeparator(locales?: Intl.LocalesArgument): string {
 function parseNumberString(
   formatted: string,
   decimalSep: string,
+  zeroCodePoint = 48,
 ): Intl.NumberFormatPart[] {
   // Detect exponent separator (E or e) — split into mantissa + exponent
   let exponentPos = -1;
@@ -118,7 +141,7 @@ function parseNumberString(
   const mantissa = exponentPos >= 0 ? formatted.slice(0, exponentPos) : formatted;
   const parts: Intl.NumberFormatPart[] = [];
 
-  parseMantissa(mantissa, decimalSep, parts);
+  parseMantissa(mantissa, decimalSep, parts, zeroCodePoint);
 
   if (exponentPos >= 0) {
     parts.push({ type: "exponentSeparator" as string, value: formatted[exponentPos] } as Intl.NumberFormatPart);
@@ -131,7 +154,7 @@ function parseNumberString(
         parts.push({ type: "exponentMinusSign" as string, value: ch } as Intl.NumberFormatPart);
       } else if (ch === "+") {
         parts.push({ type: "exponentPlusSign" as string, value: ch } as Intl.NumberFormatPart);
-      } else if (ch >= "0" && ch <= "9") {
+      } else if (isLocaleDigit(ch.charCodeAt(0), zeroCodePoint)) {
         expBuf += ch;
       }
     }
@@ -149,7 +172,9 @@ export function fallbackFormatToParts(
   value: number,
   locales?: Intl.LocalesArgument,
 ): Intl.NumberFormatPart[] {
-  return parseNumberString(formatter.format(value), detectDecimalSeparator(locales));
+  const formatted = formatter.format(value);
+  const zeroCp = detectOutputZeroCp(formatted);
+  return parseNumberString(formatted, detectDecimalSeparator(locales), zeroCp);
 }
 
 /**
@@ -171,8 +196,8 @@ function computeEngineeringString(
   const exp = 3 * Math.floor(logFloor / 3);
   const mantissa = abs / Math.pow(10, exp);
 
-  const maxFrac = resolved.maximumFractionDigits;
-  const minFrac = resolved.minimumFractionDigits;
+  const maxFrac = resolved.maximumFractionDigits ?? 0;
+  const minFrac = resolved.minimumFractionDigits ?? 0;
 
   let mantissaStr = mantissa.toFixed(maxFrac);
 
@@ -206,6 +231,7 @@ function parseMantissa(
   mantissa: string,
   decimalSep: string,
   parts: Intl.NumberFormatPart[],
+  zeroCodePoint = 48,
 ): void {
   /**
    * Search from right — in some locales the decimal sep char is also
@@ -216,7 +242,7 @@ function parseMantissa(
     if (mantissa[i] === decimalSep) {
       let hasDigitAfter = false;
       for (let j = i + 1; j < mantissa.length; j++) {
-        if (mantissa[j] >= "0" && mantissa[j] <= "9") {
+        if (isLocaleDigit(mantissa[j].charCodeAt(0), zeroCodePoint)) {
           hasDigitAfter = true;
           break;
         }
@@ -248,7 +274,7 @@ function parseMantissa(
       continue;
     }
 
-    if (ch >= "0" && ch <= "9") {
+    if (isLocaleDigit(ch.charCodeAt(0), zeroCodePoint)) {
       buf += ch;
     } else if (ch === "-") {
       flush();
@@ -259,11 +285,10 @@ function parseMantissa(
     } else if (!inFraction) {
       flush();
       const prevDigit =
-        i > 0 && mantissa[i - 1] >= "0" && mantissa[i - 1] <= "9";
+        i > 0 && isLocaleDigit(mantissa[i - 1].charCodeAt(0), zeroCodePoint);
       const nextDigit =
         i < mantissa.length - 1 &&
-        mantissa[i + 1] >= "0" &&
-        mantissa[i + 1] <= "9";
+        isLocaleDigit(mantissa[i + 1].charCodeAt(0), zeroCodePoint);
       parts.push({
         type: prevDigit && nextDigit ? "group" : "literal",
         value: ch,
@@ -286,6 +311,21 @@ function safeFormatToParts(
 
   if (typeof formatter.formatToParts === "function") {
     parts = formatter.formatToParts(value);
+
+    /**
+     * Hermes may return formatToParts with all parts as "literal" for
+     * non-Latin locales, or misclassify digit characters. Validate that
+     * at least one "integer" or "fraction" part exists for non-zero values.
+     * If not, fall back to our manual parser which detects digits by codepoint.
+     */
+    if (value !== 0) {
+      const hasDigitParts = parts.some(
+        (p) => p.type === "integer" || p.type === "fraction",
+      );
+      if (!hasDigitParts) {
+        parts = fallbackFormatToParts(formatter, value, locales);
+      }
+    }
   } else {
     parts = fallbackFormatToParts(formatter, value, locales);
   }
@@ -325,6 +365,14 @@ export function formatToKeyedParts(
   suffix = "",
 ): KeyedPart[] {
   const rawParts = safeFormatToParts(formatter, value, locales);
+
+  /**
+   * Detect the actual zero codepoint from the formatted output rather than
+   * trusting resolvedOptions().numberingSystem. Hermes may report "arab" but
+   * output Latin digits, or vice versa. Output-based detection is always correct.
+   */
+  const rawString = rawParts.map((p) => p.value).join("");
+  const zeroCP = detectOutputZeroCp(rawString);
 
   // Step 1: Flatten all parts into single characters with their source type
   interface FlatChar {
@@ -402,7 +450,7 @@ export function formatToKeyedParts(
       key: nextKey(fc.sourceType),
       type: isDigit ? "digit" : "symbol",
       char: fc.char,
-      digitValue: isDigit ? fc.char.charCodeAt(0) - 48 : -1,
+      digitValue: isDigit ? localeDigitValue(fc.char.charCodeAt(0), zeroCP) : -1,
     };
   }
 
@@ -421,7 +469,7 @@ export function formatToKeyedParts(
       key: nextKey("exponentInteger"),
       type: "digit",
       char: fc.char,
-      digitValue: fc.char.charCodeAt(0) - 48,
+      digitValue: localeDigitValue(fc.char.charCodeAt(0), zeroCP),
     };
   }
 
@@ -434,7 +482,7 @@ export function formatToKeyedParts(
       key: nextKey(fc.sourceType),
       type: isDigit ? "digit" : "symbol",
       char: fc.char,
-      digitValue: isDigit ? fc.char.charCodeAt(0) - 48 : -1,
+      digitValue: isDigit ? localeDigitValue(fc.char.charCodeAt(0), zeroCP) : -1,
     };
   }
 
