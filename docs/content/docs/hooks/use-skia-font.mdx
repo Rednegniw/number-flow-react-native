@@ -1,0 +1,64 @@
+---
+title: useSkiaFont
+description: Load a Skia font with system-font fallback for instant rendering
+---
+
+Loads a custom Skia font asynchronously while providing a synchronous system-font fallback via `matchFont`. Guarantees a non-null `SkFont` from the very first render, so components can run the full animated pipeline immediately instead of showing a blank canvas.
+
+## Import
+
+```tsx
+import { useSkiaFont } from 'number-flow-react-native/skia';
+```
+
+## Signature
+
+```tsx
+useSkiaFont(source: DataSourceParam, size: number, onError?: (err: Error) => void): SkFont
+```
+
+## Parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `source` | `DataSourceParam` | Font asset reference (`require()` or URI) |
+| `size` | `number` | Font size in points |
+| `onError` | `(err: Error) => void` | Optional error callback for font loading failures |
+
+## Returns
+
+`SkFont` — always non-null. Returns a system font fallback until the custom font loads.
+
+## Usage
+
+```tsx
+import { Canvas } from '@shopify/react-native-skia';
+import { SkiaNumberFlow, useSkiaFont } from 'number-flow-react-native/skia';
+
+function PriceDisplay() {
+  const font = useSkiaFont(require('./assets/Inter.ttf'), 32);
+
+  return (
+    <Canvas style={{ height: 50, width: 200 }}>
+      <SkiaNumberFlow
+        value={42.99}
+        font={font}
+        format={{ style: 'currency', currency: 'USD' }}
+      />
+    </Canvas>
+  );
+}
+```
+
+<Callout type="info">
+Once the custom font loads, `SkiaNumberFlow` automatically animates from the system font metrics to the custom font metrics — no loading state needed.
+</Callout>
+
+## vs. useFont
+
+Skia's built-in `useFont` returns `null` while the font is loading, which means `SkiaNumberFlow` renders an empty canvas until the font is ready. `useSkiaFont` solves this by calling `matchFont()` to create an immediate system-font fallback at the requested size:
+
+- **First render:** system font from `matchFont({ fontSize: size })`
+- **After load:** custom font from `useFont(source, size)`
+
+Your animated numbers are visible and interactive from the very first frame, with no conditional rendering or loading placeholders required.

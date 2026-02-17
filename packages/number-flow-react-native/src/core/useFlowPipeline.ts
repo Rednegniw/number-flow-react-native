@@ -8,7 +8,7 @@ import { useLayoutDiff } from "./useLayoutDiff";
 import { useTimingResolution } from "./useTimingResolution";
 import { resolveTrend } from "./utils";
 
-export interface FlowPipelineInput {
+interface FlowPipelineInput {
   keyedParts: KeyedPart[];
 
   // The scalar used for trend detection:
@@ -36,7 +36,7 @@ export interface FlowPipelineInput {
   onAnimationsFinish?: () => void;
 }
 
-export interface FlowPipelineOutput {
+interface FlowPipelineOutput {
   resolvedSpinTiming: TimingConfig;
   resolvedOpacityTiming: TimingConfig;
   resolvedTransformTiming: TimingConfig;

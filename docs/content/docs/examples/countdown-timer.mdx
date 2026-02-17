@@ -1,0 +1,57 @@
+---
+title: Countdown Timer
+description: Animated countdown timer using TimeFlow
+---
+
+A countdown timer using `TimeFlow` in MM:SS mode. Set `trend={-1}` to force all digits to always spin downward.
+
+```tsx
+import { useEffect, useState } from 'react';
+import { View, Button } from 'react-native';
+import { TimeFlow } from 'number-flow-react-native/native';
+
+export default function CountdownTimer() {
+  const [remaining, setRemaining] = useState(300);
+  const [running, setRunning] = useState(false);
+
+  useEffect(() => {
+    if (!running || remaining <= 0) return;
+    const interval = setInterval(() => {
+      setRemaining(prev => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [running, remaining]);
+
+  const mins = Math.floor(remaining / 60);
+  const secs = remaining % 60;
+
+  return (
+    <View style={{ alignItems: 'center', gap: 24, padding: 32 }}>
+      <TimeFlow
+        minutes={mins}
+        seconds={secs}
+        style={{ fontSize: 72, fontWeight: '700', color: remaining < 10 ? '#e53e3e' : '#1a1a1a' }}
+        trend={-1}
+      />
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <Button
+          title={running ? 'Pause' : 'Start'}
+          onPress={() => setRunning(v => !v)}
+        />
+        <Button
+          title="Reset"
+          onPress={() => { setRunning(false); setRemaining(300); }}
+        />
+      </View>
+    </View>
+  );
+}
+```
+
+### Key points
+
+- Omitting `hours` hides the hours segment, giving a clean MM:SS display.
+- `trend={-1}` forces all digits to spin downward, matching the countdown direction.
+- The color changes to red when under 10 seconds remaining.
+
+<ExpoSnack title="Countdown Timer" />

@@ -1,0 +1,87 @@
+---
+title: Accessibility
+description: Screen reader support, Reduce Motion, and accessibility best practices
+---
+
+The library has built-in accessibility support for screen readers and motion preferences.
+
+## Screen reader support
+
+### Native components (NumberFlow, TimeFlow)
+
+Native components automatically set:
+
+- `accessibilityRole="text"` — tells VoiceOver/TalkBack this is a text element
+- `accessibilityLabel` — the full formatted value (e.g. "$42.99", "14:30:00")
+
+Screen readers read the complete formatted number rather than announcing individual digit changes. No additional setup needed.
+
+### Skia components (SkiaNumberFlow, SkiaTimeFlow)
+
+Skia components render on a Canvas, which is opaque to the accessibility system. They handle accessibility in two ways:
+
+1. **Auto-announcements** — Value changes are announced via `AccessibilityInfo.announceForAccessibility()`. This works for dynamic updates, but not for initial focus.
+
+2. **Focus-based reading** — For VoiceOver/TalkBack to read the value when the user focuses the element, set `accessibilityLabel` on the parent `Canvas`:
+
+```tsx
+import { Canvas } from '@shopify/react-native-skia';
+import { useFormattedValue } from 'number-flow-react-native';
+import { SkiaNumberFlow, useSkiaFont } from 'number-flow-react-native/skia';
+
+function AccessibleSkiaPrice({ value }: { value: number }) {
+  const font = useSkiaFont(require('./Inter.ttf'), 32);
+  const format = { style: 'currency', currency: 'USD' } as const;
+  const label = useFormattedValue(value, format);
+
+  return (
+    <Canvas
+      style={{ height: 50, width: 200 }}
+      accessible
+      accessibilityLabel={label}
+    >
+      <SkiaNumberFlow value={value} font={font} format={format} />
+    </Canvas>
+  );
+}
+```
+
+## Reduce Motion
+
+### respectMotionPreference prop
+
+All four components accept `respectMotionPreference` (default: `true`). When enabled and the device's "Reduce Motion" setting is on, animations are disabled and values update instantly.
+
+```tsx
+// Animations disabled when Reduce Motion is on (default behavior)
+<NumberFlow value={42} style={style} />
+
+// Force animations regardless of Reduce Motion
+<NumberFlow value={42} style={style} respectMotionPreference={false} />
+```
+
+### useCanAnimate hook
+
+For cases where you want to conditionally render entirely different UI:
+
+```tsx
+import { useCanAnimate } from 'number-flow-react-native';
+
+function Price({ value }: { value: number }) {
+  const canAnimate = useCanAnimate();
+
+  if (!canAnimate) {
+    return <Text>${value.toFixed(2)}</Text>;
+  }
+
+  return <NumberFlow value={value} format={currencyFormat} style={style} />;
+}
+```
+
+## Best practices
+
+- **Native components**: No action needed — accessibility is automatic
+- **Skia components**: Always set `accessibilityLabel` on the parent `Canvas` using `useFormattedValue`
+- **Prefix/suffix**: These are included in the generated accessibility label automatically
+- **TimeFlow**: The label includes the full time string (e.g. "14:30:00")
+- **Don't disable motion preferences** without a strong reason — `respectMotionPreference={false}` should be rare

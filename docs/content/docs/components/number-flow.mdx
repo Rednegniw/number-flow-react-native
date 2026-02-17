@@ -1,0 +1,95 @@
+---
+title: NumberFlow
+description: View-based animated number component with full Intl.NumberFormat support
+---
+
+`NumberFlow` is the View-based animated number component. It renders using React Native Animated Views with Reanimated SharedValues — no extra dependencies beyond `react-native-reanimated`. Each digit position contains a virtual wheel of digits 0–9, and transitions are achieved by translating the wheel's Y position.
+
+## Import
+
+```tsx
+import { NumberFlow } from 'number-flow-react-native/native';
+```
+
+## Basic Usage
+
+```tsx
+import { useState } from 'react';
+import { View, Button } from 'react-native';
+import { NumberFlow } from 'number-flow-react-native/native';
+
+function PriceCounter() {
+  const [price, setPrice] = useState(42.99);
+
+  return (
+    <View style={{ alignItems: 'center', gap: 16, padding: 32 }}>
+      <NumberFlow
+        value={price}
+        format={{ style: 'currency', currency: 'USD' }}
+        style={{ fontSize: 48, fontWeight: '600', color: '#1a1a1a' }}
+      />
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <Button title="-1" onPress={() => setPrice(v => v - 1)} />
+        <Button title="+1" onPress={() => setPrice(v => v + 1)} />
+        <Button title="Random" onPress={() => setPrice(Math.random() * 100)} />
+      </View>
+    </View>
+  );
+}
+```
+
+Every time `price` changes, each digit rolls independently to its new value.
+
+## Props
+
+### Value props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `value` | `number` | **(required)** | Numeric value to display. |
+| `format` | `Intl.NumberFormatOptions` | `undefined` | Options passed to `Intl.NumberFormat` — currencies, percentages, compact notation, scientific, units, etc. |
+| `locales` | `Intl.LocalesArgument` | `undefined` | Locale(s) for `Intl.NumberFormat`. Controls grouping separators, decimal marks, currency symbol placement, and numeral system. |
+
+### Style props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `style` | `NumberFlowStyle` | **(required)** | Text styling. `fontSize` is required; `fontFamily` defaults to the platform system font. Accepts any `TextStyle` property. |
+| `textAlign` | `"left" \| "right" \| "center"` | `"left"` | Text alignment within the container. |
+| `prefix` | `string` | `""` | Static string prepended before the number. Animates in/out when added or removed. |
+| `suffix` | `string` | `""` | Static string appended after the number. Animates in/out when added or removed. |
+| `digits` | `Record<number, { max: number }>` | `undefined` | Per-position digit constraints. Position `0` = ones, `1` = tens, `2` = hundreds, etc. Each entry defines `{ max: N }` (1–9) as the highest value for that digit wheel. |
+| `containerStyle` | `ViewStyle` | `undefined` | Style applied to the outer container `View`. |
+
+### Animation behavior props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `trend` | `Trend \| ((prev: number, next: number) => Trend)` | auto | Digit spin direction. `1` = always up, `-1` = always down, `0` = shortest path per digit. Or a function receiving `(prev, next)` returning the direction. Auto-detects from value changes when omitted. |
+| `animated` | `boolean` | `true` | Set to `false` to disable all animations and update instantly. |
+| `respectMotionPreference` | `boolean` | `true` | Disables animations when the device "Reduce Motion" setting is on. |
+| `continuous` | `boolean` | `false` | When `true`, unchanged lower-significance digits spin through a full cycle during transitions, making the number appear to pass through intermediate values. |
+| `mask` | `boolean` | `true` | Enable edge gradient fade masking on digit slots. Uses `MaskedView` with View-strip gradients. |
+| `transformTiming` | `TimingConfig` | 900ms deceleration | Timing for layout transforms (position, width changes). Uses NumberFlow's signature deceleration curve. |
+| `spinTiming` | `TimingConfig` | Falls back to `transformTiming` | Timing for digit spin/rolling. |
+| `opacityTiming` | `TimingConfig` | 450ms ease-out | Timing for enter/exit opacity transitions. |
+| `onAnimationsStart` | `() => void` | `undefined` | Called when update animations begin. |
+| `onAnimationsFinish` | `() => void` | `undefined` | Called when all update animations complete. |
+
+### Type references
+
+```tsx
+type TimingConfig = {
+  duration: number;
+  easing: EasingFunction; // (t: 0→1) => 0→1
+};
+
+type Trend = -1 | 0 | 1;
+type TrendProp = Trend | ((prev: number, next: number) => Trend);
+```
+
+## Accessibility
+
+`NumberFlow` automatically sets `accessibilityRole="text"` and an `accessibilityLabel` with the full formatted value. Screen readers announce the complete number (e.g. "$42.99") rather than individual digit changes.
+
+<ExpoSnack title="NumberFlow Basic" />

@@ -1,0 +1,226 @@
+---
+title: Currency Converter
+description: Animated currency conversion between multiple currencies
+---
+
+A minimal currency converter with large animated values, locale-aware formatting, and a clean card-based layout. Watch the decimal separators, currency symbols, and digit grouping animate when switching between currencies.
+
+```tsx
+import { useState } from 'react';
+import { View, Text, Pressable, Platform } from 'react-native';
+import { NumberFlow } from 'number-flow-react-native/native';
+
+const currencies = [
+  { code: 'USD', locale: 'en-US', rate: 1, flag: '🇺🇸' },
+  { code: 'EUR', locale: 'de-DE', rate: 0.92, flag: '🇪🇺' },
+  { code: 'GBP', locale: 'en-GB', rate: 0.79, flag: '🇬🇧' },
+  { code: 'JPY', locale: 'ja-JP', rate: 149.5, flag: '🇯🇵' },
+];
+
+const amounts = [50, 100, 500, 1000, 5000];
+
+export default function CurrencyConverter() {
+  const [amount, setAmount] = useState(100);
+  const [fromIndex, setFromIndex] = useState(0);
+  const [toIndex, setToIndex] = useState(1);
+
+  const from = currencies[fromIndex];
+  const to = currencies[toIndex];
+  const converted = (amount / from.rate) * to.rate;
+
+  const swap = () => {
+    setFromIndex(toIndex);
+    setToIndex(fromIndex);
+  };
+
+  return (
+    <View style={{
+      flex: 1,
+      justifyContent: 'center',
+      backgroundColor: '#fafaf9',
+      padding: 24,
+      gap: 20,
+    }}>
+      {/* From card */}
+      <View style={{
+        backgroundColor: '#ffffff',
+        borderRadius: 20,
+        padding: 24,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 12,
+        elevation: 3,
+        gap: 12,
+      }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text style={{ fontSize: 13, fontWeight: '600', color: '#a8a29e', letterSpacing: 1, textTransform: 'uppercase' }}>
+            From
+          </Text>
+          <Text style={{ fontSize: 24 }}>{from.flag}</Text>
+        </View>
+        <NumberFlow
+          value={amount}
+          format={{ style: 'currency', currency: from.code }}
+          locales={from.locale}
+          style={{
+            fontSize: 44,
+            fontFamily: Platform.OS === 'ios' ? 'SF Pro Display' : 'sans-serif',
+            fontWeight: '700',
+            color: '#1c1917',
+            letterSpacing: -1,
+          }}
+        />
+        <CurrencyPicker
+          currencies={currencies}
+          selectedIndex={fromIndex}
+          onChange={setFromIndex}
+        />
+      </View>
+
+      {/* Swap button */}
+      <View style={{ alignItems: 'center', marginVertical: -8, zIndex: 1 }}>
+        <Pressable
+          onPress={swap}
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: 22,
+            backgroundColor: '#1c1917',
+            alignItems: 'center',
+            justifyContent: 'center',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.15,
+            shadowRadius: 8,
+            elevation: 4,
+          }}
+        >
+          <Text style={{ color: '#fff', fontSize: 18 }}>⇅</Text>
+        </Pressable>
+      </View>
+
+      {/* To card */}
+      <View style={{
+        backgroundColor: '#1c1917',
+        borderRadius: 20,
+        padding: 24,
+        gap: 12,
+      }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text style={{ fontSize: 13, fontWeight: '600', color: '#78716c', letterSpacing: 1, textTransform: 'uppercase' }}>
+            To
+          </Text>
+          <Text style={{ fontSize: 24 }}>{to.flag}</Text>
+        </View>
+        <NumberFlow
+          value={converted}
+          format={{ style: 'currency', currency: to.code }}
+          locales={to.locale}
+          style={{
+            fontSize: 44,
+            fontFamily: Platform.OS === 'ios' ? 'SF Pro Display' : 'sans-serif',
+            fontWeight: '700',
+            color: '#fafaf9',
+            letterSpacing: -1,
+          }}
+        />
+        <CurrencyPicker
+          currencies={currencies}
+          selectedIndex={toIndex}
+          onChange={setToIndex}
+          dark
+        />
+      </View>
+
+      {/* Amount presets */}
+      <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 8 }}>
+        {amounts.map(a => {
+          const isActive = a === amount;
+
+          return (
+            <Pressable
+              key={a}
+              onPress={() => setAmount(a)}
+              style={{
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+                borderRadius: 999,
+                backgroundColor: isActive ? '#1c1917' : '#f5f5f4',
+              }}
+            >
+              <Text style={{
+                fontSize: 13,
+                fontWeight: '600',
+                color: isActive ? '#fafaf9' : '#78716c',
+              }}>
+                {a.toLocaleString()}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+function CurrencyPicker({
+  currencies,
+  selectedIndex,
+  onChange,
+  dark = false,
+}: {
+  currencies: typeof currencies;
+  selectedIndex: number;
+  onChange: (index: number) => void;
+  dark?: boolean;
+}) {
+  return (
+    <View style={{ flexDirection: 'row', gap: 6 }}>
+      {currencies.map((c, i) => {
+        const isActive = i === selectedIndex;
+        const activeBg = dark ? '#292524' : '#f5f5f4';
+        const activeBorder = dark ? '#78716c' : '#d6d3d1';
+
+        return (
+          <Pressable
+            key={c.code}
+            onPress={() => onChange(i)}
+            style={{
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 8,
+              backgroundColor: isActive ? activeBg : 'transparent',
+              borderWidth: 1,
+              borderColor: isActive ? activeBorder : 'transparent',
+            }}
+          >
+            <Text style={{
+              fontSize: 13,
+              fontWeight: isActive ? '700' : '500',
+              color: dark
+                ? (isActive ? '#fafaf9' : '#57534e')
+                : (isActive ? '#1c1917' : '#a8a29e'),
+            }}>
+              {c.code}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+```
+
+### Features demonstrated
+
+- **Locale-aware formatting** — each currency uses its native locale (`de-DE` for EUR, `ja-JP` for JPY), so decimal separators and grouping adapt automatically
+- **JPY auto-drops decimals** — `Intl.NumberFormat` knows JPY doesn't use fractional units, so the decimal and fraction digits animate out when switching to Yen
+- **Symbol animations** — switching from `$` to `€` or `¥` triggers enter/exit animations on the currency symbol
+- **Light/dark card contrast** — the "From" and "To" cards use inverted color schemes for visual separation
+
+<Callout type="info">
+When switching from USD (`$100.00`) to JPY (`¥14,950`), several things animate simultaneously: the currency symbol changes, the decimal point and fraction digits exit, and the integer digits change. All of these are driven by the character keying system — the library assigns stable keys to each character position, so React knows which characters are entering, exiting, or updating.
+</Callout>
+
+<ExpoSnack title="Currency Converter" />

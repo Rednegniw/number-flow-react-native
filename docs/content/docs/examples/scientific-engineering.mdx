@@ -1,0 +1,55 @@
+---
+title: Scientific & Engineering Notation
+description: Animated numbers in scientific and engineering notation with superscript exponents
+---
+
+`NumberFlow` supports scientific and engineering notation via `Intl.NumberFormat`. Exponents are rendered automatically as superscripts at 60% scale.
+
+```tsx
+import { useState } from 'react';
+import { View, Button, Text } from 'react-native';
+import { NumberFlow } from 'number-flow-react-native/native';
+
+export default function ScientificEngineering() {
+  const [value, setValue] = useState(6.022e23);
+
+  return (
+    <View style={{ alignItems: 'center', gap: 32, padding: 32 }}>
+      {/* Scientific notation */}
+      <View style={{ alignItems: 'center', gap: 8 }}>
+        <Text style={{ fontSize: 14, color: '#666' }}>Scientific</Text>
+        <NumberFlow
+          value={value}
+          format={{ notation: 'scientific', maximumFractionDigits: 3 }}
+          style={{ fontSize: 36, fontFamily: 'System', color: '#000' }}
+        />
+      </View>
+
+      {/* Engineering notation */}
+      <View style={{ alignItems: 'center', gap: 8 }}>
+        <Text style={{ fontSize: 14, color: '#666' }}>Engineering</Text>
+        <NumberFlow
+          value={value}
+          format={{ notation: 'engineering', maximumFractionDigits: 2 }}
+          style={{ fontSize: 36, fontFamily: 'System', color: '#000' }}
+        />
+      </View>
+
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <Button title="6.022e23" onPress={() => setValue(6.022e23)} />
+        <Button title="1.38e-23" onPress={() => setValue(1.38e-23)} />
+        <Button title="9.81" onPress={() => setValue(9.81)} />
+        <Button title="299792458" onPress={() => setValue(299792458)} />
+      </View>
+    </View>
+  );
+}
+```
+
+### How it works
+
+- The exponent part (e.g. `E23`) is detected during formatting and rendered at 60% of the base font size using a pivot-scale transform.
+- Exponent digits roll independently, just like the mantissa digits.
+- Engineering notation constrains exponents to multiples of 3 (e.g. `6.022E23` → `602.2E21` in engineering).
+
+<ExpoSnack title="Scientific & Engineering" />

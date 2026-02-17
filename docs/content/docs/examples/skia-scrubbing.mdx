@@ -1,0 +1,61 @@
+---
+title: Skia Worklet Scrubbing
+description: Zero-latency UI thread updates with SharedValue-driven scrubbing
+---
+
+The `sharedValue` prop on `SkiaNumberFlow` enables worklet-driven rendering — the number display updates entirely on the UI thread without crossing the JS bridge. This means updates at 120Hz with zero frame drops.
+
+```tsx
+import { View, Text } from 'react-native';
+import { Canvas } from '@shopify/react-native-skia';
+import { useSharedValue, useDerivedValue } from 'react-native-reanimated';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { SkiaNumberFlow, useSkiaFont } from 'number-flow-react-native/skia';
+
+export default function ScrubExample() {
+  const progress = useSharedValue(50);
+  const font = useSkiaFont(require('./assets/Inter-Bold.otf'), 48);
+
+  const formatted = useDerivedValue(() => {
+    return progress.value.toFixed(1);
+  });
+
+  const pan = Gesture.Pan().onUpdate((e) => {
+    progress.value = Math.max(0, Math.min(100, 50 + e.translationX / 3));
+  });
+
+  return (
+    <View style={{ padding: 32, gap: 16 }}>
+      <Canvas style={{ height: 60, width: 300 }}>
+        <SkiaNumberFlow
+          sharedValue={formatted}
+          font={font}
+          color="#1a1a1a"
+          y={48}
+          width={300}
+          textAlign="center"
+        />
+      </Canvas>
+
+      <GestureDetector gesture={pan}>
+        <View style={{ height: 60, backgroundColor: '#f0f0f0', borderRadius: 12, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ color: '#999' }}>Drag to scrub</Text>
+        </View>
+      </GestureDetector>
+    </View>
+  );
+}
+```
+
+### How scrubbing works
+
+1. You provide a `SharedValue<string>` — a pre-formatted string like `"50.0"` or `"$1,234.56"`.
+2. On the UI thread, the worklet reads the string, extracts digits, and drives Skia rendering directly.
+3. `useScrubbingBridge` periodically syncs the digit count back to the JS thread so React can update the layout (number of slots).
+4. `useScrubbingLayout` computes per-slot positions from the worklet string.
+
+<Callout type="info">
+The `scrubDigitWidthPercentile` prop (default: `0.75`) controls how wide each digit slot is during scrubbing. Since digit values change rapidly during gestures, the component needs a fixed width per slot. The percentile picks a width between the narrowest (`0`) and widest (`1`) digit glyph.
+</Callout>
+
+<ExpoSnack title="Skia Scrubbing" />

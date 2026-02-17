@@ -1,42 +1,40 @@
 ---
-title: Getting Started
-description: Install and start using number-flow-react-native
+title: Overview
+description: Animated number transitions for React Native, inspired by NumberFlow
 ---
 
-## Installation
+**Number Flow React Native** is an animated number transition library for React Native. Each digit rolls independently to its target value using virtual digit wheels — columns of digits 0-9 stacked vertically, translated along the Y axis to reveal the correct digit. The library is inspired by [NumberFlow](https://number-flow.barvian.me/) for the web, and ships two rendering backends (View-based and Skia) that share a common core.
 
-```bash
-npm install number-flow-react-native react-native-reanimated
-```
+## Features
 
-For Skia components, also install:
+- Smooth digit-by-digit rolling with automatic direction detection
+- Two renderers: View-based (`NumberFlow`, `TimeFlow`) and Skia (`SkiaNumberFlow`, `SkiaTimeFlow`)
+- Full `Intl.NumberFormat` support (currencies, percentages, compact, units, locales)
+- Scientific and engineering notation with superscript exponents
+- `TimeFlow` for animated HH:MM:SS displays (12h/24h, countdown)
+- Continuous mode — unchanged lower digits cascade through full rotations
+- Worklet-driven scrubbing for zero-latency UI thread updates (Skia)
+- Prefix and suffix text with animated enter/exit
+- Per-position digit constraints (e.g. minutes tens: 0-5)
+- 34 Unicode numeral systems (Arabic-Indic, Devanagari, Thai, CJK, etc.)
+- Accessibility support (screen reader labels + announcements)
+- Respects device Reduce Motion setting
+- Hermes `formatToParts()` compatibility layer
+- StrictMode safe
 
-```bash
-npm install @shopify/react-native-skia
-```
+## Native vs Skia
 
-## Quick Start
+| Feature | Native (View) | Skia (Canvas) |
+|---|---|---|
+| Extra dependency | None | @shopify/react-native-skia |
+| Components | NumberFlow, TimeFlow | SkiaNumberFlow, SkiaTimeFlow |
+| Rendering | React Native Animated Views | Skia Canvas |
+| Worklet scrubbing | Not available | Yes (`sharedValue` prop) |
+| Text styling | `TextStyle` (fontFamily, system fonts) | `SkFont` (requires font file) |
+| Gradient mask | MaskedView + View strips | Skia LinearGradient + DstIn blending |
+| Expo Snack | Full support | Limited (Skia WASM ~3MB) |
+| Best for | Standard UI, quick setup | Charts, complex Skia UIs, many instances |
 
-```tsx
-import { NumberFlow } from 'number-flow-react-native/native';
+## Attribution
 
-function PriceDisplay() {
-  const [price, setPrice] = useState(42.99);
-
-  return (
-    <NumberFlow
-      value={price}
-      format={{ minimumFractionDigits: 2 }}
-      style={{ fontFamily: 'System', fontSize: 32, color: '#000' }}
-      prefix="$"
-    />
-  );
-}
-```
-
-## Components
-
-- **NumberFlow** / **SkiaNumberFlow** — Animated number display
-- **TimeFlow** / **SkiaTimeFlow** — Animated time display (HH:MM:SS)
-
-The `native` variants use React Native Animated Views. The `skia` variants render on a Skia Canvas for higher performance.
+This library is a React Native reimplementation inspired by [NumberFlow](https://number-flow.barvian.me/) by [Maxwell Barvian](https://github.com/barvian). The animation patterns, easing curves, and digit-rolling approach are adapted from the original web implementation. All code in this library is original.

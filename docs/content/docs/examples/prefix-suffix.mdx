@@ -1,0 +1,40 @@
+---
+title: Prefix & Suffix
+description: Static text before and after animated numbers
+---
+
+The `prefix` and `suffix` props add static text that animates in and out alongside the number. Useful for labels, units, and decorative text.
+
+```tsx
+import { useState } from 'react';
+import { View, Button } from 'react-native';
+import { NumberFlow } from 'number-flow-react-native/native';
+
+export default function GameScore() {
+  const [score, setScore] = useState(0);
+
+  return (
+    <View style={{ alignItems: 'center', gap: 16, padding: 32 }}>
+      <NumberFlow
+        value={score}
+        prefix="Score: "
+        suffix=" pts"
+        style={{ fontSize: 36, fontWeight: '700', color: '#1a1a1a' }}
+      />
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <Button title="+10" onPress={() => setScore(v => v + 10)} />
+        <Button title="+100" onPress={() => setScore(v => v + 100)} />
+        <Button title="Reset" onPress={() => setScore(0)} />
+      </View>
+    </View>
+  );
+}
+```
+
+### How it works
+
+- Prefix and suffix characters are treated as static symbols in the layout engine.
+- When a prefix or suffix is added or removed (e.g. changing from `""` to `"Score: "`), each character enters with an opacity + vertical slide animation.
+- Prefix/suffix characters are keyed independently, so changing from `" pts"` to `" points"` animates only the differing characters.
+
+<ExpoSnack title="Prefix & Suffix" />

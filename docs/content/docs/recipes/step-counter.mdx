@@ -1,0 +1,160 @@
+---
+title: Step Counter
+description: Animated step counter with daily goal progress
+---
+
+A clean health-app style step counter with large rounded typography, an animated progress bar, and the signature odometer roll for accumulating step counts.
+
+```tsx
+import { useState } from 'react';
+import { View, Text, Pressable, Platform } from 'react-native';
+import { NumberFlow } from 'number-flow-react-native/native';
+
+const DAILY_GOAL = 10000;
+
+export default function StepCounter() {
+  const [steps, setSteps] = useState(4823);
+
+  const progress = Math.min(steps / DAILY_GOAL, 1);
+  const goalReached = progress >= 1;
+
+  const accentColor = goalReached ? '#22c55e' : '#6366f1';
+  const accentBg = goalReached ? '#052e16' : '#1e1b4b';
+
+  const simulateWalk = () => {
+    const newSteps = Math.floor(Math.random() * 200) + 50;
+    setSteps(v => v + newSteps);
+  };
+
+  return (
+    <View style={{
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#0a0a0a',
+      padding: 32,
+      gap: 40,
+    }}>
+      {/* Header */}
+      <View style={{ alignItems: 'center', gap: 4 }}>
+        <Text style={{
+          fontSize: 13,
+          fontWeight: '600',
+          color: '#525252',
+          letterSpacing: 4,
+          textTransform: 'uppercase',
+        }}>
+          Today
+        </Text>
+        <NumberFlow
+          value={steps}
+          continuous
+          style={{
+            fontSize: 64,
+            fontFamily: Platform.OS === 'ios' ? 'SF Pro Rounded' : 'sans-serif',
+            fontWeight: '800',
+            color: '#fafafa',
+            letterSpacing: -1,
+          }}
+        />
+        <Text style={{
+          fontSize: 17,
+          fontWeight: '500',
+          color: '#525252',
+          marginTop: -4,
+        }}>
+          of {DAILY_GOAL.toLocaleString()} steps
+        </Text>
+      </View>
+
+      {/* Progress bar */}
+      <View style={{ width: '100%', maxWidth: 320, gap: 8 }}>
+        <View style={{
+          height: 6,
+          backgroundColor: '#1c1c1e',
+          borderRadius: 3,
+          overflow: 'hidden',
+        }}>
+          <View style={{
+            height: '100%',
+            width: `${progress * 100}%`,
+            backgroundColor: accentColor,
+            borderRadius: 3,
+          }} />
+        </View>
+
+        {/* Percentage badge */}
+        <View style={{ alignItems: 'center' }}>
+          <View style={{
+            paddingHorizontal: 14,
+            paddingVertical: 6,
+            borderRadius: 999,
+            backgroundColor: accentBg,
+          }}>
+            <NumberFlow
+              value={progress}
+              format={{ style: 'percent', minimumFractionDigits: 1 }}
+              style={{
+                fontSize: 15,
+                fontWeight: '700',
+                color: accentColor,
+                fontFamily: Platform.OS === 'ios' ? 'SF Pro Rounded' : 'sans-serif',
+              }}
+            />
+          </View>
+        </View>
+      </View>
+
+      {/* Action buttons */}
+      <View style={{ flexDirection: 'row', gap: 12 }}>
+        <Pressable
+          onPress={simulateWalk}
+          style={{
+            paddingHorizontal: 28,
+            paddingVertical: 14,
+            borderRadius: 14,
+            backgroundColor: accentColor,
+          }}
+        >
+          <Text style={{
+            color: '#fff',
+            fontWeight: '700',
+            fontSize: 15,
+            letterSpacing: 0.3,
+          }}>
+            Simulate Walk
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => setSteps(0)}
+          style={{
+            paddingHorizontal: 28,
+            paddingVertical: 14,
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: '#262626',
+          }}
+        >
+          <Text style={{ color: '#737373', fontWeight: '600', fontSize: 15 }}>
+            Reset
+          </Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+```
+
+### Features demonstrated
+
+- **Rounded system font** — `'SF Pro Rounded'` on iOS gives numbers a friendly, health-app feel
+- **Continuous mode** — the `continuous` prop creates an odometer roll as steps accumulate, where unchanged lower digits cascade
+- **Dynamic theming** — accent color shifts from indigo to green when the daily goal is reached
+- **Percentage badge** — a secondary `NumberFlow` with `format={{ style: 'percent' }}` shows progress in a pill
+
+<Callout type="info">
+The `continuous` prop is especially satisfying for counters that increment by irregular amounts. Going from `4823` to `4971` rolls digits at different speeds — the thousands digit barely moves while the ones digit spins rapidly, creating a mechanical counter effect.
+</Callout>
+
+<ExpoSnack title="Step Counter" />

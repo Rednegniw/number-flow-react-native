@@ -1,0 +1,51 @@
+---
+title: Time Display
+description: Animated clock with TimeFlow
+---
+
+`TimeFlow` renders animated HH:MM:SS displays with independently rolling digit segments. It auto-constrains digits (tens of minutes: 0–5, tens of hours: 0–2) for correct clock behavior.
+
+```tsx
+import { useEffect, useState } from 'react';
+import { View, Text, Button } from 'react-native';
+import { TimeFlow } from 'number-flow-react-native/native';
+
+export default function TimeDisplay() {
+  const [now, setNow] = useState(Date.now());
+  const [is24h, setIs24h] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <View style={{ alignItems: 'center', gap: 24, padding: 32 }}>
+      {/* 24-hour clock */}
+      <View style={{ alignItems: 'center', gap: 4 }}>
+        <Text style={{ fontSize: 14, color: '#666' }}>
+          {is24h ? '24-hour' : '12-hour'}
+        </Text>
+        <TimeFlow
+          timestamp={now}
+          is24Hour={is24h}
+          style={{ fontSize: 56, fontWeight: '600', color: '#1a1a1a' }}
+        />
+      </View>
+
+      <Button
+        title={is24h ? 'Switch to 12h' : 'Switch to 24h'}
+        onPress={() => setIs24h(v => !v)}
+      />
+    </View>
+  );
+}
+```
+
+### Segment visibility
+
+- **Full time:** Pass `hours`, `minutes`, and `seconds` (or use `timestamp`)
+- **Hours + minutes:** Pass `hours` and `minutes`, omit `seconds`
+- **Minutes + seconds:** Omit `hours`, pass `minutes` and `seconds`
+
+<ExpoSnack title="Time Display" />

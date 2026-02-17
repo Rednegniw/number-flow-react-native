@@ -1,0 +1,51 @@
+---
+title: Continuous Mode
+description: Full-rotation cascading digits for odometer-like transitions
+---
+
+Set `continuous={true}` to make unchanged lower-significance digits spin through a full rotation during transitions, creating an odometer-like effect.
+
+```tsx
+import { useState } from 'react';
+import { View, Button, Text } from 'react-native';
+import { NumberFlow } from 'number-flow-react-native/native';
+
+export default function ContinuousMode() {
+  const [value, setValue] = useState(100);
+
+  return (
+    <View style={{ alignItems: 'center', gap: 24, padding: 32 }}>
+      {/* With continuous mode */}
+      <View style={{ alignItems: 'center', gap: 8 }}>
+        <Text style={{ fontSize: 14, color: '#666' }}>continuous={'{true}'}</Text>
+        <NumberFlow
+          value={value}
+          continuous
+          style={{ fontSize: 48, fontFamily: 'System', color: '#000' }}
+        />
+      </View>
+
+      {/* Without continuous mode */}
+      <View style={{ alignItems: 'center', gap: 8 }}>
+        <Text style={{ fontSize: 14, color: '#666' }}>continuous={'{false}'}</Text>
+        <NumberFlow
+          value={value}
+          style={{ fontSize: 48, fontFamily: 'System', color: '#000' }}
+        />
+      </View>
+
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <Button title="+1" onPress={() => setValue(v => v + 1)} />
+        <Button title="+10" onPress={() => setValue(v => v + 10)} />
+        <Button title="+100" onPress={() => setValue(v => v + 100)} />
+      </View>
+    </View>
+  );
+}
+```
+
+### How it works
+
+When `continuous` is enabled and a higher digit changes, lower digits that haven't changed still spin through a full 0–9 cycle. Going from `100` to `200`, the ones and tens digits both cascade through a complete rotation even though their final value hasn't changed. This creates the visual impression of the number "passing through" all intermediate values.
+
+<ExpoSnack title="Continuous Mode" />

@@ -1,0 +1,195 @@
+---
+title: Countdown App
+description: Build a complete countdown timer with start, pause, and reset
+---
+
+A polished Pomodoro-style countdown with large monospaced digits, pill-shaped controls, and a visual urgency shift in the final seconds.
+
+```tsx
+import { useEffect, useRef, useState } from 'react';
+import { View, Text, Pressable, Platform } from 'react-native';
+import { TimeFlow } from 'number-flow-react-native/native';
+
+const PRESETS = [
+  { label: '1 min', seconds: 60 },
+  { label: '5 min', seconds: 300 },
+  { label: '10 min', seconds: 600 },
+  { label: '25 min', seconds: 1500 },
+];
+
+export default function CountdownApp() {
+  const [totalSeconds, setTotalSeconds] = useState(300);
+  const [remaining, setRemaining] = useState(300);
+  const [running, setRunning] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (!running || remaining <= 0) {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (remaining <= 0) setRunning(false);
+      return;
+    }
+
+    intervalRef.current = setInterval(() => {
+      setRemaining(prev => Math.max(0, prev - 1));
+    }, 1000);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [running, remaining]);
+
+  const mins = Math.floor(remaining / 60);
+  const secs = remaining % 60;
+  const isLow = remaining > 0 && remaining <= 10;
+  const progress = remaining / totalSeconds;
+
+  const handleReset = () => {
+    setRunning(false);
+    setRemaining(totalSeconds);
+  };
+
+  const handlePreset = (seconds: number) => {
+    setRunning(false);
+    setTotalSeconds(seconds);
+    setRemaining(seconds);
+  };
+
+  const buttonLabel = running
+    ? 'Pause'
+    : remaining < totalSeconds
+      ? 'Resume'
+      : 'Start';
+
+  return (
+    <View style={{
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#09090b',
+      padding: 32,
+    }}>
+      {/* Timer ring */}
+      <View style={{
+        width: 300,
+        height: 300,
+        borderRadius: 150,
+        borderWidth: 4,
+        borderColor: isLow ? '#ef4444' : `rgba(168, 85, 247, ${0.2 + progress * 0.8})`,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#18181b',
+        shadowColor: isLow ? '#ef4444' : '#a855f7',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.4,
+        shadowRadius: 40,
+      }}>
+        <TimeFlow
+          minutes={mins}
+          seconds={secs}
+          style={{
+            fontSize: 72,
+            fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+            fontWeight: '200',
+            color: isLow ? '#ef4444' : '#fafafa',
+            letterSpacing: 2,
+          }}
+          trend={-1}
+          continuous={isLow}
+        />
+        <Text style={{
+          fontSize: 13,
+          fontWeight: '500',
+          color: '#71717a',
+          letterSpacing: 3,
+          textTransform: 'uppercase',
+          marginTop: 8,
+        }}>
+          remaining
+        </Text>
+      </View>
+
+      {/* Controls */}
+      <View style={{ flexDirection: 'row', gap: 12, marginTop: 48 }}>
+        <Pressable
+          onPress={() => setRunning(v => !v)}
+          style={{
+            paddingHorizontal: 40,
+            paddingVertical: 14,
+            borderRadius: 999,
+            backgroundColor: running ? '#ef4444' : '#a855f7',
+          }}
+        >
+          <Text style={{
+            color: '#fff',
+            fontWeight: '600',
+            fontSize: 16,
+            letterSpacing: 0.5,
+          }}>
+            {buttonLabel}
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={handleReset}
+          style={{
+            paddingHorizontal: 32,
+            paddingVertical: 14,
+            borderRadius: 999,
+            borderWidth: 1,
+            borderColor: '#3f3f46',
+          }}
+        >
+          <Text style={{ fontWeight: '600', fontSize: 16, color: '#a1a1aa' }}>
+            Reset
+          </Text>
+        </Pressable>
+      </View>
+
+      {/* Presets */}
+      <View style={{ flexDirection: 'row', gap: 8, marginTop: 32 }}>
+        {PRESETS.map(p => {
+          const isActive = p.seconds === totalSeconds;
+
+          return (
+            <Pressable
+              key={p.label}
+              onPress={() => handlePreset(p.seconds)}
+              style={{
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+                borderRadius: 999,
+                backgroundColor: isActive ? '#27272a' : 'transparent',
+                borderWidth: 1,
+                borderColor: isActive ? '#a855f7' : '#27272a',
+              }}
+            >
+              <Text style={{
+                fontSize: 13,
+                color: isActive ? '#e4e4e7' : '#71717a',
+                fontWeight: '500',
+              }}>
+                {p.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+```
+
+### Features demonstrated
+
+- **Monospaced digits** — `fontFamily: 'Menlo'` (iOS) / `'monospace'` (Android) gives the timer a clock-face aesthetic
+- **Urgency shift** — border glow and text color snap to red in the final 10 seconds
+- **Cascading roll** — `continuous={isLow}` triggers the odometer effect only during urgency
+- **Ring border** — opacity scales with `progress`, so the ring fades as time runs out
+- **Pill buttons** — `borderRadius: 999` creates capsule-shaped controls
+
+<Callout type="info">
+The `trend={-1}` prop ensures digits always spin downward, matching the intuition of a countdown. Without it, going from `10` to `09` would spin the tens digit *up* (shortest path from 1→0), which feels wrong for a timer.
+</Callout>
+
+<ExpoSnack title="Countdown App" />

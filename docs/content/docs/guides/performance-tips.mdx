@@ -1,0 +1,82 @@
+---
+title: Performance Tips
+description: Optimization strategies for smooth 120 FPS animations
+---
+
+The library is designed for 120 FPS out of the box, but here are tips for getting the best performance.
+
+## Rendering optimization
+
+### Use stable format objects
+
+`Intl.NumberFormatOptions` objects trigger re-formatting when their reference changes. Define them outside the component or memoize them:
+
+```tsx
+// Good: stable reference
+const currencyFormat = { style: 'currency', currency: 'USD' } as const;
+
+function Price({ value }: { value: number }) {
+  return <NumberFlow value={value} format={currencyFormat} style={style} />;
+}
+
+// Bad: creates new object every render
+function Price({ value }: { value: number }) {
+  return (
+    <NumberFlow
+      value={value}
+      format={{ style: 'currency', currency: 'USD' }}
+      style={style}
+    />
+  );
+}
+```
+
+The same applies to `TimingConfig` objects — define `transformTiming`, `spinTiming`, and `opacityTiming` outside the render function.
+
+### Avoid unnecessary re-renders
+
+`NumberFlow` is a controlled component — it re-renders when its parent re-renders. If the parent renders frequently but the number value hasn't changed, wrap the component or memoize the parent to avoid unnecessary layout recalculations:
+
+```tsx
+const MemoizedNumber = React.memo(function MemoizedNumber({ value }: { value: number }) {
+  return (
+    <NumberFlow
+      value={value}
+      format={currencyFormat}
+      style={style}
+    />
+  );
+});
+```
+
+## Choosing the right renderer
+
+### Skia for many instances
+
+If you're rendering many animated numbers simultaneously (e.g. a table, dashboard, or chart), prefer `SkiaNumberFlow` inside a single `Canvas`. A single Canvas with 10 `SkiaNumberFlow` components is significantly cheaper than 10 separate `NumberFlow` View trees.
+
+### Worklet scrubbing for high-frequency updates
+
+When the value changes at high frequency (gesture-driven, sensor data, timers faster than 100ms), use `SkiaNumberFlow` with the `sharedValue` prop. This keeps all updates on the UI thread:
+
+```tsx
+const formatted = useDerivedValue(() => `${speed.value.toFixed(0)}`);
+
+<SkiaNumberFlow sharedValue={formatted} font={font} color="#000" />
+```
+
+Without `sharedValue`, each value change triggers a React re-render on the JS thread, which adds latency and can cause frame drops during fast gestures.
+
+## Built-in optimizations
+
+### Progressive mount
+
+Both Native and Skia components use **progressive mount** — on the first frame, they render a plain `Text` element (Native) or `Group` (Skia) with the static value. The full animated slot tree is swapped in on the next frame via `requestAnimationFrame`. This avoids the ~80ms cost of instantiating dozens of animated hooks during the initial mount, making the component appear instantly.
+
+### Fixed slot pool
+
+The library pre-allocates a pool of 20 slots with SharedValues. When digit count changes (e.g. 99 → 100), no new animated components are created — an existing slot from the pool is activated. This eliminates the cost of mounting/unmounting Reanimated animated components during transitions.
+
+### Reduce Motion
+
+When `respectMotionPreference={true}` (the default), animations are completely skipped for users with Reduce Motion enabled. This isn't just a visual change — it eliminates all animation overhead (no SharedValue updates, no easing computations).

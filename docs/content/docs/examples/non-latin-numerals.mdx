@@ -1,0 +1,63 @@
+---
+title: Non-Latin Numerals
+description: 34 Unicode numeral systems including Arabic-Indic, Devanagari, and Thai
+---
+
+The library auto-detects the numeral system from the `locales` and `format` props and renders the appropriate Unicode digits. 34 numeral systems are supported.
+
+```tsx
+import { useState } from 'react';
+import { View, Button, Text } from 'react-native';
+import { NumberFlow } from 'number-flow-react-native/native';
+
+const numeralSystems = [
+  { locale: 'en-US', label: 'Latin (0-9)' },
+  { locale: 'ar-SA', label: 'Arabic-Indic (٠-٩)' },
+  { locale: 'hi-IN', label: 'Devanagari (०-९)' },
+  { locale: 'th-TH', label: 'Thai (๐-๙)' },
+];
+
+export default function NonLatinNumerals() {
+  const [value, setValue] = useState(1234567);
+  const [localeIndex, setLocaleIndex] = useState(0);
+
+  const current = numeralSystems[localeIndex];
+
+  return (
+    <View style={{ alignItems: 'center', gap: 24, padding: 32 }}>
+      <Text style={{ fontSize: 14, color: '#666' }}>{current.label}</Text>
+      <NumberFlow
+        value={value}
+        locales={current.locale}
+        style={{ fontSize: 40, fontFamily: 'System', color: '#000' }}
+      />
+
+      {/* Locale selector */}
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
+        {numeralSystems.map((ns, i) => (
+          <Button
+            key={ns.locale}
+            title={ns.label}
+            onPress={() => setLocaleIndex(i)}
+            color={i === localeIndex ? '#007AFF' : '#999'}
+          />
+        ))}
+      </View>
+
+      <Button
+        title="Randomize"
+        onPress={() => setValue(Math.floor(Math.random() * 10000000))}
+      />
+    </View>
+  );
+}
+```
+
+### How it works
+
+- The numeral system is detected via `detectNumberingSystem()` from the locale and format options.
+- `getDigitStrings()` returns the Unicode digit characters for that system (e.g. `['٠','١','٢','٣','٤','٥','٦','٧','٨','٩']` for Arabic-Indic).
+- Digit wheels render the locale-appropriate characters, and the adaptive mask adjusts to each character's glyph bounds.
+- Grouping separators and decimal marks also follow the locale (e.g. `٬` as thousands separator in Arabic).
+
+<ExpoSnack title="Non-Latin Numerals" />

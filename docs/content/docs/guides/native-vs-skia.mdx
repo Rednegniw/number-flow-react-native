@@ -1,0 +1,67 @@
+---
+title: Native vs Skia
+description: Choose the right renderer for your use case
+---
+
+The library ships two rendering backends that share the same core animation engine. Choose based on your project's needs.
+
+## Comparison
+
+| Feature | Native (View) | Skia (Canvas) |
+|---|---|---|
+| Extra dependency | None | `@shopify/react-native-skia` |
+| Components | `NumberFlow`, `TimeFlow` | `SkiaNumberFlow`, `SkiaTimeFlow` |
+| Rendering | React Native Animated Views | Skia Canvas primitives |
+| Worklet scrubbing | Not available | Yes (`sharedValue` prop) |
+| Text styling | `TextStyle` (fontFamily, system fonts) | `SkFont` (requires font file) |
+| Gradient mask | `MaskedView` + View strips | Skia `LinearGradient` + DstIn blending |
+| Expo Snack | Full support | Limited (Skia WASM ~3MB) |
+| Best for | Standard UI, quick setup | Charts, complex Skia UIs, many instances |
+
+## Choosing a renderer
+
+### When to choose Native
+
+- **Quick setup** — system fonts work out of the box, no font file needed
+- **Standard UI** — card layouts, list items, form fields where the number is part of regular React Native views
+- **Expo Snack demos** — Skia's WASM bundle is ~3MB, making Snack embeds slow to load
+- **Fewer dependencies** — no need to add `@shopify/react-native-skia`
+
+### When to choose Skia
+
+- **Worklet scrubbing** — the `sharedValue` prop enables zero-latency UI thread updates. Essential for gesture-driven UIs, sliders, chart scrubbing, and any interaction where the value changes at 60–120Hz
+- **Existing Skia canvases** — if your screen already has a Skia `Canvas` (charts, graphs, custom drawing), render numbers directly alongside other Skia primitives
+- **Many simultaneous instances** — a single `Canvas` with multiple `SkiaNumberFlow` components is more efficient than dozens of View-based `NumberFlow` instances
+- **Custom font rendering** — when you need exact control over font metrics and glyph rendering
+
+## Using both renderers
+
+### Mixing in the same app
+
+You can use both renderers in the same app. Import from the appropriate entry point:
+
+```tsx
+// Native components only (no Skia dependency)
+import { NumberFlow, TimeFlow } from 'number-flow-react-native/native';
+
+// Skia components only
+import { SkiaNumberFlow, SkiaTimeFlow, useSkiaFont } from 'number-flow-react-native/skia';
+
+// Everything (pulls in Skia as a dependency)
+import { NumberFlow, SkiaNumberFlow } from 'number-flow-react-native';
+```
+
+<Callout type="info">
+If you're not using Skia, import from `number-flow-react-native/native` to avoid pulling in the optional `@shopify/react-native-skia` dependency.
+</Callout>
+
+### API differences
+
+The core animation props (`trend`, `animated`, `continuous`, `mask`, `transformTiming`, etc.) are identical across all four components. The differences are in styling and positioning:
+
+| | Native | Skia |
+|---|---|---|
+| Text appearance | `style` prop (TextStyle) | `font`, `color` props |
+| Positioning | CSS layout (flexbox) | Explicit `x`, `y`, `width` |
+| Container | `containerStyle` prop (ViewStyle) | Parent `Canvas` |
+| Value input | `value` only | `value` or `sharedValue` |

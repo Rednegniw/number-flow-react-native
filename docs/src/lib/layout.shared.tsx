@@ -1,6 +1,5 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 
-// fill this with your actual GitHub info, for example:
 export const gitConfig = {
   user: 'Rednegniw',
   repo: 'number-flow-react-native',
@@ -10,8 +9,15 @@ export const gitConfig = {
 export function baseOptions(): BaseLayoutProps {
   return {
     nav: {
-      title: 'number-flow-react-native',
+      title: 'Number Flow React Native',
     },
+    links: [
+      {
+        text: 'npm',
+        url: 'https://www.npmjs.com/package/number-flow-react-native',
+        external: true,
+      },
+    ],
     githubUrl: `https://github.com/${gitConfig.user}/${gitConfig.repo}`,
   };
 }

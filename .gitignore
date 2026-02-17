@@ -8,6 +8,15 @@ lib/
 ios/
 coverage/
 
+# Tool configs
+.claude/
+.playwright-mcp/
+
+# Temp screenshots
+*.png
+*.jpeg
+*.jpg
+
 # Docs (Fumadocs / Next.js)
 docs/.source/
 docs/.next/

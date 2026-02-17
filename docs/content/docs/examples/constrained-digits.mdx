@@ -1,0 +1,51 @@
+---
+title: Constrained Digits
+description: Per-position digit constraints for clocks, timers, and custom ranges
+---
+
+The `digits` prop limits individual digit positions to custom ranges. Instead of the default 0–9 wheel, you can constrain a position to 0–5 (for clock tens), 0–2 (for hour tens), or any range up to 0–9.
+
+```tsx
+import { useState } from 'react';
+import { View, Button } from 'react-native';
+import { NumberFlow } from 'number-flow-react-native/native';
+
+export default function ConstrainedDigits() {
+  const [value, setValue] = useState(35);
+
+  return (
+    <View style={{ alignItems: 'center', gap: 16, padding: 32 }}>
+      <NumberFlow
+        value={value}
+        digits={{ 1: { max: 5 } }}
+        style={{ fontSize: 48, fontFamily: 'System', color: '#000' }}
+      />
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <Button title="-1" onPress={() => setValue(v => Math.max(0, v - 1))} />
+        <Button title="+1" onPress={() => setValue(v => Math.min(59, v + 1))} />
+        <Button title="Random" onPress={() => setValue(Math.floor(Math.random() * 60))} />
+      </View>
+    </View>
+  );
+}
+```
+
+### Position mapping
+
+Positions are counted from the right (ones place):
+
+| Position | Place | Default range | Example constraint |
+|---|---|---|---|
+| `0` | Ones | 0–9 | `{ max: 9 }` (default) |
+| `1` | Tens | 0–9 | `{ max: 5 }` for minutes tens |
+| `2` | Hundreds | 0–9 | `{ max: 2 }` for 24h hour tens |
+
+### How it works
+
+A constraint `{ max: 5 }` creates a 6-element wheel (0, 1, 2, 3, 4, 5) instead of the default 10-element wheel (0–9). The rolling animation correctly wraps within the constrained range — rolling from 5 wraps back to 0.
+
+<Callout type="info">
+`TimeFlow` automatically applies digit constraints internally (minutes tens: 0–5, hours tens: 0–2). The `digits` prop is for `NumberFlow` when you need clock-like behavior without using `TimeFlow`.
+</Callout>
+
+<ExpoSnack title="Constrained Digits" />

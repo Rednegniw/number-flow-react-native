@@ -1,0 +1,173 @@
+---
+title: Speedometer
+description: Animated speed display with SkiaNumberFlow and smooth scrubbing
+---
+
+A dark, gesture-driven speedometer using `SkiaNumberFlow` with `sharedValue` for zero-latency worklet-driven updates. Drag up to accelerate, release to decelerate — all at 120Hz on the UI thread. No JS bridge, no frame drops.
+
+```tsx
+import { View, Text, Platform } from 'react-native';
+import { Canvas } from '@shopify/react-native-skia';
+import {
+  useSharedValue,
+  useDerivedValue,
+  withSpring,
+} from 'react-native-reanimated';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { SkiaNumberFlow, useSkiaFont } from 'number-flow-react-native/skia';
+
+export default function Speedometer() {
+  const speed = useSharedValue(0);
+  const font = useSkiaFont(require('./assets/Inter-Bold.otf'), 80);
+  const unitFont = useSkiaFont(require('./assets/Inter-Medium.otf'), 18);
+
+  const formattedSpeed = useDerivedValue(() => {
+    return Math.round(speed.value).toString();
+  });
+
+  const pan = Gesture.Pan()
+    .onUpdate((e) => {
+      const delta = -e.translationY / 4;
+      speed.value = Math.max(0, Math.min(300, delta));
+    })
+    .onEnd(() => {
+      speed.value = withSpring(0, { damping: 15, stiffness: 30 });
+    });
+
+  return (
+    <View style={{
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#09090b',
+      padding: 32,
+    }}>
+      {/* Gauge */}
+      <View style={{
+        width: 300,
+        height: 300,
+        borderRadius: 150,
+        backgroundColor: '#18181b',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 2,
+        borderColor: '#27272a',
+        shadowColor: '#6366f1',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.25,
+        shadowRadius: 60,
+      }}>
+        {/* Inner ring */}
+        <View style={{
+          width: 260,
+          height: 260,
+          borderRadius: 130,
+          borderWidth: 1,
+          borderColor: '#1c1c1e',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          {/* Speed value */}
+          <Canvas style={{ width: 240, height: 96 }}>
+            <SkiaNumberFlow
+              sharedValue={formattedSpeed}
+              font={font}
+              color="#fafafa"
+              y={80}
+              width={240}
+              textAlign="center"
+              scrubDigitWidthPercentile={0.8}
+            />
+          </Canvas>
+
+          {/* Unit label */}
+          <Canvas style={{ width: 240, height: 24, marginTop: -4 }}>
+            <SkiaNumberFlow
+              value={0}
+              font={unitFont}
+              color="#52525b"
+              suffix="km/h"
+              y={18}
+              width={240}
+              textAlign="center"
+            />
+          </Canvas>
+        </View>
+      </View>
+
+      {/* Gesture pad */}
+      <GestureDetector gesture={pan}>
+        <View style={{
+          marginTop: 40,
+          width: '100%',
+          height: 140,
+          backgroundColor: '#18181b',
+          borderRadius: 24,
+          borderWidth: 1,
+          borderColor: '#27272a',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: 8,
+        }}>
+          <Text style={{
+            fontSize: 24,
+            color: '#3f3f46',
+          }}>
+            ↕
+          </Text>
+          <Text style={{
+            color: '#52525b',
+            fontSize: 14,
+            fontFamily: Platform.OS === 'ios' ? 'SF Pro Text' : 'sans-serif',
+            fontWeight: '500',
+            letterSpacing: 0.5,
+          }}>
+            Drag up to accelerate
+          </Text>
+          <Text style={{
+            color: '#3f3f46',
+            fontSize: 11,
+            fontWeight: '500',
+            letterSpacing: 1,
+            textTransform: 'uppercase',
+          }}>
+            Release to decelerate
+          </Text>
+        </View>
+      </GestureDetector>
+    </View>
+  );
+}
+```
+
+### Features demonstrated
+
+- **Zero-latency scrubbing** — `sharedValue` keeps all updates on the UI thread, bypassing the JS bridge entirely
+- **Worklet-driven formatting** — `useDerivedValue` formats the number string inside a worklet, so the gesture handler → format → render pipeline never touches the JS thread
+- **Spring deceleration** — `withSpring` with low damping creates a natural coast-to-stop when the finger lifts
+- **scrubDigitWidthPercentile** — set to `0.8` to prevent layout jitter during rapid digit changes (uses the 80th percentile width among all digit glyphs)
+- **Custom fonts** — `useSkiaFont` loads `Inter-Bold` for the speed number and `Inter-Medium` for the unit label at different sizes
+
+<Callout type="info">
+The `sharedValue` prop is what makes this recipe special. Without it, each speed update would cross the JS bridge, causing 8–16ms of latency per frame. With `sharedValue`, the gesture handler writes directly to a `SharedValue`, `useDerivedValue` formats it on the UI thread, and `SkiaNumberFlow` reads the result via Skia — the entire pipeline runs at the display's native refresh rate.
+</Callout>
+
+### How the threading works
+
+```
+UI Thread (120Hz)
+─────────────────
+Pan gesture → speed.value
+  → useDerivedValue → formattedSpeed ("142")
+    → SkiaNumberFlow reads string
+      → extracts per-digit values
+        → positions digit wheels
+          → Skia renders frame
+
+JS Thread (idle during scrubbing)
+──────────────────────────────────
+Only wakes up when digit COUNT changes
+(e.g. "99" → "100" adds a new slot)
+```
+
+<ExpoSnack title="Speedometer" />

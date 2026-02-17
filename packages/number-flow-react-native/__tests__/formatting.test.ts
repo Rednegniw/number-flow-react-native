@@ -1,7 +1,7 @@
 import {
-  fallbackFormatToParts,
   getFormatCharacters,
   getOrCreateFormatter,
+  safeFormatToParts,
 } from "../src/core/intlHelpers";
 import { formatToKeyedParts } from "../src/core/useNumberFormatting";
 
@@ -41,12 +41,12 @@ describe("getFormatCharacters", () => {
   });
 });
 
-// ─── fallbackFormatToParts ───
+// ─── safeFormatToParts ───
 
-describe("fallbackFormatToParts", () => {
+describe("safeFormatToParts", () => {
   test("simple integer", () => {
     const fmt = new Intl.NumberFormat("en-US");
-    const parts = fallbackFormatToParts(fmt, 42, "en-US");
+    const parts = safeFormatToParts(fmt, 42, "en-US");
 
     const integerParts = parts.filter((p) => p.type === "integer");
     expect(integerParts.map((p) => p.value).join("")).toBe("42");
@@ -57,7 +57,7 @@ describe("fallbackFormatToParts", () => {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
-    const parts = fallbackFormatToParts(fmt, 3.14, "en-US");
+    const parts = safeFormatToParts(fmt, 3.14, "en-US");
 
     const types = parts.map((p) => p.type);
     expect(types).toContain("integer");
@@ -67,7 +67,7 @@ describe("fallbackFormatToParts", () => {
 
   test("negative number has minusSign part", () => {
     const fmt = new Intl.NumberFormat("en-US");
-    const parts = fallbackFormatToParts(fmt, -5, "en-US");
+    const parts = safeFormatToParts(fmt, -5, "en-US");
 
     const hasMinus = parts.some((p) => p.type === "minusSign");
     expect(hasMinus).toBe(true);
@@ -75,7 +75,7 @@ describe("fallbackFormatToParts", () => {
 
   test("grouped number has group separators", () => {
     const fmt = new Intl.NumberFormat("en-US", { useGrouping: true });
-    const parts = fallbackFormatToParts(fmt, 1234567, "en-US");
+    const parts = safeFormatToParts(fmt, 1234567, "en-US");
 
     const groups = parts.filter((p) => p.type === "group");
     expect(groups.length).toBeGreaterThan(0);
@@ -88,7 +88,7 @@ describe("fallbackFormatToParts", () => {
     });
 
     const native = fmt.formatToParts(1234.56);
-    const fallback = fallbackFormatToParts(fmt, 1234.56, "en-US");
+    const fallback = safeFormatToParts(fmt, 1234.56, "en-US");
 
     // Same number of parts
     expect(fallback.length).toBe(native.length);
@@ -259,10 +259,10 @@ describe("formatToKeyedParts — scientific notation", () => {
   });
 });
 
-describe("fallbackFormatToParts — scientific notation", () => {
+describe("safeFormatToParts — scientific notation", () => {
   test("detects exponent separator and integer", () => {
     const fmt = new Intl.NumberFormat("en-US", { notation: "scientific" });
-    const parts = fallbackFormatToParts(fmt, 1500, "en-US");
+    const parts = safeFormatToParts(fmt, 1500, "en-US");
 
     const types = parts.map((p) => p.type);
     expect(types).toContain("exponentSeparator");
@@ -271,7 +271,7 @@ describe("fallbackFormatToParts — scientific notation", () => {
 
   test("negative exponent has exponentMinusSign", () => {
     const fmt = new Intl.NumberFormat("en-US", { notation: "scientific" });
-    const parts = fallbackFormatToParts(fmt, 0.001, "en-US");
+    const parts = safeFormatToParts(fmt, 0.001, "en-US");
 
     const types = parts.map((p) => p.type);
     expect(types).toContain("exponentMinusSign");

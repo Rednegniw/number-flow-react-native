@@ -1,0 +1,62 @@
+---
+title: Percentage & Compact Notation
+description: Animated percentages and compact number formatting
+---
+
+`NumberFlow` supports all `Intl.NumberFormat` notation styles. This example shows `style: 'percent'` and `notation: 'compact'` side by side.
+
+```tsx
+import { useState } from 'react';
+import { View, Button, Text } from 'react-native';
+import { NumberFlow } from 'number-flow-react-native/native';
+
+export default function PercentageCompact() {
+  const [percent, setPercent] = useState(0.42);
+  const [bigNumber, setBigNumber] = useState(1500);
+
+  return (
+    <View style={{ alignItems: 'center', gap: 32, padding: 32 }}>
+      {/* Percentage display */}
+      <View style={{ alignItems: 'center', gap: 8 }}>
+        <Text style={{ fontSize: 14, color: '#666' }}>Percentage</Text>
+        <NumberFlow
+          value={percent}
+          format={{ style: 'percent', minimumFractionDigits: 1 }}
+          style={{ fontSize: 40, fontFamily: 'System', color: '#000' }}
+        />
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Button title="-5%" onPress={() => setPercent(v => v - 0.05)} />
+          <Button title="+5%" onPress={() => setPercent(v => v + 0.05)} />
+        </View>
+      </View>
+
+      {/* Compact notation display */}
+      <View style={{ alignItems: 'center', gap: 8 }}>
+        <Text style={{ fontSize: 14, color: '#666' }}>Compact Notation</Text>
+        <NumberFlow
+          value={bigNumber}
+          format={{ notation: 'compact', maximumFractionDigits: 1 }}
+          style={{ fontSize: 40, fontFamily: 'System', color: '#000' }}
+        />
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Button title="1.5K" onPress={() => setBigNumber(1500)} />
+          <Button title="25K" onPress={() => setBigNumber(25000)} />
+          <Button title="1.2M" onPress={() => setBigNumber(1200000)} />
+          <Button title="3.5B" onPress={() => setBigNumber(3500000000)} />
+        </View>
+      </View>
+    </View>
+  );
+}
+```
+
+### How it works
+
+- **Percentage:** `style: 'percent'` multiplies the value by 100 and appends `%`. Pass `0.42` to display `42.0%`.
+- **Compact:** `notation: 'compact'` abbreviates large numbers with locale-appropriate suffixes like `K`, `M`, `B`. The suffix characters animate in and out as the magnitude changes.
+
+<Callout type="info">
+Compact notation suffixes are locale-dependent. For example, `en-US` uses "K", "M", "B" while `ja-JP` uses "万", "億".
+</Callout>
+
+<ExpoSnack title="Percentage & Compact" />

@@ -1,0 +1,177 @@
+---
+title: Trading Ticker
+description: Real-time stock price ticker with color-coded trend
+---
+
+A dark-themed financial terminal with monospaced pricing, color-coded trend indicators, and a dynamic `trend` function that directs digit spin based on price movement.
+
+```tsx
+import { useEffect, useState } from 'react';
+import { View, Text, Platform } from 'react-native';
+import { NumberFlow } from 'number-flow-react-native/native';
+import type { Trend } from 'number-flow-react-native';
+
+interface Stock {
+  symbol: string;
+  name: string;
+  price: number;
+  prevPrice: number;
+}
+
+const initialStocks: Stock[] = [
+  { symbol: 'AAPL', name: 'Apple Inc.', price: 178.72, prevPrice: 178.72 },
+  { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 141.80, prevPrice: 141.80 },
+  { symbol: 'TSLA', name: 'Tesla Inc.', price: 248.50, prevPrice: 248.50 },
+  { symbol: 'NVDA', name: 'NVIDIA Corp.', price: 875.28, prevPrice: 875.28 },
+];
+
+const currencyFormat = {
+  style: 'currency' as const,
+  currency: 'USD',
+  minimumFractionDigits: 2,
+};
+
+const trendFn = (prev: number, next: number): Trend => {
+  if (next > prev) return 1;
+  if (next < prev) return -1;
+  return 0;
+};
+
+export default function TradingTicker() {
+  const [stocks, setStocks] = useState(initialStocks);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStocks(prev =>
+        prev.map(stock => {
+          const change = (Math.random() - 0.5) * 4;
+          const newPrice = Math.max(1, stock.price + change);
+          return { ...stock, prevPrice: stock.price, price: newPrice };
+        }),
+      );
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <View style={{
+      flex: 1,
+      justifyContent: 'center',
+      backgroundColor: '#09090b',
+      padding: 20,
+    }}>
+      {/* Header */}
+      <View style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingBottom: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#1c1c1e',
+        marginBottom: 4,
+      }}>
+        <Text style={{
+          fontSize: 11,
+          fontWeight: '600',
+          color: '#525252',
+          letterSpacing: 2,
+          textTransform: 'uppercase',
+        }}>
+          Symbol
+        </Text>
+        <Text style={{
+          fontSize: 11,
+          fontWeight: '600',
+          color: '#525252',
+          letterSpacing: 2,
+          textTransform: 'uppercase',
+        }}>
+          Last Price
+        </Text>
+      </View>
+
+      {/* Stock rows */}
+      {stocks.map((stock, i) => {
+        const isUp = stock.price >= stock.prevPrice;
+        const color = isUp ? '#22c55e' : '#ef4444';
+        const changePercent = ((stock.price - stock.prevPrice) / stock.prevPrice) * 100;
+        const sign = isUp ? '+' : '';
+
+        return (
+          <View
+            key={stock.symbol}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingVertical: 16,
+              paddingHorizontal: 16,
+              borderBottomWidth: i < stocks.length - 1 ? 1 : 0,
+              borderBottomColor: '#1c1c1e',
+            }}
+          >
+            {/* Stock info */}
+            <View style={{ gap: 2 }}>
+              <Text style={{
+                fontSize: 16,
+                fontWeight: '700',
+                color: '#fafafa',
+                fontFamily: Platform.OS === 'ios' ? 'SF Mono' : 'monospace',
+                letterSpacing: 1,
+              }}>
+                {stock.symbol}
+              </Text>
+              <Text style={{ fontSize: 12, color: '#525252', fontWeight: '500' }}>
+                {stock.name}
+              </Text>
+            </View>
+
+            {/* Price + change */}
+            <View style={{ alignItems: 'flex-end', gap: 2 }}>
+              <NumberFlow
+                value={stock.price}
+                format={currencyFormat}
+                trend={trendFn}
+                style={{
+                  fontSize: 18,
+                  fontWeight: '600',
+                  fontFamily: Platform.OS === 'ios' ? 'SF Mono' : 'monospace',
+                  color: '#fafafa',
+                }}
+              />
+              <View style={{
+                paddingHorizontal: 8,
+                paddingVertical: 2,
+                borderRadius: 4,
+                backgroundColor: isUp ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+              }}>
+                <Text style={{
+                  fontSize: 11,
+                  fontWeight: '700',
+                  fontFamily: Platform.OS === 'ios' ? 'SF Mono' : 'monospace',
+                  color,
+                }}>
+                  {sign}{changePercent.toFixed(2)}%
+                </Text>
+              </View>
+            </View>
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+```
+
+### Features demonstrated
+
+- **Monospace pricing** — `'SF Mono'` / `'monospace'` keeps digits aligned in a table layout, just like real trading terminals
+- **Dynamic trend function** — `trend={trendFn}` directs spin up for price increases and down for decreases
+- **Color-coded badges** — percentage change badges use translucent accent backgrounds
+- **Stable format object** — `currencyFormat` is declared outside the component to avoid recreating `Intl.NumberFormat` on every render
+
+<Callout type="info">
+Notice that `trendFn` is declared outside the component as a stable function reference. If it were an inline arrow function, React would create a new function identity every render, which would trigger unnecessary work inside `NumberFlow`. The same applies to `currencyFormat` — both are classic React performance patterns that matter when values update every 2 seconds.
+</Callout>
+
+<ExpoSnack title="Trading Ticker" />

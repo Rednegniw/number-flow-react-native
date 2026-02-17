@@ -1,3 +1,19 @@
 @import 'tailwindcss';
 @import 'fumadocs-ui/css/neutral.css';
 @import 'fumadocs-ui/css/preset.css';
+
+@theme {
+  --color-fd-primary: hsl(210, 80%, 45%);
+  --color-fd-primary-foreground: hsl(0, 0%, 98%);
+  --color-fd-ring: hsl(210, 80%, 45%);
+}
+
+.dark {
+  --color-fd-primary: hsl(205, 100%, 70%);
+  --color-fd-primary-foreground: hsl(0, 0%, 9%);
+  --color-fd-ring: hsl(205, 100%, 70%);
+}
+
+#nd-sidebar {
+  @apply md:border-0!;
+}

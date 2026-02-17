@@ -1,0 +1,11 @@
+{
+  "title": "Recipes",
+  "pages": [
+    "countdown-app",
+    "step-counter",
+    "trading-ticker",
+    "currency-converter",
+    "fitness-dashboard",
+    "speedometer"
+  ]
+}

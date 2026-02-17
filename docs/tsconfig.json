@@ -25,6 +25,12 @@
       ],
       "fumadocs-mdx:collections/*": [
         ".source/*"
+      ],
+      "number-flow-react-native": [
+        "../packages/number-flow-react-native/src/index.ts"
+      ],
+      "number-flow-react-native/*": [
+        "../packages/number-flow-react-native/src/*"
       ]
     },
     "plugins": [

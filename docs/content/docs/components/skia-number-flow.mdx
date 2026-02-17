@@ -1,0 +1,146 @@
+---
+title: SkiaNumberFlow
+description: Skia canvas-based animated number component with worklet scrubbing
+---
+
+`SkiaNumberFlow` is the Canvas-based animated number component. It renders using `@shopify/react-native-skia` and supports worklet-driven scrubbing via `SharedValue` for zero-latency UI thread updates. Ideal for charts, sliders, gesture-driven UIs, and scenarios with many simultaneous animated numbers.
+
+## Import
+
+```tsx
+import { SkiaNumberFlow, useSkiaFont } from 'number-flow-react-native/skia';
+```
+
+<Callout type="warn">
+`SkiaNumberFlow` must be rendered inside a Skia `Canvas` component. It renders Skia primitives (`Group`, `Text`), not React Native Views.
+</Callout>
+
+## Basic Usage
+
+```tsx
+import { useState } from 'react';
+import { View, Button } from 'react-native';
+import { Canvas } from '@shopify/react-native-skia';
+import { SkiaNumberFlow, useSkiaFont } from 'number-flow-react-native/skia';
+
+function SkiaPrice() {
+  const [price, setPrice] = useState(42.99);
+  const font = useSkiaFont(require('./assets/Inter-Bold.otf'), 48);
+
+  return (
+    <View style={{ alignItems: 'center', gap: 16, padding: 24 }}>
+      <Canvas style={{ width: 300, height: 60 }}>
+        <SkiaNumberFlow
+          value={price}
+          format={{ style: 'currency', currency: 'USD' }}
+          font={font}
+          color="#1a1a1a"
+          y={48}
+          width={300}
+          textAlign="center"
+        />
+      </Canvas>
+      <Button title="Randomize" onPress={() => setPrice(Math.random() * 999)} />
+    </View>
+  );
+}
+```
+
+<Callout type="info">
+Use the [`useSkiaFont`](/docs/hooks/use-skia-font) hook for a guaranteed non-null font. It provides a synchronous system-font fallback via `matchFont`, so the component renders immediately instead of showing blank until the custom font loads.
+</Callout>
+
+## Props
+
+### Value props (mutually exclusive)
+
+Provide either `value` (JS-driven) or `sharedValue` (worklet-driven), not both.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `value` | `number` | `undefined` | JS-thread numeric value. Triggers animated transitions on change. Mutually exclusive with `sharedValue`. |
+| `format` | `Intl.NumberFormatOptions` | `undefined` | Options passed to `Intl.NumberFormat`. Only available with `value`. |
+| `locales` | `Intl.LocalesArgument` | `undefined` | Locale(s) for `Intl.NumberFormat`. Only available with `value`. |
+| `sharedValue` | `SharedValue<string>` | `undefined` | Worklet-driven pre-formatted string (e.g. `"$42.99"`). Updates on the UI thread with no JS bridge crossing. Mutually exclusive with `value`. |
+
+### Rendering props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `font` | `SkFont \| null` | **(required)** | Skia font instance from `useFont()` or `useSkiaFont()`. Renders empty until font loads. |
+| `color` | `string` | `"#000000"` | Text color as a Skia color string. |
+| `x` | `number` | `0` | X position within the Canvas. |
+| `y` | `number` | `0` | Y position within the Canvas (baseline of the text). |
+| `width` | `number` | `0` | Available width for alignment calculations. |
+| `textAlign` | `"left" \| "right" \| "center"` | `"left"` | Text alignment within the available width. |
+| `prefix` | `string` | `""` | Static string prepended before the number. |
+| `suffix` | `string` | `""` | Static string appended after the number. |
+| `opacity` | `SharedValue<number>` | `undefined` | Parent opacity for animation coordination. |
+| `digits` | `Record<number, { max: number }>` | `undefined` | Per-position digit constraints. Position `0` = ones, `1` = tens, etc. |
+| `scrubDigitWidthPercentile` | `number` (0–1) | `0.75` | Controls digit width during worklet-driven scrubbing. `0` = narrowest, `0.5` = average, `1` = widest (no clipping). Only affects digits; symbols keep natural width. |
+
+### Animation behavior props
+
+All props from `AnimationBehaviorProps` are supported: `trend`, `animated`, `respectMotionPreference`, `continuous`, `mask`, `transformTiming`, `spinTiming`, `opacityTiming`, `onAnimationsStart`, `onAnimationsFinish`. See [NumberFlow](/docs/components/number-flow#animation-behavior-props) for details.
+
+## Worklet Scrubbing
+
+When using `sharedValue`, the component updates on the UI thread with zero JS bridge overhead. This is ideal for gesture-driven scenarios:
+
+```tsx
+import { View } from 'react-native';
+import { Canvas } from '@shopify/react-native-skia';
+import { useSharedValue, useDerivedValue } from 'react-native-reanimated';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { SkiaNumberFlow, useSkiaFont } from 'number-flow-react-native/skia';
+
+function ScrubSlider() {
+  const font = useSkiaFont(require('./assets/Inter-Medium.otf'), 32);
+  const progress = useSharedValue(0);
+
+  const formattedValue = useDerivedValue(() => {
+    return `$${(progress.value * 1000).toFixed(2)}`;
+  });
+
+  const pan = Gesture.Pan().onUpdate((e) => {
+    progress.value = Math.max(0, Math.min(1, e.translationX / 300));
+  });
+
+  return (
+    <GestureDetector gesture={pan}>
+      <View style={{ padding: 32 }}>
+        <Canvas style={{ width: 300, height: 50 }}>
+          <SkiaNumberFlow
+            sharedValue={formattedValue}
+            font={font}
+            color="#1a1a1a"
+            y={40}
+            width={300}
+            textAlign="center"
+          />
+        </Canvas>
+      </View>
+    </GestureDetector>
+  );
+}
+```
+
+<Callout type="info">
+The `scrubDigitWidthPercentile` prop controls width allocation during scrubbing. The default `0.75` (75th percentile between narrowest and widest digit) balances tightness with avoiding clipping. Lower values produce tighter spacing but may clip wide digits like "0"; higher values add more spacing.
+</Callout>
+
+## Accessibility
+
+Value changes are auto-announced for screen reader users via `AccessibilityInfo.announceForAccessibility`. For VoiceOver/TalkBack focus-based reading, set `accessibilityLabel` on the parent `Canvas`:
+
+```tsx
+import { useFormattedValue } from 'number-flow-react-native';
+
+const label = useFormattedValue(value, format);
+
+<Canvas accessible accessibilityLabel={label} style={{ height: 50, width: 200 }}>
+  <SkiaNumberFlow value={value} font={font} format={format} />
+</Canvas>
+```
+
+<ExpoSnack title="SkiaNumberFlow Basic" />

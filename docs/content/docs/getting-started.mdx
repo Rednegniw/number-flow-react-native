@@ -1,0 +1,151 @@
+---
+title: Getting Started
+description: Install Number Flow React Native and display your first animated number
+---
+
+## Installation
+
+<Tabs items={['bun', 'npm', 'yarn', 'pnpm']}>
+<Tab value="bun">
+```bash
+bun add number-flow-react-native
+```
+</Tab>
+<Tab value="npm">
+```bash
+npm install number-flow-react-native
+```
+</Tab>
+<Tab value="yarn">
+```bash
+yarn add number-flow-react-native
+```
+</Tab>
+<Tab value="pnpm">
+```bash
+pnpm add number-flow-react-native
+```
+</Tab>
+</Tabs>
+
+## Peer Dependencies
+
+| Package | Version | Required |
+|---|---|---|
+| react | >= 18 | Yes |
+| react-native | >= 0.73 | Yes |
+| react-native-reanimated | >= 3.0.0 | Yes |
+| @shopify/react-native-skia | >= 2.0.0 | Only for Skia components |
+
+Install Reanimated if you don't already have it:
+
+<Tabs items={['bun', 'npm', 'yarn', 'pnpm']}>
+<Tab value="bun">
+```bash
+bun add react-native-reanimated
+```
+</Tab>
+<Tab value="npm">
+```bash
+npm install react-native-reanimated
+```
+</Tab>
+<Tab value="yarn">
+```bash
+yarn add react-native-reanimated
+```
+</Tab>
+<Tab value="pnpm">
+```bash
+pnpm add react-native-reanimated
+```
+</Tab>
+</Tabs>
+
+<Callout type="info">
+Add the Reanimated Babel plugin to your `babel.config.js`:
+
+```js
+module.exports = { plugins: ['react-native-reanimated/plugin'] };
+```
+</Callout>
+
+If you want to use the Skia renderer, also install `@shopify/react-native-skia`:
+
+<Tabs items={['bun', 'npm', 'yarn', 'pnpm']}>
+<Tab value="bun">
+```bash
+bun add @shopify/react-native-skia
+```
+</Tab>
+<Tab value="npm">
+```bash
+npm install @shopify/react-native-skia
+```
+</Tab>
+<Tab value="yarn">
+```bash
+yarn add @shopify/react-native-skia
+```
+</Tab>
+<Tab value="pnpm">
+```bash
+pnpm add @shopify/react-native-skia
+```
+</Tab>
+</Tabs>
+
+## Quick Start
+
+<Steps>
+<Step>
+### Import NumberFlow
+
+```tsx
+import { NumberFlow } from 'number-flow-react-native/native';
+```
+</Step>
+<Step>
+### Use it with a value
+
+```tsx
+function PriceDisplay() {
+  const [price, setPrice] = useState(42.99);
+
+  return (
+    <NumberFlow
+      value={price}
+      format={{ style: 'currency', currency: 'USD' }}
+      style={{ fontSize: 32, fontFamily: 'System', color: '#000' }}
+    />
+  );
+}
+```
+
+Every time `price` changes, each digit rolls smoothly to its new value.
+</Step>
+<Step>
+### Explore the components
+
+Check out the [Components](/docs/components) section for all four components — `NumberFlow`, `TimeFlow`, `SkiaNumberFlow`, and `SkiaTimeFlow` — with full prop references.
+</Step>
+</Steps>
+
+## Import Paths
+
+The library exposes three entry points:
+
+```tsx
+// All components
+import { NumberFlow, TimeFlow, SkiaNumberFlow, SkiaTimeFlow } from 'number-flow-react-native';
+
+// Native only (smaller bundle if not using Skia)
+import { NumberFlow, TimeFlow } from 'number-flow-react-native/native';
+
+// Skia only
+import { SkiaNumberFlow, SkiaTimeFlow, useSkiaFont } from 'number-flow-react-native/skia';
+```
+
+<Callout type="info">
+If you are not using Skia, import from `number-flow-react-native/native` to avoid pulling in the optional Skia dependency.
+</Callout>

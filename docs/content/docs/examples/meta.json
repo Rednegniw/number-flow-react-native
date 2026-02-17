@@ -1,0 +1,18 @@
+{
+  "title": "Examples",
+  "pages": [
+    "basic-number",
+    "currency-formatting",
+    "percentage-compact",
+    "prefix-suffix",
+    "scientific-engineering",
+    "skia-basic",
+    "skia-scrubbing",
+    "time-display",
+    "countdown-timer",
+    "continuous-mode",
+    "constrained-digits",
+    "non-latin-numerals",
+    "trend-control"
+  ]
+}

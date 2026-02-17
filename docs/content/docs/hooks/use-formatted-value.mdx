@@ -1,0 +1,64 @@
+---
+title: useFormattedValue
+description: Format a number to a display string for accessibility labels
+---
+
+Formats a numeric value to a display string using `Intl.NumberFormat`. Useful for providing accessibility labels on Skia `Canvas` components, which don't have built-in text semantics.
+
+## Import
+
+```tsx
+import { useFormattedValue } from 'number-flow-react-native';
+```
+
+## Signature
+
+```tsx
+useFormattedValue(
+  value: number | undefined,
+  format?: Intl.NumberFormatOptions,
+  locales?: Intl.LocalesArgument,
+  prefix?: string,
+  suffix?: string,
+): string | undefined
+```
+
+## Parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `value` | `number \| undefined` | Numeric value to format |
+| `format` | `Intl.NumberFormatOptions` | Optional formatting options |
+| `locales` | `Intl.LocalesArgument` | Optional locale(s) for formatting |
+| `prefix` | `string` | Optional static prefix prepended to the formatted string |
+| `suffix` | `string` | Optional static suffix appended to the formatted string |
+
+## Returns
+
+`string | undefined` — the formatted string, or `undefined` if `value` is `undefined`.
+
+## Usage
+
+The primary use case is adding accessibility to Skia-rendered numbers. Since `Canvas` is an opaque view to the accessibility system, you need to provide a label manually:
+
+```tsx
+import { Canvas } from '@shopify/react-native-skia';
+import { useFormattedValue } from 'number-flow-react-native';
+import { SkiaNumberFlow, useSkiaFont } from 'number-flow-react-native/skia';
+
+function Price({ value }: { value: number }) {
+  const font = useSkiaFont(require('./Inter.ttf'), 32);
+  const format = { style: 'currency', currency: 'USD' } as const;
+  const label = useFormattedValue(value, format);
+
+  return (
+    <Canvas style={{ height: 50, width: 200 }} accessible accessibilityLabel={label}>
+      <SkiaNumberFlow value={value} font={font} format={format} />
+    </Canvas>
+  );
+}
+```
+
+<Callout type="info">
+`useFormattedValue` uses `Intl.NumberFormat` internally with the same formatter cache as the components, so passing identical `format` and `locales` options does not create duplicate formatter instances.
+</Callout>

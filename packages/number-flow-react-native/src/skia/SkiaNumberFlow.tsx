@@ -1,15 +1,10 @@
-import {
-  Group,
-  LinearGradient,
-  Paint,
-  Rect as SkiaRect,
-  vec,
-} from "@shopify/react-native-skia";
+import { Group, LinearGradient, Paint, Rect as SkiaRect, vec } from "@shopify/react-native-skia";
 import { useMemo } from "react";
+import type { SharedValue } from "react-native-reanimated";
 import { MASK_WIDTH_RATIO } from "../core/constants";
-import { computeKeyedLayout, computeStringLayout } from "../core/layout";
+import { computeKeyedLayout, computeStringLayout, type CharLayout } from "../core/layout";
 import { detectNumberingSystem, getDigitStrings, getZeroCodePoint } from "../core/numerals";
-import type { SkiaNumberFlowProps } from "../core/types";
+import type { GlyphMetrics, KeyedPart, SkiaNumberFlowProps } from "../core/types";
 import { useAccessibilityAnnouncement } from "../core/useAccessibilityAnnouncement";
 import { useFlowPipeline } from "../core/useFlowPipeline";
 import { getFormatCharacters } from "../core/intlHelpers";
@@ -20,19 +15,78 @@ import { renderSlots } from "./renderSlots";
 import { useGlyphMetrics } from "./useGlyphMetrics";
 import { useScrubbingBridge, useScrubbingLayout } from "./useScrubbing";
 
-export const SkiaNumberFlow = ({
-  value,
-  format,
-  locales,
-  sharedValue,
+interface ModeBaseProps {
+  format: Intl.NumberFormatOptions | undefined;
+  locales: Intl.LocalesArgument | undefined;
+  font: NonNullable<SkiaNumberFlowProps["font"]>;
+  color: string;
+  x: number;
+  y: number;
+  width: number;
+  textAlign: "left" | "right" | "center";
+  prefix: string;
+  suffix: string;
+  opacity: SkiaNumberFlowProps["opacity"];
+  spinTiming: SkiaNumberFlowProps["spinTiming"];
+  opacityTiming: SkiaNumberFlowProps["opacityTiming"];
+  transformTiming: SkiaNumberFlowProps["transformTiming"];
+  trend: SkiaNumberFlowProps["trend"];
+  animated: SkiaNumberFlowProps["animated"];
+  respectMotionPreference: SkiaNumberFlowProps["respectMotionPreference"];
+  continuous: SkiaNumberFlowProps["continuous"];
+  digits: SkiaNumberFlowProps["digits"];
+  scrubDigitWidthPercentile: number;
+  onAnimationsStart: SkiaNumberFlowProps["onAnimationsStart"];
+  onAnimationsFinish: SkiaNumberFlowProps["onAnimationsFinish"];
+  mask: SkiaNumberFlowProps["mask"];
+  metrics: GlyphMetrics;
+  digitStringsArr: string[];
+  zeroCodePoint: number;
+}
+
+interface ValueModeProps extends ModeBaseProps {
+  value: number;
+}
+
+interface SharedModeProps extends ModeBaseProps {
+  sharedValue: NonNullable<SkiaNumberFlowProps["sharedValue"]>;
+}
+
+interface RuntimeProps {
+  keyedParts: KeyedPart[];
+  trendValue: number | undefined;
+  layout: CharLayout[];
+  metrics: GlyphMetrics;
+  font: NonNullable<SkiaNumberFlowProps["font"]>;
+  color: string;
+  x: number;
+  y: number;
+  opacity: SkiaNumberFlowProps["opacity"];
+  spinTiming: SkiaNumberFlowProps["spinTiming"];
+  opacityTiming: SkiaNumberFlowProps["opacityTiming"];
+  transformTiming: SkiaNumberFlowProps["transformTiming"];
+  trend: SkiaNumberFlowProps["trend"];
+  animated: SkiaNumberFlowProps["animated"];
+  respectMotionPreference: SkiaNumberFlowProps["respectMotionPreference"];
+  continuous: SkiaNumberFlowProps["continuous"];
+  digits: SkiaNumberFlowProps["digits"];
+  onAnimationsStart: SkiaNumberFlowProps["onAnimationsStart"];
+  onAnimationsFinish: SkiaNumberFlowProps["onAnimationsFinish"];
+  mask: SkiaNumberFlowProps["mask"];
+  digitStringsArr: string[];
+  workletDigitValues?: SharedValue<number>[] | null;
+  workletLayout?: SharedValue<{ x: number; width: number }[]>;
+}
+
+function SkiaNumberFlowRuntime({
+  keyedParts,
+  trendValue,
+  layout,
+  metrics,
   font,
-  color = "#000000",
-  x = 0,
-  y = 0,
-  width = 0,
-  textAlign = "left",
-  prefix = "",
-  suffix = "",
+  color,
+  x,
+  y,
   opacity,
   spinTiming,
   opacityTiming,
@@ -42,99 +96,28 @@ export const SkiaNumberFlow = ({
   respectMotionPreference,
   continuous,
   digits,
-  scrubDigitWidthPercentile = 0.75,
   onAnimationsStart,
   onAnimationsFinish,
   mask,
-}: SkiaNumberFlowProps) => {
-  const formatChars = useMemo(
-    () => getFormatCharacters(locales, format, prefix, suffix),
-    [locales, format, prefix, suffix],
-  );
-  const numberingSystem = useMemo(() => detectNumberingSystem(locales, format), [locales, format]);
-  const zeroCodePoint = getZeroCodePoint(numberingSystem);
-  const digitStringsArr = useMemo(() => getDigitStrings(numberingSystem), [numberingSystem]);
-  const metrics = useGlyphMetrics(font, formatChars, digitStringsArr);
-
-  if (__DEV__) {
-    if (!font) {
-      warnOnce(
-        "skia-font",
-        "font is null — pass a loaded SkFont from useFont(). Component renders empty until font loads.",
-      );
-    }
-    if (value !== undefined && sharedValue !== undefined) {
-      warnOnce("skia-nf-both", "Both value and sharedValue provided. Use one or the other.");
-    }
-    if (value === undefined && sharedValue === undefined) {
-      warnOnce("skia-nf-neither", "Neither value nor sharedValue provided.");
-    }
-    if (scrubDigitWidthPercentile < 0 || scrubDigitWidthPercentile > 1) {
-      warnOnce("nf-percentile", "scrubDigitWidthPercentile should be between 0 and 1.");
-    }
-    if (digits) {
-      for (const [posStr, constraint] of Object.entries(digits)) {
-        if (constraint.max < 1 || constraint.max > 9) {
-          warnOnce(
-            `skia-nf-digit-max-${posStr}`,
-            `digits[${posStr}].max must be between 1 and 9, got ${constraint.max}.`,
-          );
-        }
-      }
-    }
-  }
-
-  const clampedPercentile = Math.max(0, Math.min(1, scrubDigitWidthPercentile));
-
-  // Scrubbing bridge: digit-count bridging between worklet and JS thread
-  const { effectiveValue } = useScrubbingBridge({
-    sharedValue,
-    value,
-    prefix,
-    suffix,
-    zeroCodePoint,
-  });
-
-  const keyedParts = useNumberFormatting(effectiveValue, format, locales, prefix, suffix);
-
-  const layout = useMemo(() => {
-    if (!metrics) return [];
-
-    if (sharedValue && value === undefined) {
-      const text = `${prefix}${sharedValue.value}${suffix}`;
-      return computeStringLayout(text, metrics, width, textAlign);
-    }
-
-    if (keyedParts.length === 0) return [];
-    return computeKeyedLayout(keyedParts, metrics, width, textAlign, digitStringsArr);
-  }, [metrics, keyedParts, width, textAlign, prefix, suffix, sharedValue, value, digitStringsArr]);
-
-  const layoutDigitCount = useMemo(() => {
-    let count = 0;
-    for (let i = 0; i < layout.length; i++) {
-      if (layout[i].isDigit) count++;
-    }
-    return count;
-  }, [layout]);
-
-  // Scrubbing layout: worklet-driven digit values and per-slot positioning
-  const { workletDigitValues, workletLayout } = useScrubbingLayout({
-    sharedValue,
-    prefix,
-    suffix,
-    zeroCodePoint,
-    metrics,
-    digitStringsArr,
-    scrubDigitWidthPercentile: clampedPercentile,
-    layout,
-    layoutDigitCount,
-    width,
-    textAlign,
-  });
-
-  const pipeline = useFlowPipeline({
+  digitStringsArr,
+  workletDigitValues,
+  workletLayout,
+}: RuntimeProps) {
+  const {
+    resolvedSpinTiming,
+    resolvedOpacityTiming,
+    resolvedTransformTiming,
+    resolvedTrend,
+    spinGenerations,
+    prevMap,
+    isInitialRender,
+    exitingEntries,
+    onExitComplete,
+    accessibilityLabel,
+    adaptiveMask,
+  } = useFlowPipeline({
     keyedParts,
-    trendValue: value,
+    trendValue,
     layout,
     metrics,
     animated,
@@ -149,25 +132,7 @@ export const SkiaNumberFlow = ({
     onAnimationsFinish,
   });
 
-  const {
-    resolvedSpinTiming,
-    resolvedOpacityTiming,
-    resolvedTransformTiming,
-    resolvedTrend,
-    spinGenerations,
-    prevMap,
-    isInitialRender,
-    exitingEntries,
-    onExitComplete,
-    accessibilityLabel,
-    adaptiveMask,
-  } = pipeline;
-
   useAccessibilityAnnouncement(accessibilityLabel);
-
-  if (!font || !metrics) {
-    return <Group />;
-  }
 
   if (layout.length === 0 && exitingEntries.size === 0) {
     return <Group />;
@@ -269,4 +234,273 @@ export const SkiaNumberFlow = ({
   }
 
   return maskedContent;
+}
+
+function SkiaNumberFlowValueMode({
+  value,
+  format,
+  locales,
+  font,
+  color,
+  x,
+  y,
+  width,
+  textAlign,
+  prefix,
+  suffix,
+  opacity,
+  spinTiming,
+  opacityTiming,
+  transformTiming,
+  trend,
+  animated,
+  respectMotionPreference,
+  continuous,
+  digits,
+  onAnimationsStart,
+  onAnimationsFinish,
+  mask,
+  metrics,
+  digitStringsArr,
+}: ValueModeProps) {
+  const keyedParts = useNumberFormatting(value, format, locales, prefix, suffix);
+
+  const layout = useMemo(() => {
+    if (keyedParts.length === 0) return [];
+    return computeKeyedLayout(keyedParts, metrics, width, textAlign, digitStringsArr);
+  }, [keyedParts, metrics, width, textAlign, digitStringsArr]);
+
+  return (
+    <SkiaNumberFlowRuntime
+      animated={animated}
+      color={color}
+      continuous={continuous}
+      digitStringsArr={digitStringsArr}
+      digits={digits}
+      font={font}
+      keyedParts={keyedParts}
+      layout={layout}
+      mask={mask}
+      metrics={metrics}
+      onAnimationsFinish={onAnimationsFinish}
+      onAnimationsStart={onAnimationsStart}
+      opacity={opacity}
+      opacityTiming={opacityTiming}
+      respectMotionPreference={respectMotionPreference}
+      spinTiming={spinTiming}
+      transformTiming={transformTiming}
+      trend={trend}
+      trendValue={value}
+      x={x}
+      y={y}
+    />
+  );
+}
+
+function SkiaNumberFlowSharedMode({
+  sharedValue,
+  format,
+  locales,
+  font,
+  color,
+  x,
+  y,
+  width,
+  textAlign,
+  prefix,
+  suffix,
+  opacity,
+  spinTiming,
+  opacityTiming,
+  transformTiming,
+  trend,
+  animated,
+  respectMotionPreference,
+  continuous,
+  digits,
+  scrubDigitWidthPercentile,
+  onAnimationsStart,
+  onAnimationsFinish,
+  mask,
+  metrics,
+  digitStringsArr,
+  zeroCodePoint,
+}: SharedModeProps) {
+  // Scrubbing bridge: digit-count bridging between worklet and JS thread
+  const { effectiveValue } = useScrubbingBridge({
+    sharedValue,
+    value: undefined,
+    prefix,
+    suffix,
+    zeroCodePoint,
+  });
+
+  const keyedParts = useNumberFormatting(effectiveValue, format, locales, prefix, suffix);
+
+  const layout = useMemo(() => {
+    const text = `${prefix}${sharedValue.value}${suffix}`;
+    return computeStringLayout(text, metrics, width, textAlign);
+  }, [metrics, width, textAlign, prefix, suffix, sharedValue]);
+
+  const layoutDigitCount = useMemo(() => {
+    let count = 0;
+    for (let i = 0; i < layout.length; i++) {
+      if (layout[i].isDigit) count++;
+    }
+    return count;
+  }, [layout]);
+
+  // Scrubbing layout: worklet-driven digit values and per-slot positioning
+  const { workletDigitValues, workletLayout } = useScrubbingLayout({
+    sharedValue,
+    prefix,
+    suffix,
+    zeroCodePoint,
+    metrics,
+    digitStringsArr,
+    scrubDigitWidthPercentile,
+    layout,
+    layoutDigitCount,
+    width,
+    textAlign,
+  });
+
+  return (
+    <SkiaNumberFlowRuntime
+      animated={animated}
+      color={color}
+      continuous={continuous}
+      digitStringsArr={digitStringsArr}
+      digits={digits}
+      font={font}
+      keyedParts={keyedParts}
+      layout={layout}
+      mask={mask}
+      metrics={metrics}
+      onAnimationsFinish={onAnimationsFinish}
+      onAnimationsStart={onAnimationsStart}
+      opacity={opacity}
+      opacityTiming={opacityTiming}
+      respectMotionPreference={respectMotionPreference}
+      spinTiming={spinTiming}
+      transformTiming={transformTiming}
+      trend={trend}
+      trendValue={undefined}
+      workletDigitValues={workletDigitValues}
+      workletLayout={workletLayout}
+      x={x}
+      y={y}
+    />
+  );
+}
+
+export const SkiaNumberFlow = ({
+  value,
+  format,
+  locales,
+  sharedValue,
+  font,
+  color = "#000000",
+  x = 0,
+  y = 0,
+  width = 0,
+  textAlign = "left",
+  prefix = "",
+  suffix = "",
+  opacity,
+  spinTiming,
+  opacityTiming,
+  transformTiming,
+  trend,
+  animated,
+  respectMotionPreference,
+  continuous,
+  digits,
+  scrubDigitWidthPercentile = 0.75,
+  onAnimationsStart,
+  onAnimationsFinish,
+  mask,
+}: SkiaNumberFlowProps) => {
+  const formatChars = useMemo(
+    () => getFormatCharacters(locales, format, prefix, suffix),
+    [locales, format, prefix, suffix],
+  );
+  const numberingSystem = useMemo(() => detectNumberingSystem(locales, format), [locales, format]);
+  const zeroCodePoint = getZeroCodePoint(numberingSystem);
+  const digitStringsArr = useMemo(() => getDigitStrings(numberingSystem), [numberingSystem]);
+  const metrics = useGlyphMetrics(font, formatChars, digitStringsArr);
+
+  if (__DEV__) {
+    if (!font) {
+      warnOnce(
+        "skia-font",
+        "font is null — pass a loaded SkFont from useFont(). Component renders empty until font loads.",
+      );
+    }
+    if (value !== undefined && sharedValue !== undefined) {
+      warnOnce("skia-nf-both", "Both value and sharedValue provided. Use one or the other.");
+    }
+    if (value === undefined && sharedValue === undefined) {
+      warnOnce("skia-nf-neither", "Neither value nor sharedValue provided.");
+    }
+    if (scrubDigitWidthPercentile < 0 || scrubDigitWidthPercentile > 1) {
+      warnOnce("nf-percentile", "scrubDigitWidthPercentile should be between 0 and 1.");
+    }
+    if (digits) {
+      for (const [posStr, constraint] of Object.entries(digits)) {
+        if (constraint.max < 1 || constraint.max > 9) {
+          warnOnce(
+            `skia-nf-digit-max-${posStr}`,
+            `digits[${posStr}].max must be between 1 and 9, got ${constraint.max}.`,
+          );
+        }
+      }
+    }
+  }
+
+  const clampedPercentile = Math.max(0, Math.min(1, scrubDigitWidthPercentile));
+
+  if (!font || !metrics) {
+    return <Group />;
+  }
+
+  const baseProps: ModeBaseProps = {
+    format,
+    locales,
+    font,
+    color,
+    x,
+    y,
+    width,
+    textAlign,
+    prefix,
+    suffix,
+    opacity,
+    spinTiming,
+    opacityTiming,
+    transformTiming,
+    trend,
+    animated,
+    respectMotionPreference,
+    continuous,
+    digits,
+    scrubDigitWidthPercentile: clampedPercentile,
+    onAnimationsStart,
+    onAnimationsFinish,
+    mask,
+    metrics,
+    digitStringsArr,
+    zeroCodePoint,
+  };
+
+  // Shared-value mode mounts scrubbing hooks; value mode avoids them entirely.
+  if (sharedValue !== undefined && value === undefined) {
+    return <SkiaNumberFlowSharedMode {...baseProps} sharedValue={sharedValue} />;
+  }
+
+  if (value === undefined) {
+    return <Group />;
+  }
+
+  return <SkiaNumberFlowValueMode {...baseProps} value={value} />;
 };

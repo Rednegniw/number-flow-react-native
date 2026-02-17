@@ -1,0 +1,123 @@
+---
+title: SkiaTimeFlow
+description: Skia canvas-based animated time display with worklet scrubbing
+---
+
+`SkiaTimeFlow` is the Canvas-based animated time display. Like `TimeFlow`, it supports hours/minutes/seconds segments, 12h/24h formats, and timestamp input — but renders in Skia and supports worklet-driven scrubbing via `SharedValue`.
+
+## Import
+
+```tsx
+import { SkiaTimeFlow, useSkiaFont } from 'number-flow-react-native/skia';
+```
+
+## Basic Usage
+
+```tsx
+import { useEffect, useState } from 'react';
+import { View } from 'react-native';
+import { Canvas } from '@shopify/react-native-skia';
+import { SkiaTimeFlow, useSkiaFont } from 'number-flow-react-native/skia';
+
+function SkiaClock() {
+  const font = useSkiaFont(require('./assets/Inter-Bold.otf'), 48);
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <View style={{ alignItems: 'center', padding: 24 }}>
+      <Canvas style={{ width: 300, height: 60 }}>
+        <SkiaTimeFlow
+          timestamp={now}
+          font={font}
+          color="#1a1a1a"
+          y={48}
+          width={300}
+          textAlign="center"
+        />
+      </Canvas>
+    </View>
+  );
+}
+```
+
+## Props
+
+### Time value props (mutually exclusive with sharedValue)
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `hours` | `number` (0–23) | `undefined` | Hours value. Omit to hide the hours segment. |
+| `minutes` | `number` (0–59) | **(required)** | Minutes value. Required when using direct time values. |
+| `seconds` | `number` (0–59) | `undefined` | Seconds value. Omit to hide the seconds segment. |
+| `timestamp` | `number` | `undefined` | Unix timestamp in milliseconds. Auto-extracts hours/minutes/seconds. |
+| `timezoneOffset` | `number` | `undefined` | Timezone offset in milliseconds for timestamp mode. |
+| `sharedValue` | `SharedValue<string>` | `undefined` | Worklet-driven pre-formatted time string (e.g. `"14:30"`, `"2:30 PM"`). Mutually exclusive with direct time values. |
+
+### Format props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `is24Hour` | `boolean` | `true` | Use 24-hour format. |
+| `padHours` | `boolean` | `true` | Pad hours with a leading zero. |
+
+### Rendering props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `font` | `SkFont \| null` | **(required)** | Skia font instance from `useFont()` or `useSkiaFont()`. |
+| `color` | `string` | `"#000000"` | Text color as a Skia color string. |
+| `x` | `number` | `0` | X position within the Canvas. |
+| `y` | `number` | `0` | Y position (baseline). |
+| `width` | `number` | `0` | Available width for alignment. |
+| `textAlign` | `"left" \| "right" \| "center"` | `"left"` | Text alignment. |
+| `opacity` | `SharedValue<number>` | `undefined` | Parent opacity for animation coordination. |
+
+### Animation behavior props
+
+All props from `AnimationBehaviorProps` are supported. See [NumberFlow](/docs/components/number-flow#animation-behavior-props) for details.
+
+## Worklet Scrubbing
+
+Like `SkiaNumberFlow`, `SkiaTimeFlow` accepts a `sharedValue` for zero-latency UI thread updates:
+
+```tsx
+import { Canvas } from '@shopify/react-native-skia';
+import { useDerivedValue, useSharedValue } from 'react-native-reanimated';
+import { SkiaTimeFlow, useSkiaFont } from 'number-flow-react-native/skia';
+
+function ScrubbableTime() {
+  const font = useSkiaFont(require('./assets/Inter.ttf'), 36);
+  const totalSeconds = useSharedValue(3600);
+
+  const formatted = useDerivedValue(() => {
+    const h = Math.floor(totalSeconds.value / 3600);
+    const m = Math.floor((totalSeconds.value % 3600) / 60);
+    const s = Math.floor(totalSeconds.value % 60);
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  });
+
+  return (
+    <Canvas style={{ width: 300, height: 50 }}>
+      <SkiaTimeFlow
+        sharedValue={formatted}
+        font={font}
+        color="#1a1a1a"
+        y={40}
+        width={300}
+        textAlign="center"
+      />
+    </Canvas>
+  );
+}
+```
+
+## Accessibility
+
+Value changes are auto-announced via `AccessibilityInfo.announceForAccessibility`. For focus-based reading, set `accessibilityLabel` on the parent `Canvas`.
+
+<ExpoSnack title="SkiaTimeFlow" />

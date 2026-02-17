@@ -1,0 +1,19 @@
+{
+  "title": "Docs",
+  "pages": [
+    "index",
+    "getting-started",
+    "---Components---",
+    "components",
+    "---Hooks---",
+    "hooks",
+    "---Examples---",
+    "examples",
+    "---Recipes---",
+    "recipes",
+    "---Guides---",
+    "guides",
+    "---Architecture---",
+    "architecture"
+  ]
+}

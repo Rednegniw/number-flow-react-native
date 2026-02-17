@@ -7,8 +7,7 @@ import {
 } from "./timing";
 import { useCanAnimate } from "./useCanAnimate";
 
-export interface ResolvedTimings {
-  shouldAnimate: boolean;
+interface ResolvedTimings {
   resolvedSpinTiming: TimingConfig;
   resolvedOpacityTiming: TimingConfig;
   resolvedTransformTiming: TimingConfig;
@@ -41,7 +40,6 @@ export function useTimingResolution(
     : ZERO_TIMING;
 
   return {
-    shouldAnimate,
     resolvedSpinTiming,
     resolvedOpacityTiming,
     resolvedTransformTiming,

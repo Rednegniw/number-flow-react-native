@@ -1,0 +1,60 @@
+---
+title: useCanAnimate
+description: Check if animations are enabled based on device motion preferences
+---
+
+Returns whether NumberFlow animations are currently enabled, based on the device's "Reduce Motion" accessibility setting.
+
+## Import
+
+```tsx
+import { useCanAnimate } from 'number-flow-react-native';
+```
+
+## Signature
+
+```tsx
+useCanAnimate(respectMotionPreference?: boolean): boolean
+```
+
+## Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `respectMotionPreference` | `boolean` | `true` | When `true`, returns `false` if the device "Reduce Motion" setting is on |
+
+## Returns
+
+`boolean` — `true` if animations should play, `false` if reduced motion is active.
+
+## Usage
+
+```tsx
+import { Text } from 'react-native';
+import { NumberFlow } from 'number-flow-react-native/native';
+import { useCanAnimate } from 'number-flow-react-native';
+
+function AnimatedPrice({ value }: { value: number }) {
+  const canAnimate = useCanAnimate();
+
+  if (!canAnimate) {
+    return <Text style={{ fontSize: 32 }}>${value.toFixed(2)}</Text>;
+  }
+
+  return (
+    <NumberFlow
+      value={value}
+      format={{ style: 'currency', currency: 'USD' }}
+      style={{ fontSize: 32, fontFamily: 'System' }}
+    />
+  );
+}
+```
+
+<Callout type="info">
+NumberFlow components already respect Reduce Motion internally via the `respectMotionPreference` prop (default: `true`). This hook is mainly useful when you need to conditionally render entirely different UI based on motion capability.
+</Callout>
+
+## Implementation
+
+Under the hood, `useCanAnimate` uses Reanimated's `useReducedMotion` to read the device accessibility setting. When `respectMotionPreference` is `false`, the hook always returns `true` regardless of the device setting.

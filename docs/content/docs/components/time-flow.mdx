@@ -1,0 +1,141 @@
+---
+title: TimeFlow
+description: View-based animated time display component (HH:MM:SS)
+---
+
+`TimeFlow` renders animated time displays with independently rolling hours, minutes, and seconds segments. It supports 12-hour and 24-hour formats, optional segments, countdown modes, and timestamp-based input.
+
+## Import
+
+```tsx
+import { TimeFlow } from 'number-flow-react-native/native';
+```
+
+## Basic Usage
+
+A live clock that updates every second:
+
+```tsx
+import { useEffect, useState } from 'react';
+import { View } from 'react-native';
+import { TimeFlow } from 'number-flow-react-native/native';
+
+function LiveClock() {
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <View style={{ alignItems: 'center', padding: 24 }}>
+      <TimeFlow
+        timestamp={now}
+        style={{ fontSize: 48, fontWeight: '600', color: '#1a1a1a' }}
+      />
+    </View>
+  );
+}
+```
+
+## Props
+
+### Time value props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `hours` | `number` (0–23) | `undefined` | Hours value. Omit to hide the hours segment (useful for MM:SS countdown mode). |
+| `minutes` | `number` (0–59) | **(required)** | Minutes value. |
+| `seconds` | `number` (0–59) | `undefined` | Seconds value. Omit to hide the seconds segment. |
+| `timestamp` | `number` | `undefined` | Unix timestamp in milliseconds. Auto-extracts hours/minutes/seconds. Takes priority over direct value props. |
+| `timezoneOffset` | `number` | `undefined` | Timezone offset in milliseconds for timestamp mode. |
+
+### Format props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `is24Hour` | `boolean` | `true` | Use 24-hour format. When `false`, displays 12-hour format. Only applies when hours are shown. |
+| `padHours` | `boolean` | `true` | Pad hours with a leading zero (`"09:30"` vs `"9:30"`). |
+
+### Style props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `style` | `NumberFlowStyle` | **(required)** | Text styling. `fontSize` is required. |
+| `textAlign` | `"left" \| "right" \| "center"` | `"left"` | Text alignment within the container. |
+| `containerStyle` | `ViewStyle` | `undefined` | Style applied to the outer container `View`. |
+
+### Animation behavior props
+
+All props from `AnimationBehaviorProps` are supported: `trend`, `animated`, `respectMotionPreference`, `continuous`, `mask`, `transformTiming`, `spinTiming`, `opacityTiming`, `onAnimationsStart`, `onAnimationsFinish`. See [NumberFlow](/docs/components/number-flow#animation-behavior-props) for details.
+
+## Examples
+
+### Countdown timer (MM:SS)
+
+Omit `hours` to show minutes and seconds only:
+
+```tsx
+import { useEffect, useState } from 'react';
+import { View } from 'react-native';
+import { TimeFlow } from 'number-flow-react-native/native';
+
+function CountdownTimer({ initialSeconds = 300 }) {
+  const [remaining, setRemaining] = useState(initialSeconds);
+
+  useEffect(() => {
+    if (remaining <= 0) return;
+    const interval = setInterval(() => {
+      setRemaining(prev => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [remaining]);
+
+  const mins = Math.floor(remaining / 60);
+  const secs = remaining % 60;
+
+  return (
+    <View style={{ alignItems: 'center', padding: 24 }}>
+      <TimeFlow
+        minutes={mins}
+        seconds={secs}
+        style={{ fontSize: 64, fontWeight: '700', color: '#e53e3e' }}
+        trend={-1}
+      />
+    </View>
+  );
+}
+```
+
+### 12-hour format
+
+```tsx
+<TimeFlow
+  hours={14}
+  minutes={30}
+  seconds={0}
+  is24Hour={false}
+  padHours={false}
+  style={{ fontSize: 36, color: '#333' }}
+/>
+{/* Renders: 2:30:00 */}
+```
+
+### Timestamp with timezone offset
+
+```tsx
+const tokyoOffset = 9 * 60 * 60 * 1000; // UTC+9 in ms
+
+<TimeFlow
+  timestamp={Date.now()}
+  timezoneOffset={tokyoOffset}
+  style={{ fontSize: 32, color: '#1a1a1a' }}
+/>
+```
+
+## Accessibility
+
+`TimeFlow` sets `accessibilityRole="text"` and an `accessibilityLabel` with the full formatted time string automatically. Screen readers read the complete time (e.g. "14:30:00") rather than announcing individual digit changes.
+
+<ExpoSnack title="TimeFlow Clock" />

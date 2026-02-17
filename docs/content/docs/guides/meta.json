@@ -1,0 +1,9 @@
+{
+  "title": "Guides",
+  "pages": [
+    "native-vs-skia",
+    "accessibility",
+    "how-it-works",
+    "performance-tips"
+  ]
+}

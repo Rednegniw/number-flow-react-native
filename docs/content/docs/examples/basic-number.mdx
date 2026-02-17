@@ -1,0 +1,35 @@
+---
+title: Basic Number
+description: Simple animated number display with increment/decrement controls
+---
+
+The simplest `NumberFlow` usage — a number that rolls digit-by-digit when the value changes.
+
+```tsx
+import { useState } from 'react';
+import { View, Button } from 'react-native';
+import { NumberFlow } from 'number-flow-react-native/native';
+
+export default function BasicNumber() {
+  const [value, setValue] = useState(42);
+
+  return (
+    <View style={{ alignItems: 'center', gap: 16, padding: 32 }}>
+      <NumberFlow
+        value={value}
+        style={{ fontSize: 48, fontFamily: 'System', color: '#000' }}
+      />
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <Button title="-10" onPress={() => setValue(v => v - 10)} />
+        <Button title="-1" onPress={() => setValue(v => v - 1)} />
+        <Button title="+1" onPress={() => setValue(v => v + 1)} />
+        <Button title="+10" onPress={() => setValue(v => v + 10)} />
+      </View>
+    </View>
+  );
+}
+```
+
+Each digit independently rolls to its target value. When going from 42 to 52, only the tens digit animates — the ones digit stays put.
+
+<ExpoSnack title="Basic Number" />

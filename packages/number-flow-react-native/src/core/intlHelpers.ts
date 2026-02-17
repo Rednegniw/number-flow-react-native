@@ -70,6 +70,7 @@ export function getFormatCharacters(
   const digitStrings = getDigitStrings(numberingSystem);
   for (const ds of digitStrings) chars.add(ds);
 
+  // Also include prefix/suffix chars.
   for (const ch of prefix) chars.add(ch);
   for (const ch of suffix) chars.add(ch);
 
@@ -244,7 +245,7 @@ function parseNumberString(
  * Hermes has Intl.NumberFormat but may lack formatToParts(). This fallback
  * uses format() and parses the resulting string into typed parts.
  */
-export function fallbackFormatToParts(
+function fallbackFormatToParts(
   formatter: Intl.NumberFormat,
   value: number,
   locales?: Intl.LocalesArgument,

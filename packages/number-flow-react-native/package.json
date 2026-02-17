@@ -1,6 +1,6 @@
 {
   "name": "number-flow-react-native",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Animated number transitions for React Native — View-based and Skia renderers",
   "source": "./src/index.ts",
   "main": "./lib/module/index.js",

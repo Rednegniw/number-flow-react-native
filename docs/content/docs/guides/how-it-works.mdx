@@ -1,0 +1,71 @@
+---
+title: How It Works
+description: Digit wheels, keying strategy, and the animation pipeline
+---
+
+A high-level look at how the library produces smooth digit-by-digit animations.
+
+## Core concepts
+
+### Digit wheels
+
+Each digit position renders a **virtual wheel** — a column of digits 0–9 stacked vertically. The wheel is taller than the visible area; only one digit is visible at a time. Transitions are achieved by translating the wheel's Y position using Reanimated SharedValues.
+
+```
+  ┌─────┐
+  │  7  │  ← visible
+  │  8  │
+  │  9  │
+  │  0  │
+  │  1  │
+  │ ... │
+  └─────┘
+      ↑ translateY animates to show target digit
+```
+
+When rolling from 3 to 7, the wheel translates upward by 4 digit heights. The `computeRollDelta()` function calculates the optimal rotation — shortest path (3→7 = +4) or forced direction (trend control).
+
+### Character keying strategy
+
+Correct React reconciliation requires stable keys for each character position. The library uses a directional keying strategy:
+
+- **Integer digits** — keyed right-to-left: `integer:0` (ones), `integer:1` (tens), `integer:2` (hundreds)
+- **Fraction digits** — keyed left-to-right: `fraction:0` (tenths), `fraction:1` (hundredths)
+- **Symbols** — keyed by type and position: `decimal:0`, `group:0`, `prefix:0`, etc.
+
+This ensures that when digit count changes (e.g. 99 → 100), the ones digit keeps its `integer:0` key and the new hundreds digit enters as `integer:2` — no unnecessary unmount/remount of existing slots.
+
+## Rendering pipeline
+
+### Layout engine
+
+The layout engine (`computeKeyedLayout`) measures and positions each character:
+
+1. **Glyph measurement** — measures the advance width of every character that could appear (digits 0–9, symbols, prefix/suffix characters)
+2. **Uniform digit width** — all digit positions use `maxDigitWidth` (the widest digit glyph) for consistent slot sizing
+3. **X position computation** — accumulates widths left-to-right to determine each character's X coordinate
+4. **Alignment** — applies `textAlign` offset based on total content width vs container width
+
+### Enter/exit animations
+
+When the formatted string changes shape (digits added/removed, prefix/suffix changed):
+
+- **Entering characters** fade in with opacity (0→1) and slide vertically
+- **Exiting characters** fade out with opacity (1→0) and slide vertically
+- **Updating characters** (same key, different position) smoothly translate to their new X position
+
+The `useLayoutDiff` hook computes which entries are entering, exiting, or updating by comparing the current and previous `KeyedPart[]` arrays.
+
+### Slot pool
+
+To avoid creating/destroying React components as digit count changes, the library uses a fixed pool of up to 20 slots (`MAX_SLOTS = 20`). Each slot has pre-allocated SharedValues. Unused slots render nothing; active slots are assigned to layout entries. This eliminates the cost of mounting new Animated components during transitions.
+
+## Advanced features
+
+### Continuous mode
+
+When `continuous={true}`, the library generates additional spin for unchanged lower-significance digits. If the tens digit changes from 0 to 1 (e.g. 09 → 19), the ones digit — even though its value is still 9 — spins through a full 0–9 cycle. This creates the visual impression of passing through all intermediate values (10, 11, 12, ... 18, 19).
+
+### Adaptive masking
+
+The gradient mask at the top and bottom of each digit slot isn't a fixed size. The library measures per-character glyph bounds (`charBounds`) to determine exactly where each character's visual content starts and ends relative to the baseline. The mask fade zones are positioned to avoid cutting into visible glyph content, adapting to the actual font metrics.
