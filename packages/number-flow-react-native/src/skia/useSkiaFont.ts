@@ -1,5 +1,5 @@
-import { matchFont, useFont } from "@shopify/react-native-skia";
 import type { DataSourceParam, SkFont } from "@shopify/react-native-skia";
+import { matchFont, useFont } from "@shopify/react-native-skia";
 import { useMemo } from "react";
 
 /**

@@ -2,12 +2,12 @@ import { Group, LinearGradient, Paint, Rect as SkiaRect, vec } from "@shopify/re
 import { useMemo } from "react";
 import type { SharedValue } from "react-native-reanimated";
 import { MASK_WIDTH_RATIO } from "../core/constants";
-import { computeKeyedLayout, computeStringLayout, type CharLayout } from "../core/layout";
+import { getFormatCharacters } from "../core/intlHelpers";
+import { type CharLayout, computeKeyedLayout, computeStringLayout } from "../core/layout";
 import { detectNumberingSystem, getDigitStrings, getZeroCodePoint } from "../core/numerals";
 import type { GlyphMetrics, KeyedPart, SkiaNumberFlowProps } from "../core/types";
 import { useAccessibilityAnnouncement } from "../core/useAccessibilityAnnouncement";
 import { useFlowPipeline } from "../core/useFlowPipeline";
-import { getFormatCharacters } from "../core/intlHelpers";
 import { useNumberFormatting } from "../core/useNumberFormatting";
 import { getDigitCount } from "../core/utils";
 import { warnOnce } from "../core/warnings";

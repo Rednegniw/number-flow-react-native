@@ -86,11 +86,7 @@ function TimingBadge({ timeMs }: { timeMs: number | undefined }) {
 
 // ─── Native test run ─────────────────────────────────────────────────────────
 
-function NativeTestRun({
-  onAllDone,
-}: {
-  onAllDone: (results: TimingResult[]) => void;
-}) {
+function NativeTestRun({ onAllDone }: { onAllDone: (results: TimingResult[]) => void }) {
   const startTime = useRef(performance.now()).current;
   const [times, setTimes] = useState<Record<string, number>>({});
   const reportedRef = useRef(false);
@@ -129,9 +125,7 @@ function NativeTestRun({
           }}
         >
           <VisibilityProbe label="Text" onVisible={handleVisible} startTime={startTime}>
-            <Text
-              style={{ fontFamily: FONT_REGULAR, fontSize: FONT_SIZE, color: colors.text }}
-            >
+            <Text style={{ fontFamily: FONT_REGULAR, fontSize: FONT_SIZE, color: colors.text }}>
               {FORMATTED_VALUE}
             </Text>
           </VisibilityProbe>
@@ -513,7 +507,7 @@ export const PerformanceDemoSkia = () => {
           </Text>
           {coldAvg !== null && (
             <Text style={{ fontSize: 12, color: colors.textSecondary, fontFamily: "monospace" }}>
-              Cold ({coldRuns.length})   {coldAvg.toFixed(1).padStart(7)}ms
+              Cold ({coldRuns.length}) {coldAvg.toFixed(1).padStart(7)}ms
             </Text>
           )}
           {cachedAvg !== null && (

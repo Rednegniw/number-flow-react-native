@@ -1,6 +1,6 @@
 import { SUPERSCRIPT_SCALE } from "./constants";
-import type { GlyphMetrics, KeyedPart, TextAlign } from "./types";
 import { isDigitChar, localeDigitValue } from "./numerals";
+import type { GlyphMetrics, KeyedPart, TextAlign } from "./types";
 
 /**
  * Assigns x positions to each entry based on text alignment.

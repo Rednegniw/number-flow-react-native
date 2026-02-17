@@ -12,17 +12,28 @@ const digitStringsCache = new Map<string, string[]>();
 export function hanidecDigitValue(charCode: number): number {
   "worklet";
   switch (charCode) {
-    case 0x3007: return 0;  // 〇
-    case 0x4e00: return 1;  // 一
-    case 0x4e8c: return 2;  // 二
-    case 0x4e09: return 3;  // 三
-    case 0x56db: return 4;  // 四
-    case 0x4e94: return 5;  // 五
-    case 0x516d: return 6;  // 六
-    case 0x4e03: return 7;  // 七
-    case 0x516b: return 8;  // 八
-    case 0x4e5d: return 9;  // 九
-    default: return -1;
+    case 0x3007:
+      return 0; // 〇
+    case 0x4e00:
+      return 1; // 一
+    case 0x4e8c:
+      return 2; // 二
+    case 0x4e09:
+      return 3; // 三
+    case 0x56db:
+      return 4; // 四
+    case 0x4e94:
+      return 5; // 五
+    case 0x516d:
+      return 6; // 六
+    case 0x4e03:
+      return 7; // 七
+    case 0x516b:
+      return 8; // 八
+    case 0x4e5d:
+      return 9; // 九
+    default:
+      return -1;
   }
 }
 

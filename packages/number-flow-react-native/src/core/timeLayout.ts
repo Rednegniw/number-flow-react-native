@@ -1,6 +1,6 @@
 import { assignXPositions, type CharLayout } from "./layout";
-import type { GlyphMetrics, TextAlign } from "./types";
 import { isDigitChar, localeDigitValue } from "./numerals";
+import type { GlyphMetrics, TextAlign } from "./types";
 
 /**
  * Keys for each digit position within a time segment.

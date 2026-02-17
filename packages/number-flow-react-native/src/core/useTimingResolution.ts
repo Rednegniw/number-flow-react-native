@@ -1,10 +1,10 @@
-import type { TimingConfig } from "./types";
 import {
   DEFAULT_OPACITY_TIMING,
   DEFAULT_SPIN_TIMING,
   DEFAULT_TRANSFORM_TIMING,
   ZERO_TIMING,
 } from "./timing";
+import type { TimingConfig } from "./types";
 import { useCanAnimate } from "./useCanAnimate";
 
 interface ResolvedTimings {
@@ -27,9 +27,7 @@ export function useTimingResolution(
   const canAnimate = useCanAnimate(respectMotionPreference);
   const shouldAnimate = (animated ?? true) && canAnimate;
 
-  const resolvedSpinTiming = shouldAnimate
-    ? (spinTiming ?? DEFAULT_SPIN_TIMING)
-    : ZERO_TIMING;
+  const resolvedSpinTiming = shouldAnimate ? (spinTiming ?? DEFAULT_SPIN_TIMING) : ZERO_TIMING;
 
   const resolvedOpacityTiming = shouldAnimate
     ? (opacityTiming ?? DEFAULT_OPACITY_TIMING)

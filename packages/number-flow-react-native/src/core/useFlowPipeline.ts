@@ -87,7 +87,11 @@ export function useFlowPipeline(input: FlowPipelineInput): FlowPipelineOutput {
   // 4. Animation lifecycle
   useAnimationLifecycle(
     input.layout,
-    { spin: resolvedSpinTiming, opacity: resolvedOpacityTiming, transform: resolvedTransformTiming },
+    {
+      spin: resolvedSpinTiming,
+      opacity: resolvedOpacityTiming,
+      transform: resolvedTransformTiming,
+    },
     input.onAnimationsStart,
     input.onAnimationsFinish,
   );
@@ -98,7 +102,7 @@ export function useFlowPipeline(input: FlowPipelineInput): FlowPipelineOutput {
   // 6. Accessibility label
   const accessibilityLabel = useMemo(() => {
     if (input.keyedParts.length === 0) return undefined;
-    
+
     return input.keyedParts.map((p) => p.char).join("");
   }, [input.keyedParts]);
 

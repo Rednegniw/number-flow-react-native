@@ -7,10 +7,10 @@ import {
   useDerivedValue,
 } from "react-native-reanimated";
 import { assignXPositions, type CharLayout } from "../core/layout";
+import { countDigits } from "../core/numerals";
 import type { GlyphMetrics, TextAlign } from "../core/types";
 import { useDebouncedWidths } from "../core/useDebouncedWidths";
 import { useWorkletFormatting } from "../core/useWorkletFormatting";
-import { countDigits } from "../core/numerals";
 
 // ---------------------------------------------------------------------------
 // useScrubbingBridge

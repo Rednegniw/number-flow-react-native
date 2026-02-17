@@ -1,5 +1,5 @@
-import { computeAdaptiveMaskHeights } from "../src/core/mask";
 import type { CharLayout } from "../src/core/layout";
+import { computeAdaptiveMaskHeights } from "../src/core/mask";
 import type { GlyphMetrics } from "../src/core/types";
 
 /**

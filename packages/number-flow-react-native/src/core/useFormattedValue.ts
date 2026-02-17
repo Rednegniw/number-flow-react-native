@@ -23,10 +23,10 @@ export function useFormattedValue(
   // Serialize format/locales to a stable string — avoids re-runs when callers pass inline objects
   const formatKey = useMemo(() => JSON.stringify([locales, format]), [locales, format]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: formatKey serializes locales+format into a stable string to avoid re-runs on inline objects
   return useMemo(() => {
     if (value === undefined) return undefined;
     const formatter = getOrCreateFormatter(locales, format);
     return `${prefix ?? ""}${formatter.format(value)}${suffix ?? ""}`;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, prefix, suffix, formatKey]);
 }

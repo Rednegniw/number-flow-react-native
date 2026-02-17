@@ -201,8 +201,6 @@ export const TimeFlow = ({
       </View>
     );
   }
-
-  {/* Placeholder branch: show plain Text while slot tree loads */}
   if (!slotsReady) {
     return (
       <View

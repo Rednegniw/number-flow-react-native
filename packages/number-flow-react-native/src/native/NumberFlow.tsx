@@ -1,9 +1,9 @@
 import MaskedView from "@rednegniw/masked-view";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { type LayoutChangeEvent, Text, View } from "react-native";
+import { getFormatCharacters } from "../core/intlHelpers";
 import { computeKeyedLayout } from "../core/layout";
 import { detectNumberingSystem, getDigitStrings } from "../core/numerals";
-import { getFormatCharacters } from "../core/intlHelpers";
 import { useFlowPipeline } from "../core/useFlowPipeline";
 import { useNumberFormatting } from "../core/useNumberFormatting";
 import { getDigitCount } from "../core/utils";
@@ -35,48 +35,29 @@ export const NumberFlow = ({
 }: NumberFlowProps) => {
   const formatChars = useMemo(
     () => getFormatCharacters(locales, format, prefix, suffix),
-    [locales, format, prefix, suffix]
+    [locales, format, prefix, suffix],
   );
-  const numberingSystem = useMemo(
-    () => detectNumberingSystem(locales, format),
-    [locales, format]
-  );
-  const digitStrings = useMemo(
-    () => getDigitStrings(numberingSystem),
-    [numberingSystem]
-  );
-  const { metrics, MeasureElement } = useMeasuredGlyphMetrics(
-    nfStyle,
-    formatChars,
-    digitStrings
-  );
+  const numberingSystem = useMemo(() => detectNumberingSystem(locales, format), [locales, format]);
+  const digitStrings = useMemo(() => getDigitStrings(numberingSystem), [numberingSystem]);
+  const { metrics, MeasureElement } = useMeasuredGlyphMetrics(nfStyle, formatChars, digitStrings);
 
   if (__DEV__) {
     if (!nfStyle.fontSize) {
-      warnOnce(
-        "nf-fontSize",
-        "style.fontSize is required for NumberFlow to measure glyphs."
-      );
+      warnOnce("nf-fontSize", "style.fontSize is required for NumberFlow to measure glyphs.");
     }
     if (digits) {
       for (const [posStr, constraint] of Object.entries(digits)) {
         if (constraint.max < 1 || constraint.max > 9) {
           warnOnce(
             `nf-digit-max-${posStr}`,
-            `digits[${posStr}].max must be between 1 and 9, got ${constraint.max}.`
+            `digits[${posStr}].max must be between 1 and 9, got ${constraint.max}.`,
           );
         }
       }
     }
   }
 
-  const keyedParts = useNumberFormatting(
-    value,
-    format,
-    locales,
-    prefix,
-    suffix
-  );
+  const keyedParts = useNumberFormatting(value, format, locales, prefix, suffix);
 
   const [containerWidth, setContainerWidth] = useState(0);
   const handleContainerLayout = useCallback((e: LayoutChangeEvent) => {
@@ -92,13 +73,7 @@ export const NumberFlow = ({
     if (containerWidth === 0 && textAlign !== "left") return [];
 
     if (keyedParts.length === 0) return [];
-    return computeKeyedLayout(
-      keyedParts,
-      metrics,
-      containerWidth,
-      textAlign,
-      digitStrings
-    );
+    return computeKeyedLayout(keyedParts, metrics, containerWidth, textAlign, digitStrings);
   }, [metrics, keyedParts, containerWidth, textAlign, digitStrings]);
 
   const {
@@ -135,7 +110,7 @@ export const NumberFlow = ({
       ...nfStyle,
       color: nfStyle.color ?? "#000000",
     }),
-    [nfStyle]
+    [nfStyle],
   );
 
   const resolvedMask = mask ?? true;
@@ -179,7 +154,6 @@ export const NumberFlow = ({
     );
   }, [resolvedMask, metrics, maskTop, maskBottom, topSteps, bottomSteps]);
 
-  
   const [slotsReady, setSlotsReady] = useState(false);
   const metricsReady = !!metrics;
 
