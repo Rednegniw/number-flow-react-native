@@ -1,6 +1,6 @@
-import { Canvas, useFont } from "@shopify/react-native-skia";
+import { Canvas } from "@shopify/react-native-skia";
 import { NumberFlow } from "number-flow-react-native/native";
-import { SkiaNumberFlow } from "number-flow-react-native/skia";
+import { SkiaNumberFlow, useSkiaFont } from "number-flow-react-native/skia";
 import { useCallback, useState } from "react";
 import { Text, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
@@ -91,13 +91,11 @@ const SliderTrack = ({
 );
 
 export const ScrubbingDemoSkia = () => {
-  const skiaFont = useFont(INTER_FONT_ASSET, SKIA_FONT_SIZE);
+  const skiaFont = useSkiaFont(INTER_FONT_ASSET, SKIA_FONT_SIZE);
 
   const thumbX = useSharedValue(TRACK_WIDTH / 2);
   const isScrubbing = useSharedValue(false);
-  const [lastValue, setLastValue] = useState(
-    Math.round((MAX_VALUE / 2) * 10) / 10,
-  );
+  const [lastValue, setLastValue] = useState(Math.round((MAX_VALUE / 2) * 10) / 10);
 
   const updateLastValue = useCallback((v: number) => {
     setLastValue(v);
@@ -125,8 +123,7 @@ export const ScrubbingDemoSkia = () => {
       "worklet";
       isScrubbing.value = false;
       const ratio = Math.max(0, Math.min(1, thumbX.value / TRACK_WIDTH));
-      const value =
-        Math.round((MIN_VALUE + ratio * (MAX_VALUE - MIN_VALUE)) * 10) / 10;
+      const value = Math.round((MIN_VALUE + ratio * (MAX_VALUE - MIN_VALUE)) * 10) / 10;
       runOnJS(updateLastValue)(value);
     });
 
@@ -184,9 +181,7 @@ export const ScrubbingDemoSkia = () => {
 
 export const ScrubbingDemoNative = () => {
   const thumbX = useSharedValue(TRACK_WIDTH / 2);
-  const [value, setValue] = useState(
-    Math.round((MAX_VALUE / 2) * 10) / 10,
-  );
+  const [value, setValue] = useState(Math.round((MAX_VALUE / 2) * 10) / 10);
 
   const updateValue = useCallback((v: number) => {
     setValue(v);

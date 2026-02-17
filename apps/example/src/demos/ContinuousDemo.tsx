@@ -1,6 +1,6 @@
-import { Canvas, useFont } from "@shopify/react-native-skia";
+import { Canvas } from "@shopify/react-native-skia";
 import { NumberFlow } from "number-flow-react-native/native";
-import { SkiaNumberFlow } from "number-flow-react-native/skia";
+import { SkiaNumberFlow, useSkiaFont } from "number-flow-react-native/skia";
 import { useCallback, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { colors } from "../theme/colors";
@@ -53,9 +53,7 @@ const ActionButtons = ({ onJump, onReset }: { onJump: () => void; onReset: () =>
         alignItems: "center",
       }}
     >
-      <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
-        Reset
-      </Text>
+      <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>Reset</Text>
     </Pressable>
   </View>
 );
@@ -133,7 +131,7 @@ export const ContinuousDemoNative = () => {
 };
 
 export const ContinuousDemoSkia = () => {
-  const skiaFont = useFont(INTER_FONT_ASSET, FONT_SIZE);
+  const skiaFont = useSkiaFont(INTER_FONT_ASSET, FONT_SIZE);
   const { value, jump, reset } = useContinuousDemoState();
 
   return (

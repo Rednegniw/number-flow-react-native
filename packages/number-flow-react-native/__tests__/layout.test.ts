@@ -5,11 +5,26 @@ import type { GlyphMetrics, KeyedPart } from "../src/core/types";
 // Shared mock metrics: all characters 10px wide, digits 12px
 const metrics: GlyphMetrics = {
   charWidths: {
-    "0": 12, "1": 12, "2": 12, "3": 12, "4": 12,
-    "5": 12, "6": 12, "7": 12, "8": 12, "9": 12,
-    ":": 6, ".": 6, ",": 6, " ": 8,
-    "$": 10, "%": 10, "-": 8,
-    "A": 10, "M": 12, "P": 10,
+    "0": 12,
+    "1": 12,
+    "2": 12,
+    "3": 12,
+    "4": 12,
+    "5": 12,
+    "6": 12,
+    "7": 12,
+    "8": 12,
+    "9": 12,
+    ":": 6,
+    ".": 6,
+    ",": 6,
+    " ": 8,
+    $: 10,
+    "%": 10,
+    "-": 8,
+    A: 10,
+    M: 12,
+    P: 10,
   },
   maxDigitWidth: 12,
   lineHeight: 20,
@@ -54,10 +69,7 @@ describe("computeKeyedLayout", () => {
   });
 
   test("preserves keyed part metadata", () => {
-    const parts = [
-      symbol("prefix:0", "$"),
-      digit("integer:0", 5),
-    ];
+    const parts = [symbol("prefix:0", "$"), digit("integer:0", 5)];
     const layout = computeKeyedLayout(parts, metrics, 100, "left");
 
     expect(layout[0].key).toBe("prefix:0");
@@ -91,10 +103,7 @@ describe("computeKeyedLayout", () => {
   });
 
   test("superscript widths are scaled by SUPERSCRIPT_SCALE", () => {
-    const parts = [
-      digit("integer:0", 1),
-      digit("exponentInteger:0", 3),
-    ];
+    const parts = [digit("integer:0", 1), digit("exponentInteger:0", 3)];
     const layout = computeKeyedLayout(parts, metrics, 200, "left");
 
     expect(layout[0].width).toBe(12);
@@ -125,58 +134,42 @@ describe("computeStringLayout", () => {
 
 describe("computeTimeStringLayout", () => {
   test("HH:MM:SS assigns semantic keys", () => {
-    const layout = computeTimeStringLayout(
-      "14:30:45", metrics, 200, "left", true, true,
-    );
+    const layout = computeTimeStringLayout("14:30:45", metrics, 200, "left", true, true);
     const keys = layout.map((c) => c.key);
 
-    expect(keys).toEqual([
-      "h10", "h1", "sep", "m10", "m1", "sep2", "s10", "s1",
-    ]);
+    expect(keys).toEqual(["h10", "h1", "sep", "m10", "m1", "sep2", "s10", "s1"]);
   });
 
   test("HH:MM without seconds", () => {
-    const layout = computeTimeStringLayout(
-      "14:30", metrics, 200, "left", true, false,
-    );
+    const layout = computeTimeStringLayout("14:30", metrics, 200, "left", true, false);
     const keys = layout.map((c) => c.key);
 
     expect(keys).toEqual(["h10", "h1", "sep", "m10", "m1"]);
   });
 
   test("MM:SS countdown mode (no hours)", () => {
-    const layout = computeTimeStringLayout(
-      "05:30", metrics, 200, "left", false, true,
-    );
+    const layout = computeTimeStringLayout("05:30", metrics, 200, "left", false, true);
     const keys = layout.map((c) => c.key);
 
     expect(keys).toEqual(["m10", "m1", "sep2", "s10", "s1"]);
   });
 
   test("single-digit hour: only h1, no h10", () => {
-    const layout = computeTimeStringLayout(
-      "9:30", metrics, 200, "left", true, false,
-    );
+    const layout = computeTimeStringLayout("9:30", metrics, 200, "left", true, false);
     const keys = layout.map((c) => c.key);
 
     expect(keys).toEqual(["h1", "sep", "m10", "m1"]);
   });
 
   test("AM/PM suffix parsed correctly", () => {
-    const layout = computeTimeStringLayout(
-      "2:30 PM", metrics, 200, "left", true, false,
-    );
+    const layout = computeTimeStringLayout("2:30 PM", metrics, 200, "left", true, false);
     const keys = layout.map((c) => c.key);
 
-    expect(keys).toEqual([
-      "h1", "sep", "m10", "m1", "ampm-sp", "ampm:PM:0", "ampm:PM:1",
-    ]);
+    expect(keys).toEqual(["h1", "sep", "m10", "m1", "ampm-sp", "ampm:PM:0", "ampm:PM:1"]);
   });
 
   test("digit values are correct", () => {
-    const layout = computeTimeStringLayout(
-      "14:30", metrics, 200, "left", true, false,
-    );
+    const layout = computeTimeStringLayout("14:30", metrics, 200, "left", true, false);
 
     const digitEntries = layout.filter((c) => c.isDigit);
     const values = digitEntries.map((c) => ({ key: c.key, val: c.digitValue }));

@@ -1,9 +1,5 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import {
-  type SharedValue,
-  makeMutable,
-  withTiming,
-} from "react-native-reanimated";
+import { makeMutable, type SharedValue, withTiming } from "react-native-reanimated";
 import type { TimingConfig } from "./types";
 
 /**
@@ -28,7 +24,7 @@ export function useAnimatedX(
         easing: transformTiming.easing,
       });
     }
-  }, [targetX, exiting, transformTiming]);
+  }, [targetX, exiting, transformTiming, animatedX]);
 
   return animatedX;
 }

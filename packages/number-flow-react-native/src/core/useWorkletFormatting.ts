@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { type SharedValue, useAnimatedReaction } from "react-native-reanimated";
-import { makeMutable } from "react-native-reanimated";
+import { makeMutable, type SharedValue, useAnimatedReaction } from "react-native-reanimated";
 import { MAX_SLOTS } from "./constants";
-import { workletDigitValue } from "./utils";
+import { localeDigitValue } from "./numerals";
 
 /**
  * Watches a SharedValue<string> and extracts per-digit numeric values on the
@@ -21,9 +20,7 @@ export function useWorkletFormatting(
   suffix: string,
   zeroCodePoint = 48,
 ): SharedValue<number>[] | null {
-  const [digitValues] = useState(() =>
-    Array.from({ length: MAX_SLOTS }, () => makeMutable(-1)),
-  );
+  const [digitValues] = useState(() => Array.from({ length: MAX_SLOTS }, () => makeMutable(-1)));
 
   useAnimatedReaction(
     () => sharedValue?.value ?? "",
@@ -43,7 +40,7 @@ export function useWorkletFormatting(
 
       for (let i = 0; i < len && digitIndex < MAX_SLOTS; i++) {
         const code = fullText.charCodeAt(i);
-        const dv = workletDigitValue(code, zeroCodePoint);
+        const dv = localeDigitValue(code, zeroCodePoint);
         if (dv >= 0) {
           digitValues[digitIndex].value = dv;
           digitIndex++;

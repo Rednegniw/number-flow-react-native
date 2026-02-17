@@ -10,11 +10,7 @@ import type { Trend, TrendProp } from "./types";
  *   offset-raw: mod(length + n - mod(c, length), length)
  *   offset: offset-raw - length * round(down, offset-raw / (length/2), 1)
  */
-export function signedDigitOffset(
-  n: number,
-  c: number,
-  digitCount: number = DIGIT_COUNT,
-): number {
+export function signedDigitOffset(n: number, c: number, digitCount: number = DIGIT_COUNT): number {
   "worklet";
 
   const raw = (((n - c) % digitCount) + digitCount) % digitCount;
@@ -67,10 +63,7 @@ export function resolveTrend(
   prevValue: number | undefined,
   nextValue: number | undefined,
 ): Trend {
-  const hasChange =
-    prevValue !== undefined &&
-    nextValue !== undefined &&
-    prevValue !== nextValue;
+  const hasChange = prevValue !== undefined && nextValue !== undefined && prevValue !== nextValue;
 
   // Static trend value — pass through
   if (typeof trendProp === "number") {
@@ -107,13 +100,20 @@ export function parseDigitPosition(key: string): number | undefined {
 
   // Time digit keys — significance ordered: s1 < s10 < m1 < m10 < h1 < h10
   switch (key) {
-    case "s1": return 0;
-    case "s10": return 1;
-    case "m1": return 2;
-    case "m10": return 3;
-    case "h1": return 4;
-    case "h10": return 5;
-    default: return undefined;
+    case "s1":
+      return 0;
+    case "s10":
+      return 1;
+    case "m1":
+      return 2;
+    case "m10":
+      return 3;
+    case "h1":
+      return 4;
+    case "h10":
+      return 5;
+    default:
+      return undefined;
   }
 }
 
@@ -146,40 +146,4 @@ export function getDigitCount(
 
   const constraint = digits[pos];
   return constraint ? constraint.max + 1 : DIGIT_COUNT;
-}
-
-// Worklet-safe hanidec lookup (non-contiguous CJK ideograph digits).
-function workletHanidecValue(code: number): number {
-  "worklet";
-  switch (code) {
-    case 0x3007: return 0;
-    case 0x4e00: return 1;
-    case 0x4e8c: return 2;
-    case 0x4e09: return 3;
-    case 0x56db: return 4;
-    case 0x4e94: return 5;
-    case 0x516d: return 6;
-    case 0x4e03: return 7;
-    case 0x516b: return 8;
-    case 0x4e5d: return 9;
-    default: return -1;
-  }
-}
-
-/**
- * Returns the numeric value (0-9) of a character code, or -1 if not a digit.
- * Worklet-safe — handles both contiguous systems and hanidec (0x3007 sentinel).
- */
-export function workletDigitValue(code: number, zeroCodePoint: number): number {
-  "worklet";
-  if (zeroCodePoint === 0x3007) return workletHanidecValue(code);
-
-  const dv = code - zeroCodePoint;
-  return dv >= 0 && dv <= 9 ? dv : -1;
-}
-
-// Checks if a character is a digit in the given numbering system.
-export function isDigitChar(char: string, zeroCodePoint = 48): boolean {
-  "worklet";
-  return workletDigitValue(char.charCodeAt(0), zeroCodePoint) >= 0;
 }

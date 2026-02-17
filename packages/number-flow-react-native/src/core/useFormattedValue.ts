@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { getOrCreateFormatter } from "./useNumberFormatting";
+import { getOrCreateFormatter } from "./intlHelpers";
 
 /**
  * Formats a numeric value to a display string using Intl.NumberFormat, with optional prefix/suffix.
@@ -20,15 +20,13 @@ export function useFormattedValue(
   prefix?: string,
   suffix?: string,
 ): string | undefined {
-  const formatKey = useMemo(
-    () => JSON.stringify([locales, format]),
-    [locales, format],
-  );
+  // Serialize format/locales to a stable string — avoids re-runs when callers pass inline objects
+  const formatKey = useMemo(() => JSON.stringify([locales, format]), [locales, format]);
 
   return useMemo(() => {
     if (value === undefined) return undefined;
     const formatter = getOrCreateFormatter(locales, format);
     return `${prefix ?? ""}${formatter.format(value)}${suffix ?? ""}`;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, formatKey, prefix, suffix]);
+  }, [value, prefix, suffix, formatKey]);
 }

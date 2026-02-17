@@ -1,4 +1,4 @@
-import React, { useCallback, useReducer, useRef, useMemo } from "react";
+import React, { useCallback, useMemo, useReducer, useRef } from "react";
 import { Text } from "react-native";
 import { MEASURABLE_CHARS } from "../core/constants";
 import type { GlyphMetrics } from "../core/types";
@@ -7,9 +7,7 @@ import type { NumberFlowStyle } from "./types";
 // Combines MEASURABLE_CHARS with additional chars, deduplicating
 function buildCharSet(additionalChars?: string): string {
   if (!additionalChars) return MEASURABLE_CHARS;
-  const unique = Array.from(additionalChars).filter(
-    (c) => !MEASURABLE_CHARS.includes(c),
-  );
+  const unique = Array.from(additionalChars).filter((c) => !MEASURABLE_CHARS.includes(c));
   return unique.length > 0 ? MEASURABLE_CHARS + unique.join("") : MEASURABLE_CHARS;
 }
 
@@ -38,9 +36,7 @@ function cacheKey(
  */
 
 // ASCII characters known to have no descender (bottom = 0)
-const NO_DESCENDER = new Set(
-  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ.:%+-~°!^*×/$€£¥₩ \u00A0",
-);
+const NO_DESCENDER = new Set("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ.:%+-~°!^*×/$€£¥₩ \u00A0");
 
 /**
  * Estimates per-character vertical bounds using font-level metrics.
@@ -121,14 +117,10 @@ const MeasureComponent = React.memo(
         const ascent = -tallestLine.ascender;
         const descent = tallestLine.descender;
         // Fallback 0.72 × |ascent| matches typical system font cap-height ratio.
-        const capHeight = (tallestLine as unknown as Record<string, number>).capHeight || -ascent * 0.72;
+        const capHeight =
+          (tallestLine as unknown as Record<string, number>).capHeight || -ascent * 0.72;
 
-        const charBounds = estimateCharBounds(
-          charSet,
-          descent,
-          capHeight,
-          localeDigitStrings,
-        );
+        const charBounds = estimateCharBounds(charSet, descent, capHeight, localeDigitStrings);
 
         onComplete({
           charWidths,
@@ -139,7 +131,7 @@ const MeasureComponent = React.memo(
           charBounds,
         });
       },
-      [onComplete],
+      [onComplete, charSet, localeDigitStrings],
     );
 
     return (
@@ -161,7 +153,7 @@ const MeasureComponent = React.memo(
 
 MeasureComponent.displayName = "NumberFlowMeasure";
 
-export function useGlyphMetrics(
+export function useMeasuredGlyphMetrics(
   style: NumberFlowStyle,
   additionalChars?: string,
   localeDigitStrings?: string[],
@@ -169,14 +161,10 @@ export function useGlyphMetrics(
   metrics: GlyphMetrics | null;
   MeasureElement: React.ReactElement | null;
 } {
-  const charSet = useMemo(
-    () => buildCharSet(additionalChars),
-    [additionalChars],
-  );
+  const charSet = useMemo(() => buildCharSet(additionalChars), [additionalChars]);
   const key = cacheKey(style, additionalChars);
   const cached = metricsCache.get(key);
   const [, forceUpdate] = useReducer((n: number) => n + 1, 0);
-  const completedRef = useRef(false);
 
   /**
    * Track the best available metrics for this font config — prevents
@@ -190,19 +178,13 @@ export function useGlyphMetrics(
   const handleComplete = useCallback(
     (metrics: GlyphMetrics) => {
       metricsCache.set(key, metrics);
-      completedRef.current = true;
       forceUpdate();
     },
-    [key, forceUpdate],
+    [key],
   );
 
   if (cached) {
     return { metrics: cached, MeasureElement: null };
-  }
-
-  if (completedRef.current) {
-    const nowCached = metricsCache.get(key);
-    if (nowCached) return { metrics: nowCached, MeasureElement: null };
   }
 
   /**

@@ -1,12 +1,12 @@
 import { useState } from "react";
 import {
-  type SharedValue,
   makeMutable,
+  type SharedValue,
   useAnimatedReaction,
   withTiming,
 } from "react-native-reanimated";
 import { MAX_SLOTS } from "./constants";
-import { workletDigitValue } from "./utils";
+import { localeDigitValue } from "./numerals";
 
 const WIDTH_ANIM_MS = 200;
 
@@ -35,9 +35,7 @@ export function useDebouncedWidths(
   const [debouncedWidths] = useState(() =>
     Array.from({ length: MAX_SLOTS }, () => makeMutable(-1)),
   );
-  const [prevDigits] = useState(() =>
-    Array.from({ length: MAX_SLOTS }, () => makeMutable(-1)),
-  );
+  const [prevDigits] = useState(() => Array.from({ length: MAX_SLOTS }, () => makeMutable(-1)));
   const [wasActive] = useState(() => makeMutable(false));
 
   useAnimatedReaction(
@@ -75,7 +73,7 @@ export function useDebouncedWidths(
 
       for (let i = 0; i < len && digitIndex < MAX_SLOTS; i++) {
         const code = fullText.charCodeAt(i);
-        const dv = workletDigitValue(code, zeroCodePoint);
+        const dv = localeDigitValue(code, zeroCodePoint);
         if (dv >= 0) {
           prevDigits[digitIndex].value = dv;
           debouncedWidths[digitIndex].value = scrubDigitWidth;

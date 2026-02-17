@@ -1,6 +1,6 @@
-import type { CharLayout } from "./layout";
+import { assignXPositions, type CharLayout } from "./layout";
 import type { GlyphMetrics, TextAlign } from "./types";
-import { isDigitChar, workletDigitValue } from "./utils";
+import { isDigitChar, localeDigitValue } from "./numerals";
 
 /**
  * Keys for each digit position within a time segment.
@@ -23,7 +23,7 @@ function pushChar(
     key,
     char,
     isDigit,
-    digitValue: isDigit ? workletDigitValue(char.charCodeAt(0), zeroCodePoint) : -1,
+    digitValue: isDigit ? localeDigitValue(char.charCodeAt(0), zeroCodePoint) : -1,
     x: 0,
     width,
   });
@@ -114,23 +114,6 @@ export function computeTimeStringLayout(
     }
   }
 
-  let contentWidth = 0;
-  for (const entry of chars) {
-    contentWidth += entry.width;
-  }
-
-  let startX = 0;
-  if (textAlign === "right") {
-    startX = totalWidth - contentWidth;
-  } else if (textAlign === "center") {
-    startX = (totalWidth - contentWidth) / 2;
-  }
-
-  let currentX = startX;
-  for (const entry of chars) {
-    entry.x = currentX;
-    currentX += entry.width;
-  }
-
+  assignXPositions(chars, totalWidth, textAlign);
   return chars;
 }

@@ -1,24 +1,14 @@
 import MaskedView from "@rednegniw/masked-view";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { View, type LayoutChangeEvent } from "react-native";
-import { MASK_HEIGHT_RATIO } from "../core/constants";
-import {
-  DEFAULT_OPACITY_TIMING,
-  DEFAULT_SPIN_TIMING,
-  DEFAULT_TRANSFORM_TIMING,
-  ZERO_TIMING,
-} from "../core/timing";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { type LayoutChangeEvent, Text, View } from "react-native";
 import { computeKeyedLayout } from "../core/layout";
 import type { TimeFlowProps } from "../core/timeTypes";
-import { useContinuousSpin } from "../core/useContinuousSpin";
-import { useLayoutDiff } from "../core/useLayoutDiff";
+import { useFlowPipeline } from "../core/useFlowPipeline";
 import { useTimeFormatting } from "../core/useTimeFormatting";
-import { useCanAnimate } from "../core/useCanAnimate";
-import { resolveTrend, TIME_DIGIT_COUNTS } from "../core/utils";
+import { TIME_DIGIT_COUNTS } from "../core/utils";
 import { warnOnce } from "../core/warnings";
-import { DigitSlot } from "./DigitSlot";
-import { SymbolSlot } from "./SymbolSlot";
-import { useGlyphMetrics } from "./useGlyphMetrics";
+import { renderSlots } from "./renderSlots";
+import { useMeasuredGlyphMetrics } from "./useMeasuredGlyphMetrics";
 
 export const TimeFlow = ({
   hours,
@@ -42,20 +32,13 @@ export const TimeFlow = ({
   containerStyle,
   mask,
 }: TimeFlowProps) => {
-  const { metrics, MeasureElement } = useGlyphMetrics(nfStyle);
+  const { metrics, MeasureElement } = useMeasuredGlyphMetrics(nfStyle);
 
-  const canAnimate = useCanAnimate(respectMotionPreference);
-  const shouldAnimate = (animated ?? true) && canAnimate;
-
-  const resolvedSpinTiming = shouldAnimate
-    ? (spinTiming ?? DEFAULT_SPIN_TIMING)
-    : ZERO_TIMING;
-  const resolvedOpacityTiming = shouldAnimate
-    ? (opacityTiming ?? DEFAULT_OPACITY_TIMING)
-    : ZERO_TIMING;
-  const resolvedTransformTiming = shouldAnimate
-    ? (transformTiming ?? DEFAULT_TRANSFORM_TIMING)
-    : ZERO_TIMING;
+  if (__DEV__) {
+    if (!nfStyle.fontSize) {
+      warnOnce("tf-fontSize", "style.fontSize is required for TimeFlow to measure glyphs.");
+    }
+  }
 
   const resolved = useMemo(() => {
     if (timestamp !== undefined) {
@@ -73,22 +56,7 @@ export const TimeFlow = ({
   const resolvedMinutes = resolved.minutes;
   const resolvedSeconds = resolved.seconds;
 
-  const totalSeconds =
-    (resolvedHours ?? 0) * 3600 +
-    (resolvedMinutes ?? 0) * 60 +
-    (resolvedSeconds ?? 0);
-
-  const prevTotalRef = useRef(totalSeconds);
-  const resolvedTrend = resolveTrend(trend, prevTotalRef.current, totalSeconds);
-  prevTotalRef.current = totalSeconds;
-
   if (__DEV__) {
-    if (!nfStyle.fontSize) {
-      warnOnce(
-        "tf-fontSize",
-        "style.fontSize is required for TimeFlow to measure glyphs.",
-      );
-    }
     if (resolvedHours !== undefined && (resolvedHours < 0 || resolvedHours > 23)) {
       warnOnce("tf-hours", "hours must be 0-23.");
     }
@@ -100,6 +68,9 @@ export const TimeFlow = ({
     }
   }
 
+  const totalSeconds =
+    (resolvedHours ?? 0) * 3600 + (resolvedMinutes ?? 0) * 60 + (resolvedSeconds ?? 0);
+
   const keyedParts = useTimeFormatting(
     resolvedHours,
     resolvedMinutes,
@@ -108,64 +79,54 @@ export const TimeFlow = ({
     padHours,
   );
 
-  const spinGenerations = useContinuousSpin(
-    keyedParts,
-    continuous,
-    resolvedTrend,
-  );
-
   const [containerWidth, setContainerWidth] = useState(0);
   const handleContainerLayout = useCallback((e: LayoutChangeEvent) => {
     setContainerWidth(e.nativeEvent.layout.width);
   }, []);
 
-  const effectiveWidth = containerWidth;
-
   const layout = useMemo(() => {
     if (!metrics) return [];
+
+    // Skip layout when container hasn't measured yet and alignment needs width.
+    // Without this guard, center/right alignment computes with width=0,
+    // then re-computes after onLayout — causing a visible slide-in animation.
+    if (containerWidth === 0 && textAlign !== "left") return [];
+
     if (keyedParts.length === 0) return [];
-    return computeKeyedLayout(keyedParts, metrics, effectiveWidth, textAlign);
-  }, [metrics, keyedParts, effectiveWidth, textAlign]);
+    return computeKeyedLayout(keyedParts, metrics, containerWidth, textAlign);
+  }, [metrics, keyedParts, containerWidth, textAlign]);
 
-  // Store callbacks in refs so the setTimeout in the effect always calls the latest version
-  const onAnimationsStartRef = useRef(onAnimationsStart);
-  onAnimationsStartRef.current = onAnimationsStart;
-  const onAnimationsFinishRef = useRef(onAnimationsFinish);
-  onAnimationsFinishRef.current = onAnimationsFinish;
+  const pipeline = useFlowPipeline({
+    keyedParts,
+    trendValue: totalSeconds,
+    layout,
+    metrics,
+    animated,
+    respectMotionPreference,
+    spinTiming,
+    opacityTiming,
+    transformTiming,
+    trend,
+    continuous,
+    mask,
+    onAnimationsStart,
+    onAnimationsFinish,
+  });
 
-  const prevLayoutRef = useRef(layout);
-  const prevLayoutLenRef = useRef(layout.length);
-  const animTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const {
+    resolvedSpinTiming,
+    resolvedOpacityTiming,
+    resolvedTransformTiming,
+    resolvedTrend,
+    spinGenerations,
+    prevMap,
+    isInitialRender,
+    exitingEntries,
+    onExitComplete,
+    accessibilityLabel,
+    adaptiveMask,
+  } = pipeline;
 
-  useEffect(() => {
-    if (
-      layout.length > 0 &&
-      prevLayoutLenRef.current > 0 &&
-      layout !== prevLayoutRef.current
-    ) {
-      onAnimationsStartRef.current?.();
-      if (animTimerRef.current) clearTimeout(animTimerRef.current);
-      const maxDur = Math.max(
-        resolvedSpinTiming.duration,
-        resolvedOpacityTiming.duration,
-        resolvedTransformTiming.duration,
-      );
-      animTimerRef.current = setTimeout(
-        () => onAnimationsFinishRef.current?.(),
-        maxDur,
-      );
-    }
-    prevLayoutRef.current = layout;
-    prevLayoutLenRef.current = layout.length;
-    return () => {
-      if (animTimerRef.current) clearTimeout(animTimerRef.current);
-    };
-  }, [layout, resolvedSpinTiming, resolvedOpacityTiming, resolvedTransformTiming]);
-
-  const { prevMap, isInitialRender, exitingEntries, onExitComplete } =
-    useLayoutDiff(layout);
-
-  // Spread full nfStyle so all TextStyle properties (lineHeight, letterSpacing, etc.) reach <Text>
   const textStyle = useMemo(
     () => ({
       ...nfStyle,
@@ -174,174 +135,134 @@ export const TimeFlow = ({
     [nfStyle],
   );
 
-  const accessibilityLabel = useMemo(() => {
-    if (keyedParts.length === 0) return undefined;
-    return keyedParts.map((p) => p.char).join("");
-  }, [keyedParts]);
-
   const resolvedMask = mask ?? true;
-  const lineHeight = metrics?.lineHeight ?? 0;
-  const maskHeight = resolvedMask ? MASK_HEIGHT_RATIO * lineHeight : 0;
-  const MASK_STEPS = 12;
-  const stepHeight = maskHeight / MASK_STEPS;
+  const maskTop = adaptiveMask.top;
+  const maskBottom = adaptiveMask.bottom;
+  const { expansionTop, expansionBottom } = adaptiveMask;
+
+  // Step count scales with mask height — each step must be >=1px (sub-pixel Views collapse to 0).
+  const topSteps = Math.max(2, Math.round(maskTop));
+  const bottomSteps = Math.max(2, Math.round(maskBottom));
 
   const gradientMaskElement = useMemo(() => {
-    if (!resolvedMask || lineHeight === 0) return null;
+    if (!resolvedMask || !metrics) return null;
     return (
       <View style={{ flex: 1, flexDirection: "column" }}>
-        {/* Top fade: transparent → opaque */}
-        {Array.from({ length: MASK_STEPS }, (_, i) => (
+        {/* Top fade: transparent -> opaque */}
+        {Array.from({ length: topSteps }, (_, i) => (
           <View
             key={`t${i}`}
             style={{
-              height: stepHeight,
-              backgroundColor: `rgba(0,0,0,${i / (MASK_STEPS - 1)})`,
+              height: maskTop / topSteps,
+              backgroundColor: `rgba(0,0,0,${i / (topSteps - 1)})`,
             }}
           />
         ))}
         {/* Middle: fully opaque */}
         <View style={{ flex: 1, backgroundColor: "black" }} />
-        {/* Bottom fade: opaque → transparent */}
-        {Array.from({ length: MASK_STEPS }, (_, i) => (
+        {/* Bottom fade: opaque -> transparent */}
+        {Array.from({ length: bottomSteps }, (_, i) => (
           <View
             key={`b${i}`}
             style={{
-              height: stepHeight,
-              backgroundColor: `rgba(0,0,0,${1 - i / (MASK_STEPS - 1)})`,
+              height: maskBottom / bottomSteps,
+              backgroundColor: `rgba(0,0,0,${1 - i / (bottomSteps - 1)})`,
             }}
           />
         ))}
       </View>
     );
-  }, [resolvedMask, lineHeight, stepHeight]);
+  }, [resolvedMask, metrics, maskTop, maskBottom, topSteps, bottomSteps]);
 
-  if (!metrics) {
+  // Progressive mount: render a plain <Text> on the first frame, then swap to
+  // the full animated slot tree on the next frame. At mount time there is never
+  // a value change to animate, so the placeholder is visually identical while
+  // avoiding the ~80ms cost of instantiating dozens of useAnimatedStyle hooks.
+  const [slotsReady, setSlotsReady] = useState(false);
+  const metricsReady = !!metrics;
+
+  useEffect(() => {
+    if (!metricsReady) return;
+    const id = requestAnimationFrame(() => setSlotsReady(true));
+    return () => cancelAnimationFrame(id);
+  }, [metricsReady]);
+
+  if (!metrics || (layout.length === 0 && exitingEntries.size === 0)) {
     return (
-      <View onLayout={handleContainerLayout} style={containerStyle}>
+      <View
+        accessible
+        accessibilityRole="text"
+        accessibilityLabel={accessibilityLabel}
+        onLayout={handleContainerLayout}
+        style={containerStyle}
+      >
+        <Text style={[textStyle, { textAlign }]}>{accessibilityLabel}</Text>
         {MeasureElement}
       </View>
     );
   }
 
-  if (layout.length === 0 && exitingEntries.size === 0) {
+  {/* Placeholder branch: show plain Text while slot tree loads */}
+  if (!slotsReady) {
     return (
-      <View onLayout={handleContainerLayout} style={containerStyle}>
+      <View
+        accessible
+        accessibilityRole="text"
+        accessibilityLabel={accessibilityLabel}
+        onLayout={handleContainerLayout}
+        style={[
+          containerStyle,
+          {
+            height: metrics.lineHeight + expansionTop + expansionBottom,
+            marginTop: -expansionTop,
+            marginBottom: -expansionBottom,
+            position: "relative",
+            overflow: "hidden",
+          },
+        ]}
+      >
+        <Text style={[textStyle, { textAlign }]}>{accessibilityLabel}</Text>
         {MeasureElement}
       </View>
     );
   }
 
-  const slots = (
-    <>
-      {layout.map((entry) => {
-        const isEntering = !isInitialRender && !prevMap.has(entry.key);
-        if (entry.isDigit) {
-          const digitCount = TIME_DIGIT_COUNTS[entry.key];
-          const spinGeneration = spinGenerations?.get(entry.key);
-
-          return (
-            <DigitSlot
-              charWidth={entry.width}
-              continuousSpinGeneration={spinGeneration}
-              digitCount={digitCount}
-              digitValue={entry.digitValue}
-              entering={isEntering}
-              exiting={false}
-              key={entry.key}
-              lineHeight={metrics.lineHeight}
-              maskTop={maskHeight}
-              maskBottom={maskHeight}
-              metrics={metrics}
-              opacityTiming={resolvedOpacityTiming}
-              spinTiming={resolvedSpinTiming}
-              targetX={entry.x}
-              textStyle={textStyle}
-              transformTiming={resolvedTransformTiming}
-              trend={resolvedTrend}
-            />
-          );
-        }
-        return (
-          <SymbolSlot
-            char={entry.char}
-            entering={isEntering}
-            exiting={false}
-            key={entry.key}
-            lineHeight={metrics.lineHeight}
-            opacityTiming={resolvedOpacityTiming}
-            targetX={entry.x}
-            textStyle={textStyle}
-            transformTiming={resolvedTransformTiming}
-          />
-        );
-      })}
-
-      {Array.from(exitingEntries.entries()).map(([key, entry]) => {
-        if (entry.isDigit) {
-          const digitCount = TIME_DIGIT_COUNTS[entry.key];
-
-          return (
-            <DigitSlot
-              charWidth={entry.width}
-              digitCount={digitCount}
-              digitValue={entry.digitValue}
-              entering={false}
-              exitKey={key}
-              exiting
-              key={key}
-              lineHeight={metrics.lineHeight}
-              maskTop={maskHeight}
-              maskBottom={maskHeight}
-              metrics={metrics}
-              onExitComplete={onExitComplete}
-              opacityTiming={resolvedOpacityTiming}
-              spinTiming={resolvedSpinTiming}
-              targetX={entry.x}
-              textStyle={textStyle}
-              transformTiming={resolvedTransformTiming}
-              trend={resolvedTrend}
-            />
-          );
-        }
-        return (
-          <SymbolSlot
-            char={entry.char}
-            entering={false}
-            exitKey={key}
-            exiting
-            key={key}
-            lineHeight={metrics.lineHeight}
-            onExitComplete={onExitComplete}
-            opacityTiming={resolvedOpacityTiming}
-            targetX={entry.x}
-            textStyle={textStyle}
-            transformTiming={resolvedTransformTiming}
-          />
-        );
-      })}
-    </>
-  );
+  const slots = renderSlots({
+    layout,
+    exitingEntries,
+    prevMap,
+    isInitialRender,
+    onExitComplete,
+    metrics,
+    textStyle,
+    resolvedTrend,
+    spinTiming: resolvedSpinTiming,
+    opacityTiming: resolvedOpacityTiming,
+    transformTiming: resolvedTransformTiming,
+    spinGenerations,
+    digitCountResolver: (key) => TIME_DIGIT_COUNTS[key],
+    maskTop,
+    maskBottom,
+  });
 
   // Optionally wrap in MaskedView for gradient edge fade.
   // Content must be inside a single wrapper View so MaskedView's native
   // didUpdateReactSubviews always sees one stable child — avoids Fabric
   // "Attempt to recycle a mounted view" crash from dynamic slot churn.
-  const maskedContent = resolvedMask && gradientMaskElement ? (
-    <MaskedView
-      maskElement={gradientMaskElement}
-      style={{ flex: 1 }}
-    >
-      <View style={{ flex: 1, position: "relative" }}>
+  const maskedContent =
+    resolvedMask && gradientMaskElement ? (
+      <MaskedView maskElement={gradientMaskElement} style={{ flex: 1 }}>
+        <View style={{ flex: 1, position: "relative", top: expansionTop }}>
+          {MeasureElement}
+          {slots}
+        </View>
+      </MaskedView>
+    ) : (
+      <View style={{ flex: 1, position: "relative", top: expansionTop }}>
         {MeasureElement}
         {slots}
       </View>
-    </MaskedView>
-  ) : (
-    <>
-      {MeasureElement}
-      {slots}
-    </>
-  );
+    );
 
   return (
     <View
@@ -351,7 +272,13 @@ export const TimeFlow = ({
       onLayout={handleContainerLayout}
       style={[
         containerStyle,
-        { height: metrics.lineHeight, position: "relative" },
+        {
+          height: metrics.lineHeight + expansionTop + expansionBottom,
+          marginTop: -expansionTop,
+          marginBottom: -expansionBottom,
+          position: "relative",
+          overflow: "hidden",
+        },
       ]}
     >
       {maskedContent}

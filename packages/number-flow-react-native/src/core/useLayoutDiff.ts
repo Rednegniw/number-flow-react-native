@@ -15,9 +15,6 @@ interface LayoutDiffResult {
  *
  * The diff logic runs during render (not in useEffect) using a ref-based
  * idempotent pattern for StrictMode safety.
- *
- * Must be called before any early returns (Rules of Hooks). Handles
- * empty layouts gracefully.
  */
 export function useLayoutDiff(layout: CharLayout[]): LayoutDiffResult {
   const prevLayoutRef = useRef<CharLayout[]>([]);
@@ -25,7 +22,6 @@ export function useLayoutDiff(layout: CharLayout[]): LayoutDiffResult {
   const [, forceUpdate] = useReducer((n: number) => n + 1, 0);
   const isFirstLayoutRef = useRef(true);
 
-  // StrictMode-safe: only process diff once per layout change.
   const lastDiffIdRef = useRef("");
   const diffResultRef = useRef<{
     prevMap: Map<string, CharLayout>;
@@ -40,10 +36,9 @@ export function useLayoutDiff(layout: CharLayout[]): LayoutDiffResult {
   // Stable layout identity — fast string concat instead of map+join
   let layoutId = "";
   for (const s of layout) {
-    layoutId += s.key + ":" + s.digitValue + "|";
+    layoutId += `${s.key}:${s.digitValue}|`;
   }
 
-  // Only run diff logic once per layout change (idempotent under StrictMode)
   if (layoutId !== lastDiffIdRef.current) {
     lastDiffIdRef.current = layoutId;
 

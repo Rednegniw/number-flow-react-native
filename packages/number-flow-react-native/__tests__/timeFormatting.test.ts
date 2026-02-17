@@ -1,7 +1,4 @@
-import {
-  to12Hour,
-  formatTimeToKeyedParts,
-} from "../src/core/useTimeFormatting";
+import { formatTimeToKeyedParts, to12Hour } from "../src/core/useTimeFormatting";
 
 // ─── to12Hour ───
 
@@ -90,9 +87,7 @@ describe("formatTimeToKeyedParts", () => {
       const parts = formatTimeToKeyedParts(14, 30, 45, true, true);
       const keys = parts.map((p) => p.key);
 
-      expect(keys).toEqual([
-        "h10", "h1", "sep", "m10", "m1", "sep2", "s10", "s1",
-      ]);
+      expect(keys).toEqual(["h10", "h1", "sep", "m10", "m1", "sep2", "s10", "s1"]);
     });
   });
 
@@ -165,9 +160,12 @@ describe("formatTimeToKeyedParts", () => {
       }
 
       expect(values).toEqual({
-        h10: 1, h1: 4,
-        m10: 3, m1: 0,
-        s10: 4, s1: 5,
+        h10: 1,
+        h1: 4,
+        m10: 3,
+        m1: 0,
+        s10: 4,
+        s1: 5,
       });
     });
 

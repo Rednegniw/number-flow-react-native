@@ -1,9 +1,9 @@
 import {
-  getOrCreateFormatter,
-  getFormatCharacters,
   fallbackFormatToParts,
-  formatToKeyedParts,
-} from "../src/core/useNumberFormatting";
+  getFormatCharacters,
+  getOrCreateFormatter,
+} from "../src/core/intlHelpers";
+import { formatToKeyedParts } from "../src/core/useNumberFormatting";
 
 // ─── getOrCreateFormatter ───
 
@@ -97,9 +97,7 @@ describe("fallbackFormatToParts", () => {
     expect(fallback.map((p) => p.type)).toEqual(native.map((p) => p.type));
 
     // Same concatenated output
-    expect(fallback.map((p) => p.value).join("")).toBe(
-      native.map((p) => p.value).join(""),
-    );
+    expect(fallback.map((p) => p.value).join("")).toBe(native.map((p) => p.value).join(""));
   });
 });
 
@@ -126,17 +124,10 @@ describe("formatToKeyedParts", () => {
     const parts = formatToKeyedParts(1234, fmt, "en-US");
 
     // 1,234: four digits + one group separator
-    const digitKeys = parts
-      .filter((p) => p.type === "digit")
-      .map((p) => p.key);
+    const digitKeys = parts.filter((p) => p.type === "digit").map((p) => p.key);
 
     // integer:0=4, integer:1=3, integer:2=2, integer:3=1
-    expect(digitKeys).toEqual([
-      "integer:3",
-      "integer:2",
-      "integer:1",
-      "integer:0",
-    ]);
+    expect(digitKeys).toEqual(["integer:3", "integer:2", "integer:1", "integer:0"]);
   });
 
   test("decimal number: fraction digits keyed LTR", () => {
@@ -208,7 +199,7 @@ describe("formatToKeyedParts", () => {
     const parts = formatToKeyedParts(1234.56, fmt, "en-US", "$", "!");
     const result = parts.map((p) => p.char).join("");
 
-    expect(result).toBe("$" + fmt.format(1234.56) + "!");
+    expect(result).toBe(`$${fmt.format(1234.56)}!`);
   });
 });
 
@@ -246,9 +237,7 @@ describe("formatToKeyedParts — scientific notation", () => {
 
   test("×10 symbols are keyed as exponentSeparator", () => {
     const parts = formatToKeyedParts(1500, sciFmt, "en-US");
-    const sepParts = parts.filter((p) =>
-      p.key.startsWith("exponentSeparator:"),
-    );
+    const sepParts = parts.filter((p) => p.key.startsWith("exponentSeparator:"));
 
     expect(sepParts.length).toBe(3);
     expect(sepParts.map((p) => p.char).join("")).toBe("\u00D710");

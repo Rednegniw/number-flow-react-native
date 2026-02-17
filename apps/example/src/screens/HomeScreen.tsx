@@ -9,13 +9,7 @@ import { FONT_REGULAR, FONT_SEMIBOLD } from "../theme/fonts";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
-const DemoCard = ({
-  entry,
-  onPress,
-}: {
-  entry: DemoEntry;
-  onPress: () => void;
-}) => {
+const DemoCard = ({ entry, onPress }: { entry: DemoEntry; onPress: () => void }) => {
   const badgeLabel = entry.supportsSkia ? "Skia + Native" : "Native only";
   const badgeBg = entry.supportsSkia ? colors.badge.skia : colors.badge.nativeOnly;
   const badgeText = entry.supportsSkia ? colors.badge.skiaText : colors.badge.nativeOnlyText;
@@ -52,9 +46,7 @@ const DemoCard = ({
             paddingVertical: 3,
           }}
         >
-          <Text style={{ fontSize: 11, fontWeight: "500", color: badgeText }}>
-            {badgeLabel}
-          </Text>
+          <Text style={{ fontSize: 11, fontWeight: "500", color: badgeText }}>{badgeLabel}</Text>
         </View>
       </View>
 
@@ -104,10 +96,7 @@ export const HomeScreen = ({ navigation }: Props) => {
 
   const renderItem = useCallback(
     ({ item }: { item: DemoEntry }) => (
-      <DemoCard
-        entry={item}
-        onPress={() => navigation.navigate("Demo", { demoKey: item.key })}
-      />
+      <DemoCard entry={item} onPress={() => navigation.navigate("Demo", { demoKey: item.key })} />
     ),
     [navigation],
   );

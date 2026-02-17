@@ -1,10 +1,10 @@
-import { Canvas, useFont } from "@shopify/react-native-skia";
+import { Canvas } from "@shopify/react-native-skia";
 import { NumberFlow } from "number-flow-react-native/native";
-import { SkiaNumberFlow } from "number-flow-react-native/skia";
+import { SkiaNumberFlow, useSkiaFont } from "number-flow-react-native/skia";
 import { useCallback, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { colors } from "../theme/colors";
-import { INTER_FONT_ASSET, FONT_REGULAR } from "../theme/fonts";
+import { FONT_REGULAR, INTER_FONT_ASSET } from "../theme/fonts";
 import { pick, pickSuffix, randomInt } from "./utils";
 
 const FONT_SIZE = 36;
@@ -69,16 +69,14 @@ export const IntegerDemoNative = () => {
           alignItems: "center",
         }}
       >
-        <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
-          Randomize
-        </Text>
+        <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>Randomize</Text>
       </Pressable>
     </View>
   );
 };
 
 export const IntegerDemoSkia = () => {
-  const skiaFont = useFont(INTER_FONT_ASSET, FONT_SIZE);
+  const skiaFont = useSkiaFont(INTER_FONT_ASSET, FONT_SIZE);
   const { value, suffix, prefix, randomize } = useIntegerDemoState();
 
   return (
@@ -125,9 +123,7 @@ export const IntegerDemoSkia = () => {
           alignItems: "center",
         }}
       >
-        <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
-          Randomize
-        </Text>
+        <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>Randomize</Text>
       </Pressable>
     </View>
   );

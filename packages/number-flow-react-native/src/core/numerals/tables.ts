@@ -16,14 +16,7 @@
 export const LATIN_ZERO = 0x0030; // 48
 export const HANIDEC_ZERO = 0x3007;
 
-export const HANIDEC_DIGITS = [
-  "〇", "一", "二", "三", "四", "五", "六", "七", "八", "九",
-];
-
-export const HANIDEC_CODEPOINTS = [
-  0x3007, 0x4e00, 0x4e8c, 0x4e09, 0x56db,
-  0x4e94, 0x516d, 0x4e03, 0x516b, 0x4e5d,
-];
+export const HANIDEC_DIGITS = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
 
 /**
  * Map of CLDR numbering system name → Unicode codepoint of digit zero.
@@ -78,7 +71,7 @@ export const ZERO_CODEPOINTS: Record<string, number> = {
  * Key format: language subtag or language-region (e.g. "ar", "ar-EG").
  */
 export const CLDR_DEFAULT_NUMBERING: Record<string, string> = {
-  "ar": "arab",
+  ar: "arab",
   "ar-AE": "arab",
   "ar-BH": "arab",
   "ar-EG": "arab",
@@ -92,28 +85,28 @@ export const CLDR_DEFAULT_NUMBERING: Record<string, string> = {
   "ar-SD": "arab",
   "ar-SY": "arab",
   "ar-YE": "arab",
-  "as": "beng",
+  as: "beng",
   "as-IN": "beng",
-  "bn": "beng",
+  bn: "beng",
   "bn-BD": "beng",
   "bn-IN": "beng",
-  "ckb": "arab",
+  ckb: "arab",
   "ckb-IQ": "arab",
-  "dz": "tibt",
+  dz: "tibt",
   "dz-BT": "tibt",
-  "fa": "arabext",
+  fa: "arabext",
   "fa-IR": "arabext",
-  "ks": "arabext",
+  ks: "arabext",
   "ks-IN": "arabext",
-  "mr": "deva",
+  mr: "deva",
   "mr-IN": "deva",
-  "my": "mymr",
+  my: "mymr",
   "my-MM": "mymr",
-  "ne": "deva",
+  ne: "deva",
   "ne-NP": "deva",
-  "ps": "arabext",
+  ps: "arabext",
   "ps-AF": "arabext",
-  "sat": "olck",
+  sat: "olck",
   "sat-IN": "olck",
   "ur-IN": "arabext",
 };

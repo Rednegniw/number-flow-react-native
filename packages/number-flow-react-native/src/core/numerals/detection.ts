@@ -1,10 +1,5 @@
-import {
-  CLDR_DEFAULT_NUMBERING,
-  HANIDEC_ZERO,
-  LATIN_ZERO,
-  ZERO_CODEPOINTS,
-} from "./tables";
 import { hanidecDigitValue } from "./digits";
+import { CLDR_DEFAULT_NUMBERING, HANIDEC_ZERO, LATIN_ZERO, ZERO_CODEPOINTS } from "./tables";
 
 const numberingSystemCache = new Map<string, string>();
 
@@ -14,9 +9,7 @@ const numberingSystemCache = new Map<string, string>();
  * then language subtag (e.g. "ar").
  * Returns undefined if the locale defaults to "latn".
  */
-function getExpectedNumberingSystem(
-  locales?: Intl.LocalesArgument,
-): string | undefined {
+function getExpectedNumberingSystem(locales?: Intl.LocalesArgument): string | undefined {
   if (!locales) return undefined;
 
   const tag = String(locales);
@@ -46,7 +39,7 @@ function getExpectedNumberingSystem(
  *
  * Handles hanidec (non-contiguous ideographs) separately from contiguous systems.
  */
-export function detectOutputZeroCp(formattedStr: string): number {
+export function detectOutputZeroCodePoint(formattedStr: string): number {
   for (let i = 0; i < formattedStr.length; i++) {
     const code = formattedStr.charCodeAt(i);
 
@@ -100,7 +93,7 @@ export function detectNumberingSystem(
 
   // Verify by checking the actual formatted output
   const probe = formatter.format(1234567890);
-  const outputZeroCp = detectOutputZeroCp(probe);
+  const outputZeroCp = detectOutputZeroCodePoint(probe);
 
   if (outputZeroCp !== LATIN_ZERO) {
     // Platform does output non-Latin digits; find the matching system name

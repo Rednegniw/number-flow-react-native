@@ -1,6 +1,34 @@
 import { SUPERSCRIPT_SCALE } from "./constants";
 import type { GlyphMetrics, KeyedPart, TextAlign } from "./types";
-import { isDigitChar, workletDigitValue } from "./utils";
+import { isDigitChar, localeDigitValue } from "./numerals";
+
+/**
+ * Assigns x positions to each entry based on text alignment.
+ * Mutates the `x` field of each entry in place.
+ * Worklet-safe. When `precomputedContentWidth` is provided, skips the sum loop.
+ */
+export function assignXPositions(
+  chars: { x: number; width: number }[],
+  totalWidth: number,
+  textAlign: TextAlign,
+  precomputedContentWidth?: number,
+): void {
+  "worklet";
+  let contentWidth = precomputedContentWidth ?? 0;
+  if (precomputedContentWidth === undefined) {
+    for (const entry of chars) contentWidth += entry.width;
+  }
+
+  let startX = 0;
+  if (textAlign === "right") startX = totalWidth - contentWidth;
+  else if (textAlign === "center") startX = (totalWidth - contentWidth) / 2;
+
+  let currentX = startX;
+  for (const entry of chars) {
+    entry.x = currentX;
+    currentX += entry.width;
+  }
+}
 
 export interface CharLayout {
   key: string;
@@ -20,12 +48,10 @@ export function computeKeyedLayout(
   localeDigitStrings?: string[],
 ): CharLayout[] {
   const chars: CharLayout[] = [];
-  let contentWidth = 0;
 
   for (const part of parts) {
     const isSuperscript =
-      part.key.startsWith("exponentInteger:") ||
-      part.key.startsWith("exponentSign:");
+      part.key.startsWith("exponentInteger:") || part.key.startsWith("exponentSign:");
 
     // For digit parts, look up the width of the locale digit character
     // (what DigitSlot actually renders) rather than the format output character.
@@ -38,7 +64,6 @@ export function computeKeyedLayout(
     const rawWidth = metrics.charWidths[displayChar] ?? metrics.maxDigitWidth;
     const width = isSuperscript ? rawWidth * SUPERSCRIPT_SCALE : rawWidth;
 
-    contentWidth += width;
     chars.push({
       key: part.key,
       char: part.char,
@@ -50,19 +75,7 @@ export function computeKeyedLayout(
     });
   }
 
-  let startX = 0;
-  if (textAlign === "right") {
-    startX = totalWidth - contentWidth;
-  } else if (textAlign === "center") {
-    startX = (totalWidth - contentWidth) / 2;
-  }
-
-  let currentX = startX;
-  for (const entry of chars) {
-    entry.x = currentX;
-    currentX += entry.width;
-  }
-
+  assignXPositions(chars, totalWidth, textAlign);
   return chars;
 }
 
@@ -74,35 +87,22 @@ export function computeStringLayout(
   zeroCodePoint = 48,
 ): CharLayout[] {
   const chars: CharLayout[] = [];
-  let contentWidth = 0;
 
   for (let i = 0; i < text.length; i++) {
     const char = text[i];
     const digit = isDigitChar(char, zeroCodePoint);
     const width = metrics.charWidths[char] ?? metrics.maxDigitWidth;
-    contentWidth += width;
+
     chars.push({
       key: `pos:${i}`,
       char,
       isDigit: digit,
-      digitValue: digit ? workletDigitValue(char.charCodeAt(0), zeroCodePoint) : -1,
+      digitValue: digit ? localeDigitValue(char.charCodeAt(0), zeroCodePoint) : -1,
       x: 0,
       width,
     });
   }
 
-  let startX = 0;
-  if (textAlign === "right") {
-    startX = totalWidth - contentWidth;
-  } else if (textAlign === "center") {
-    startX = (totalWidth - contentWidth) / 2;
-  }
-
-  let currentX = startX;
-  for (const entry of chars) {
-    entry.x = currentX;
-    currentX += entry.width;
-  }
-
+  assignXPositions(chars, totalWidth, textAlign);
   return chars;
 }

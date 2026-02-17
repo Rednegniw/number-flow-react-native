@@ -1,6 +1,6 @@
-import { Canvas, useFont } from "@shopify/react-native-skia";
+import { Canvas } from "@shopify/react-native-skia";
 import { TimeFlow } from "number-flow-react-native/native";
-import { SkiaTimeFlow } from "number-flow-react-native/skia";
+import { SkiaTimeFlow, useSkiaFont } from "number-flow-react-native/skia";
 import { useCallback, useRef, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { colors } from "../theme/colors";
@@ -102,9 +102,7 @@ export const CountdownDemoNative = () => {
             alignItems: "center",
           }}
         >
-          <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
-            Reset
-          </Text>
+          <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>Reset</Text>
         </Pressable>
       </View>
     </View>
@@ -112,7 +110,7 @@ export const CountdownDemoNative = () => {
 };
 
 export const CountdownDemoSkia = () => {
-  const skiaFont = useFont(INTER_FONT_ASSET, FONT_SIZE);
+  const skiaFont = useSkiaFont(INTER_FONT_ASSET, FONT_SIZE);
   const { minutes, seconds, toggle, reset } = useCountdownDemoState();
 
   return (
@@ -169,9 +167,7 @@ export const CountdownDemoSkia = () => {
             alignItems: "center",
           }}
         >
-          <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
-            Reset
-          </Text>
+          <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>Reset</Text>
         </Pressable>
       </View>
     </View>

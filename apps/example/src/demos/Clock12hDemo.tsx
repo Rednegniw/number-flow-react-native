@@ -1,6 +1,6 @@
-import { Canvas, useFont } from "@shopify/react-native-skia";
+import { Canvas } from "@shopify/react-native-skia";
 import { TimeFlow } from "number-flow-react-native/native";
-import { SkiaTimeFlow } from "number-flow-react-native/skia";
+import { SkiaTimeFlow, useSkiaFont } from "number-flow-react-native/skia";
 import { useCallback, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { colors } from "../theme/colors";
@@ -96,7 +96,7 @@ export const Clock12hDemoNative = () => {
 };
 
 export const Clock12hDemoSkia = () => {
-  const skiaFont = useFont(INTER_FONT_ASSET, FONT_SIZE);
+  const skiaFont = useSkiaFont(INTER_FONT_ASSET, FONT_SIZE);
   const { hours, minutes, is24Hour, increment, toggle24h } = useClock12hDemoState();
 
   return (

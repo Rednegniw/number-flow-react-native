@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { Text, type TextStyle } from "react-native";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import { SUPERSCRIPT_SCALE } from "../core/constants";
+import { getSuperscriptTextStyle } from "../core/superscript";
 import type { TimingConfig } from "../core/types";
 import { useAnimatedX } from "../core/useAnimatedX";
 import { useSlotOpacity } from "../core/useSlotOpacity";
@@ -36,15 +37,10 @@ export const SymbolSlot = React.memo(
   }: SymbolSlotProps) => {
     const effectiveHeight = superscript ? lineHeight * SUPERSCRIPT_SCALE : lineHeight;
 
-    const effectiveTextStyle = useMemo(() => {
-      if (!superscript) return textStyle;
-
-      return {
-        ...textStyle,
-        fontSize: (textStyle.fontSize ?? 16) * SUPERSCRIPT_SCALE,
-        lineHeight: effectiveHeight,
-      };
-    }, [textStyle, superscript, effectiveHeight]);
+    const effectiveTextStyle = useMemo(
+      () => (superscript ? getSuperscriptTextStyle(textStyle, effectiveHeight) : textStyle),
+      [textStyle, superscript, effectiveHeight],
+    );
 
     const slotOpacity = useSlotOpacity({
       entering,
@@ -62,9 +58,7 @@ export const SymbolSlot = React.memo(
     }));
 
     return (
-      <Animated.View
-        style={[{ position: "absolute", height: effectiveHeight }, animatedStyle]}
-      >
+      <Animated.View style={[{ position: "absolute", height: effectiveHeight }, animatedStyle]}>
         <Text style={effectiveTextStyle}>{char}</Text>
       </Animated.View>
     );

@@ -8,5 +8,5 @@ module.exports = {
     "^.+\\.tsx?$": ["ts-jest", { tsconfig: "./tsconfig.test.json" }],
   },
   setupFiles: ["./jest.setup.js"],
-  modulePathIgnorePatterns: ["<rootDir>/dist"],
+  modulePathIgnorePatterns: ["<rootDir>/lib"],
 };

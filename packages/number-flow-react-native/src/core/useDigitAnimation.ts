@@ -1,8 +1,8 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import {
-  type SharedValue,
   makeMutable,
   runOnJS,
+  type SharedValue,
   useAnimatedReaction,
   withTiming,
 } from "react-native-reanimated";
@@ -83,7 +83,7 @@ export function useDigitAnimation({
         easing: spinTiming.easing,
       });
     }
-  }, [trend, spinTiming]);
+  }, [trend, spinTiming, animDelta, currentDigitSV, resolvedDigitCount]);
 
   const slotOpacity = useSlotOpacity({
     entering,
@@ -95,8 +95,7 @@ export function useDigitAnimation({
   });
 
   useLayoutEffect(() => {
-    const workletActive =
-      workletDigitValue !== undefined && workletDigitValue.value >= 0;
+    const workletActive = workletDigitValue !== undefined && workletDigitValue.value >= 0;
     if (!exiting && !workletActive && prevDigitRef.current !== digitValue) {
       const delta = computeRollDelta(prevDigitRef.current, digitValue, trend, resolvedDigitCount);
       prevDigitRef.current = digitValue;
@@ -107,7 +106,16 @@ export function useDigitAnimation({
         easing: spinTiming.easing,
       });
     }
-  }, [digitValue, exiting, workletDigitValue, trend, spinTiming]);
+  }, [
+    digitValue,
+    exiting,
+    workletDigitValue,
+    trend,
+    spinTiming,
+    animDelta,
+    currentDigitSV,
+    resolvedDigitCount,
+  ]);
 
   /**
    * Continuous spin: when the generation counter increments, this digit's
@@ -139,7 +147,15 @@ export function useDigitAnimation({
       duration: spinTiming.duration,
       easing: spinTiming.easing,
     });
-  }, [continuousSpinGeneration, exiting, entering, trend, spinTiming, resolvedDigitCount]);
+  }, [
+    continuousSpinGeneration,
+    exiting,
+    entering,
+    trend,
+    spinTiming,
+    resolvedDigitCount,
+    animDelta,
+  ]);
 
   const syncFromWorklet = useCallback((digit: number) => {
     prevDigitRef.current = digit;

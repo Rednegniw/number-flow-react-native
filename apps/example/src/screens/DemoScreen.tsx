@@ -2,7 +2,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useLayoutEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { RendererToggle, type Renderer } from "../components/RendererToggle";
+import { type Renderer, RendererToggle } from "../components/RendererToggle";
 import { DEMO_REGISTRY } from "../config/demoRegistry";
 import type { RootStackParamList } from "../navigation/types";
 import { colors } from "../theme/colors";

@@ -1,10 +1,5 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import {
-  type SharedValue,
-  makeMutable,
-  runOnJS,
-  withTiming,
-} from "react-native-reanimated";
+import { makeMutable, runOnJS, type SharedValue, withTiming } from "react-native-reanimated";
 import type { TimingConfig } from "./types";
 
 /**
@@ -65,7 +60,7 @@ export function useSlotOpacity({
         easing: opacityTiming.easing,
       });
     }
-  }, [currentState, opacityTiming, exitKey, onExitComplete, onExitingStart]);
+  }, [currentState, opacityTiming, exitKey, onExitComplete, onExitingStart, slotOpacity]);
 
   return slotOpacity;
 }

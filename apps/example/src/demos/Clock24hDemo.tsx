@@ -1,6 +1,6 @@
-import { Canvas, useFont } from "@shopify/react-native-skia";
+import { Canvas } from "@shopify/react-native-skia";
 import { TimeFlow } from "number-flow-react-native/native";
-import { SkiaTimeFlow } from "number-flow-react-native/skia";
+import { SkiaTimeFlow, useSkiaFont } from "number-flow-react-native/skia";
 import { useCallback, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { colors } from "../theme/colors";
@@ -85,9 +85,7 @@ export const Clock24hDemoNative = () => {
             alignItems: "center",
           }}
         >
-          <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
-            Random
-          </Text>
+          <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>Random</Text>
         </Pressable>
       </View>
     </View>
@@ -95,7 +93,7 @@ export const Clock24hDemoNative = () => {
 };
 
 export const Clock24hDemoSkia = () => {
-  const skiaFont = useFont(INTER_FONT_ASSET, FONT_SIZE);
+  const skiaFont = useSkiaFont(INTER_FONT_ASSET, FONT_SIZE);
   const { hours, minutes, increment, randomize } = useClock24hDemoState();
 
   return (
@@ -151,9 +149,7 @@ export const Clock24hDemoSkia = () => {
             alignItems: "center",
           }}
         >
-          <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
-            Random
-          </Text>
+          <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>Random</Text>
         </Pressable>
       </View>
     </View>

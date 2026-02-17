@@ -1,6 +1,6 @@
-import { Canvas, useFont } from "@shopify/react-native-skia";
+import { Canvas } from "@shopify/react-native-skia";
 import { TimeFlow } from "number-flow-react-native/native";
-import { SkiaTimeFlow } from "number-flow-react-native/skia";
+import { SkiaTimeFlow, useSkiaFont } from "number-flow-react-native/skia";
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { colors } from "../theme/colors";
@@ -22,7 +22,14 @@ interface TransitionTest {
 const TRANSITIONS: TransitionTest[] = [
   { label: "9:59 → 10:00", use24h: true, fromHours: 9, fromMinutes: 59, toHours: 10, toMinutes: 0 },
   { label: "10:00 → 9:59", use24h: true, fromHours: 10, fromMinutes: 0, toHours: 9, toMinutes: 59 },
-  { label: "11:59AM → 12:00PM", use24h: false, fromHours: 11, fromMinutes: 59, toHours: 12, toMinutes: 0 },
+  {
+    label: "11:59AM → 12:00PM",
+    use24h: false,
+    fromHours: 11,
+    fromMinutes: 59,
+    toHours: 12,
+    toMinutes: 0,
+  },
   { label: "23:59 → 0:00", use24h: true, fromHours: 23, fromMinutes: 59, toHours: 0, toMinutes: 0 },
 ];
 
@@ -122,7 +129,7 @@ export const EdgeCaseDemoNative = () => {
 };
 
 export const EdgeCaseDemoSkia = () => {
-  const skiaFont = useFont(INTER_FONT_ASSET, FONT_SIZE);
+  const skiaFont = useSkiaFont(INTER_FONT_ASSET, FONT_SIZE);
   const { hours, minutes, is24Hour, runTransition } = useEdgeCaseDemoState();
 
   return (

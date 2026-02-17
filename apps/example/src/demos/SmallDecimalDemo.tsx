@@ -1,6 +1,6 @@
-import { Canvas, useFont } from "@shopify/react-native-skia";
+import { Canvas } from "@shopify/react-native-skia";
 import { NumberFlow } from "number-flow-react-native/native";
-import { SkiaNumberFlow } from "number-flow-react-native/skia";
+import { SkiaNumberFlow, useSkiaFont } from "number-flow-react-native/skia";
 import { useCallback, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { colors } from "../theme/colors";
@@ -29,9 +29,7 @@ export const SmallDecimalDemoNative = () => {
   return (
     <View style={{ gap: 8 }}>
       {/* State info */}
-      <Text style={{ fontSize: 11, color: colors.textSecondary }}>
-        {`suffix="${suffix}"`}
-      </Text>
+      <Text style={{ fontSize: 11, color: colors.textSecondary }}>{`suffix="${suffix}"`}</Text>
 
       {/* Number display */}
       <View
@@ -64,24 +62,20 @@ export const SmallDecimalDemoNative = () => {
           alignItems: "center",
         }}
       >
-        <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
-          Randomize
-        </Text>
+        <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>Randomize</Text>
       </Pressable>
     </View>
   );
 };
 
 export const SmallDecimalDemoSkia = () => {
-  const skiaFont = useFont(INTER_FONT_ASSET, FONT_SIZE);
+  const skiaFont = useSkiaFont(INTER_FONT_ASSET, FONT_SIZE);
   const { value, suffix, randomize } = useSmallDecimalDemoState();
 
   return (
     <View style={{ gap: 8 }}>
       {/* State info */}
-      <Text style={{ fontSize: 11, color: colors.textSecondary }}>
-        {`suffix="${suffix}"`}
-      </Text>
+      <Text style={{ fontSize: 11, color: colors.textSecondary }}>{`suffix="${suffix}"`}</Text>
 
       {/* Number display */}
       <View
@@ -118,9 +112,7 @@ export const SmallDecimalDemoSkia = () => {
           alignItems: "center",
         }}
       >
-        <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
-          Randomize
-        </Text>
+        <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>Randomize</Text>
       </Pressable>
     </View>
   );

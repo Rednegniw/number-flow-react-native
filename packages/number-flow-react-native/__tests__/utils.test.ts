@@ -1,12 +1,12 @@
-import {
-  signedDigitOffset,
-  computeRollDelta,
-  resolveTrend,
-  parseDigitPosition,
-  getDigitCount,
-  isDigitChar,
-} from "../src/core/utils";
+import { isDigitChar } from "../src/core/numerals";
 import type { Trend } from "../src/core/types";
+import {
+  computeRollDelta,
+  getDigitCount,
+  parseDigitPosition,
+  resolveTrend,
+  signedDigitOffset,
+} from "../src/core/utils";
 
 // ─── signedDigitOffset ───
 
@@ -125,8 +125,7 @@ describe("resolveTrend", () => {
   });
 
   test("function is called with prev and next", () => {
-    const fn = (prev: number, next: number): Trend =>
-      next > prev ? 1 : -1;
+    const fn = (prev: number, next: number): Trend => (next > prev ? 1 : -1);
 
     expect(resolveTrend(fn, 10, 20)).toBe(1);
     expect(resolveTrend(fn, 20, 10)).toBe(-1);

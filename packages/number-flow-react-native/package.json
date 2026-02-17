@@ -3,30 +3,36 @@
   "version": "0.1.0",
   "description": "Animated number transitions for React Native — View-based and Skia renderers",
   "source": "./src/index.ts",
-  "main": "./src/index.ts",
+  "main": "./lib/module/index.js",
+  "module": "./lib/module/index.js",
   "react-native": "./src/index.ts",
-  "types": "./src/index.ts",
+  "types": "./lib/typescript/index.d.ts",
   "exports": {
     ".": {
       "source": "./src/index.ts",
       "react-native": "./src/index.ts",
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
+      "types": "./lib/typescript/index.d.ts",
+      "default": "./lib/module/index.js"
     },
     "./skia": {
       "source": "./src/skia/index.ts",
       "react-native": "./src/skia/index.ts",
-      "types": "./src/skia/index.ts",
-      "default": "./src/skia/index.ts"
+      "types": "./lib/typescript/skia/index.d.ts",
+      "default": "./lib/module/skia/index.js"
     },
     "./native": {
       "source": "./src/native/index.ts",
       "react-native": "./src/native/index.ts",
-      "types": "./src/native/index.ts",
-      "default": "./src/native/index.ts"
-    }
+      "types": "./lib/typescript/native/index.d.ts",
+      "default": "./lib/module/native/index.js"
+    },
+    "./package.json": "./package.json"
   },
-  "files": ["src"],
+  "files": [
+    "src",
+    "lib"
+  ],
+  "sideEffects": false,
   "repository": {
     "type": "git",
     "url": "https://github.com/Rednegniw/number-flow-react-native.git",
@@ -44,9 +50,16 @@
   ],
   "author": "Antonin Wingender",
   "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
+    "prepare": "bob build",
+    "prepublishOnly": "tsc --noEmit && jest",
     "check-types": "tsc --noEmit",
-    "test": "jest"
+    "test": "jest",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write ."
   },
   "peerDependencies": {
     "react": ">=18",
@@ -66,7 +79,26 @@
     "@types/jest": "^30.0.0",
     "@types/react": "~19.1.0",
     "jest": "^30.0.0",
+    "react-native-builder-bob": "^0.40.18",
     "ts-jest": "^29.4.6",
     "typescript": "~5.9.2"
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      [
+        "module",
+        {
+          "esm": true
+        }
+      ],
+      [
+        "typescript",
+        {
+          "project": "tsconfig.build.json"
+        }
+      ]
+    ]
   }
 }

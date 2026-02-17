@@ -6,26 +6,6 @@ export const DIGIT_COUNT = 10;
 export const MEASURABLE_CHARS =
   "0123456789.,%+-$/:! €£¥₩abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~°";
 
-// Avoids allocating new strings in hot animation paths
-export const DIGIT_STRINGS = [
-  "0",
-  "1",
-  "2",
-  "3",
-  "4",
-  "5",
-  "6",
-  "7",
-  "8",
-  "9",
-] as const;
-
-/**
- * Vertical mask fade height as a ratio of lineHeight.
- * Matches web NumberFlow's --number-flow-mask-height: 0.25em
- */
-export const MASK_HEIGHT_RATIO = 0.25;
-
 /**
  * Horizontal mask fade width as a ratio of lineHeight.
  * Matches web NumberFlow's --number-flow-mask-width: 0.5em

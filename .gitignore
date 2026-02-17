@@ -1,10 +1,12 @@
 node_modules/
 dist/
+lib/
 .DS_Store
 *.tsbuildinfo
-CLAUDE.md
-COOL_RECS.md
-QUALITY_ASSESSMENT.md
+/*.md
+!README.md
+ios/
+coverage/
 
 # Docs (Fumadocs / Next.js)
 docs/.source/

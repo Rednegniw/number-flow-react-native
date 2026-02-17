@@ -1,23 +1,17 @@
-export { SkiaNumberFlow } from "./skia";
-export { SkiaTimeFlow } from "./skia";
-export { NumberFlow } from "./native";
-export { TimeFlow } from "./native";
-export { useFormattedValue } from "./core/useFormattedValue";
-export { useCanAnimate } from "./core/useCanAnimate";
 export { detectNumberingSystem, getDigitStrings, getZeroCodePoint } from "./core/numerals";
-
+export type { SkiaTimeFlowProps, TimeFlowProps } from "./core/timeTypes";
 export type {
-  SkiaNumberFlowProps,
-  GlyphMetrics,
-  TimingConfig,
   AnimationConfig,
-  TextAlign,
-  Trend,
-  TrendProp,
   DigitConstraint,
   DigitsProp,
-  KeyedPart,
+  SkiaNumberFlowProps,
+  TextAlign,
+  TimingConfig,
+  Trend,
+  TrendProp,
 } from "./core/types";
-
+export { useCanAnimate } from "./core/useCanAnimate";
+export { useFormattedValue } from "./core/useFormattedValue";
+export { NumberFlow, TimeFlow } from "./native";
 export type { NumberFlowProps, NumberFlowStyle } from "./native/types";
-export type { TimeFlowProps, SkiaTimeFlowProps } from "./core/timeTypes";
+export { SkiaNumberFlow, SkiaTimeFlow, useSkiaFont } from "./skia";

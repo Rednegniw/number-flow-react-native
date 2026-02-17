@@ -1,43 +1,37 @@
-import React, { useMemo, useState } from "react";
+import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { StyleSheet, Text, type TextStyle } from "react-native";
 import Animated, {
-  type SharedValue,
   makeMutable,
+  type SharedValue,
   useAnimatedReaction,
   useAnimatedStyle,
   withTiming,
 } from "react-native-reanimated";
-import {
-  DIGIT_COUNT,
-  SUPERSCRIPT_SCALE,
-} from "../core/constants";
+import { DIGIT_COUNT, SUPERSCRIPT_SCALE } from "../core/constants";
+import { getSuperscriptTextStyle } from "../core/superscript";
 import type { GlyphMetrics, TimingConfig, Trend } from "../core/types";
 import { useAnimatedX } from "../core/useAnimatedX";
 import { useDigitAnimation } from "../core/useDigitAnimation";
 import { signedDigitOffset } from "../core/utils";
-import { useLayoutEffect, useRef } from "react";
 
 // Extracted as its own component so useAnimatedStyle respects Rules of Hooks
 interface DigitElementProps {
-  digitIndex: number;
   digitString: string;
   yValue: SharedValue<number>;
   textStyle: DigitSlotProps["textStyle"];
 }
 
-const DigitElement = React.memo(
-  ({ digitString, yValue, textStyle }: DigitElementProps) => {
-    const animatedStyle = useAnimatedStyle(() => ({
-      transform: [{ translateY: yValue.value }],
-    }));
+const DigitElement = React.memo(({ digitString, yValue, textStyle }: DigitElementProps) => {
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: yValue.value }],
+  }));
 
-    return (
-      <Animated.View style={[styles.digitView, animatedStyle]}>
-        <Text style={textStyle}>{digitString}</Text>
-      </Animated.View>
-    );
-  },
-);
+  return (
+    <Animated.View style={[styles.digitView, animatedStyle]}>
+      <Text style={textStyle}>{digitString}</Text>
+    </Animated.View>
+  );
+});
 
 DigitElement.displayName = "DigitElement";
 
@@ -46,7 +40,6 @@ interface DigitSlotProps {
   digitValue: number;
   targetX: number;
   charWidth: number;
-  lineHeight: number;
   textStyle: TextStyle;
   spinTiming: TimingConfig;
   opacityTiming: TimingConfig;
@@ -70,7 +63,6 @@ export const DigitSlot = React.memo(
     digitValue,
     targetX,
     charWidth,
-    lineHeight,
     textStyle,
     spinTiming,
     opacityTiming,
@@ -88,7 +80,8 @@ export const DigitSlot = React.memo(
     digitStrings,
   }: DigitSlotProps) => {
     const resolvedDigitCount = digitCount ?? DIGIT_COUNT;
-    const resolvedDigitStrings = digitStrings ?? Array.from({ length: resolvedDigitCount }, (_, i) => String(i));
+    const resolvedDigitStrings =
+      digitStrings ?? Array.from({ length: resolvedDigitCount }, (_, i) => String(i));
 
     // Superscript scaling — exponent digits/signs render smaller at the top of the line.
     // Mask heights are zeroed for superscript: the container-level gradient doesn't cover
@@ -98,29 +91,23 @@ export const DigitSlot = React.memo(
     const effectiveMaskTop = superscript ? 0 : maskTop;
     const effectiveMaskBottom = superscript ? 0 : maskBottom;
 
-    const effectiveTextStyle = useMemo(() => {
-      if (!superscript) return textStyle;
+    const effectiveTextStyle = useMemo(
+      () => (superscript ? getSuperscriptTextStyle(textStyle, effectiveLH) : textStyle),
+      [textStyle, superscript, effectiveLH],
+    );
 
-      return {
-        ...textStyle,
-        fontSize: (textStyle.fontSize ?? 16) * SUPERSCRIPT_SCALE,
-        lineHeight: effectiveLH,
-      };
-    }, [textStyle, superscript, effectiveLH]);
-
-    const { initialDigit, animDelta, currentDigitSV, slotOpacity } =
-      useDigitAnimation({
-        digitValue,
-        entering,
-        exiting,
-        trend,
-        spinTiming,
-        opacityTiming,
-        exitKey,
-        onExitComplete,
-        digitCount: resolvedDigitCount,
-        continuousSpinGeneration,
-      });
+    const { initialDigit, animDelta, currentDigitSV, slotOpacity } = useDigitAnimation({
+      digitValue,
+      entering,
+      exiting,
+      trend,
+      spinTiming,
+      opacityTiming,
+      exitKey,
+      onExitComplete,
+      digitCount: resolvedDigitCount,
+      continuousSpinGeneration,
+    });
 
     /**
      * Per-digit Y transforms stored as makeMutable shared values.
@@ -166,13 +153,10 @@ export const DigitSlot = React.memo(
           easing: transformTiming.easing,
         });
       }
-    }, [charWidth, exiting, transformTiming]);
+    }, [charWidth, exiting, transformTiming, animatedClipWidth]);
 
     const animatedStyle = useAnimatedStyle(() => ({
-      transform: [
-        { translateX: animatedX.value },
-        { translateY: -effectiveMaskTop },
-      ],
+      transform: [{ translateX: animatedX.value }, { translateY: -effectiveMaskTop }],
       opacity: slotOpacity.value,
     }));
 
@@ -188,7 +172,6 @@ export const DigitSlot = React.memo(
       () =>
         Array.from({ length: resolvedDigitCount }, (_, n) => (
           <DigitElement
-            digitIndex={n}
             digitString={resolvedDigitStrings[n]}
             key={n}
             textStyle={effectiveTextStyle}

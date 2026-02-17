@@ -1,4 +1,5 @@
 {
+  "name": "number-flow-react-native-monorepo",
   "private": true,
   "workspaces": [
     "packages/*",
@@ -10,21 +11,25 @@
     "example": "bun --cwd apps/example",
     "docs": "bun --cwd docs",
     "check-types": "bun --filter '*' check-types",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "test": "bun run lib test",
+    "build": "bun run lib prepare",
     "android": "expo run:android",
     "ios": "expo run:ios"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.0",
+    "@changesets/changelog-github": "^0.5.2",
     "@changesets/cli": "^2.29.0"
-  },
-  "name": "number-flow-react-native",
-  "version": "1.0.0",
-  "dependencies": {
-    "@rednegniw/masked-view": "0.4.0",
-    "expo": "~54.0.33",
-    "react": "19.1.0",
-    "react-native": "0.81.5"
   },
   "trustedDependencies": [
     "@shopify/react-native-skia"
-  ]
+  ],
+  "overrides": {
+    "react": "19.1.0",
+    "react-native": "0.81.5"
+  },
+  "version": "1.0.0"
 }

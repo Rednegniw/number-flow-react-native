@@ -1,5 +1,5 @@
 {
   "ios": {
-    "bundleIdentifier": "com.redwingen.number-flow-react-native"
+    "bundleIdentifier": "com.redwingen.number-flow-react-native-monorepo"
   }
 }

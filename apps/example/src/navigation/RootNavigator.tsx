@@ -17,14 +17,7 @@ export const RootNavigator = () => (
       contentStyle: { backgroundColor: colors.background },
     }}
   >
-    <Stack.Screen
-      component={HomeScreen}
-      name="Home"
-      options={{ headerShown: false }}
-    />
-    <Stack.Screen
-      component={DemoScreen}
-      name="Demo"
-    />
+    <Stack.Screen component={HomeScreen} name="Home" options={{ headerShown: false }} />
+    <Stack.Screen component={DemoScreen} name="Demo" />
   </Stack.Navigator>
 );

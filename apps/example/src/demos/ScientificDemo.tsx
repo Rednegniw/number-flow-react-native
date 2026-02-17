@@ -1,6 +1,6 @@
-import { Canvas, useFont } from "@shopify/react-native-skia";
+import { Canvas } from "@shopify/react-native-skia";
 import { NumberFlow } from "number-flow-react-native/native";
-import { SkiaNumberFlow } from "number-flow-react-native/skia";
+import { SkiaNumberFlow, useSkiaFont } from "number-flow-react-native/skia";
 import { useCallback, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { colors } from "../theme/colors";
@@ -49,9 +49,7 @@ const ActionButtons = ({
         alignItems: "center",
       }}
     >
-      <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
-        Next Value
-      </Text>
+      <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>Next Value</Text>
     </Pressable>
 
     <Pressable
@@ -72,8 +70,7 @@ const ActionButtons = ({
 );
 
 export const ScientificDemoNative = () => {
-  const { value, notation, engineering, next, toggleNotation } =
-    useScientificDemoState();
+  const { value, notation, engineering, next, toggleNotation } = useScientificDemoState();
 
   return (
     <View style={{ gap: 8 }}>
@@ -109,9 +106,8 @@ export const ScientificDemoNative = () => {
 };
 
 export const ScientificDemoSkia = () => {
-  const skiaFont = useFont(INTER_FONT_ASSET, FONT_SIZE);
-  const { value, notation, engineering, next, toggleNotation } =
-    useScientificDemoState();
+  const skiaFont = useSkiaFont(INTER_FONT_ASSET, FONT_SIZE);
+  const { value, notation, engineering, next, toggleNotation } = useScientificDemoState();
 
   return (
     <View style={{ gap: 8 }}>

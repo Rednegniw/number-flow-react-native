@@ -1,11 +1,7 @@
-import { Canvas, type SkFont, useFont } from "@shopify/react-native-skia";
+import { Canvas, type SkFont } from "@shopify/react-native-skia";
+import { detectNumberingSystem, getDigitStrings, getZeroCodePoint } from "number-flow-react-native";
 import { NumberFlow } from "number-flow-react-native/native";
-import { SkiaNumberFlow } from "number-flow-react-native/skia";
-import {
-  detectNumberingSystem,
-  getDigitStrings,
-  getZeroCodePoint,
-} from "number-flow-react-native";
+import { SkiaNumberFlow, useSkiaFont } from "number-flow-react-native/skia";
 import { useCallback, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { colors } from "../theme/colors";
@@ -32,14 +28,54 @@ interface NumeralSystem {
 
 const SYSTEMS: NumeralSystem[] = [
   { label: "Latin", locale: "en-US", digits: "0123456789", fontKey: "latin" },
-  { label: "Arabic-Indic", locale: "ar-EG", digits: "\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669", fontKey: "arabic" },
-  { label: "Ext. Arabic", locale: "fa-IR", digits: "\u06F0\u06F1\u06F2\u06F3\u06F4\u06F5\u06F6\u06F7\u06F8\u06F9", fontKey: "arabic" },
-  { label: "Bengali", locale: "bn-BD", digits: "\u09E6\u09E7\u09E8\u09E9\u09EA\u09EB\u09EC\u09ED\u09EE\u09EF", fontKey: "bengali" },
-  { label: "Devanagari", locale: "ne-NP", digits: "\u0966\u0967\u0968\u0969\u096A\u096B\u096C\u096D\u096E\u096F", fontKey: "devanagari" },
-  { label: "Myanmar", locale: "my-MM", digits: "\u1040\u1041\u1042\u1043\u1044\u1045\u1046\u1047\u1048\u1049", fontKey: "myanmar" },
-  { label: "Thai", locale: "th-TH-u-nu-thai", digits: "\u0E50\u0E51\u0E52\u0E53\u0E54\u0E55\u0E56\u0E57\u0E58\u0E59", fontKey: "thai" },
-  { label: "Full-width", locale: "ja-JP-u-nu-fullwide", digits: "\uFF10\uFF11\uFF12\uFF13\uFF14\uFF15\uFF16\uFF17\uFF18\uFF19", fontKey: "cjk" },
-  { label: "Hanidec", locale: "zh-CN-u-nu-hanidec", digits: "\u3007\u4E00\u4E8C\u4E09\u56DB\u4E94\u516D\u4E03\u516B\u4E5D", fontKey: "cjk" },
+  {
+    label: "Arabic-Indic",
+    locale: "ar-EG",
+    digits: "\u0660\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669",
+    fontKey: "arabic",
+  },
+  {
+    label: "Ext. Arabic",
+    locale: "fa-IR",
+    digits: "\u06F0\u06F1\u06F2\u06F3\u06F4\u06F5\u06F6\u06F7\u06F8\u06F9",
+    fontKey: "arabic",
+  },
+  {
+    label: "Bengali",
+    locale: "bn-BD",
+    digits: "\u09E6\u09E7\u09E8\u09E9\u09EA\u09EB\u09EC\u09ED\u09EE\u09EF",
+    fontKey: "bengali",
+  },
+  {
+    label: "Devanagari",
+    locale: "ne-NP",
+    digits: "\u0966\u0967\u0968\u0969\u096A\u096B\u096C\u096D\u096E\u096F",
+    fontKey: "devanagari",
+  },
+  {
+    label: "Myanmar",
+    locale: "my-MM",
+    digits: "\u1040\u1041\u1042\u1043\u1044\u1045\u1046\u1047\u1048\u1049",
+    fontKey: "myanmar",
+  },
+  {
+    label: "Thai",
+    locale: "th-TH-u-nu-thai",
+    digits: "\u0E50\u0E51\u0E52\u0E53\u0E54\u0E55\u0E56\u0E57\u0E58\u0E59",
+    fontKey: "thai",
+  },
+  {
+    label: "Full-width",
+    locale: "ja-JP-u-nu-fullwide",
+    digits: "\uFF10\uFF11\uFF12\uFF13\uFF14\uFF15\uFF16\uFF17\uFF18\uFF19",
+    fontKey: "cjk",
+  },
+  {
+    label: "Hanidec",
+    locale: "zh-CN-u-nu-hanidec",
+    digits: "\u3007\u4E00\u4E8C\u4E09\u56DB\u4E94\u516D\u4E03\u516B\u4E5D",
+    fontKey: "cjk",
+  },
 ];
 
 // CJK fonts are too large to bundle (~10 MB+), so these systems are unsupported in Skia mode
@@ -125,11 +161,7 @@ const NumeralChips = ({
   selectedIndex: number;
   onSelect: (i: number) => void;
 }) => (
-  <ScrollView
-    horizontal
-    showsHorizontalScrollIndicator={false}
-    style={{ marginHorizontal: -4 }}
-  >
+  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -4 }}>
     <View style={{ flexDirection: "row", gap: 6, paddingHorizontal: 4 }}>
       {SYSTEMS.map((sys, i) => {
         const isSelected = i === selectedIndex;
@@ -184,9 +216,7 @@ const ActionButtons = ({
         alignItems: "center",
       }}
     >
-      <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
-        Randomize
-      </Text>
+      <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>Randomize</Text>
     </Pressable>
 
     <Pressable
@@ -214,9 +244,7 @@ const ActionButtons = ({
         paddingHorizontal: 16,
       }}
     >
-      <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
-        Debug
-      </Text>
+      <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>Debug</Text>
     </Pressable>
   </View>
 );
@@ -256,8 +284,8 @@ const FontExplainer = ({ fontName }: { fontName: string }) => (
     }}
   >
     <Text style={{ fontSize: 11, color: "#4338CA", lineHeight: 16 }}>
-      Skia renders with {fontName}. Unlike native Text which uses OS font
-      fallback, Skia needs an explicit font file per script.
+      Skia renders with {fontName}. Unlike native Text which uses OS font fallback, Skia needs an
+      explicit font file per script.
     </Text>
   </View>
 );
@@ -273,22 +301,22 @@ const CjkUnsupportedBanner = () => (
     }}
   >
     <Text style={{ fontSize: 11, color: "#92400E", lineHeight: 16 }}>
-      CJK fonts are too large to bundle in a demo app (~10 MB). This script is
-      only available in Native mode.
+      CJK fonts are too large to bundle in a demo app (~10 MB). This script is only available in
+      Native mode.
     </Text>
   </View>
 );
 
 // Hook to load all script fonts upfront (hooks must be called unconditionally)
 function useScriptFonts() {
-  const latin = useFont(INTER_FONT_ASSET, FONT_SIZE);
-  const arabic = useFont(NOTO_ARABIC, FONT_SIZE);
-  const bengali = useFont(NOTO_BENGALI, FONT_SIZE);
-  const devanagari = useFont(NOTO_DEVANAGARI, FONT_SIZE);
-  const myanmar = useFont(NOTO_MYANMAR, FONT_SIZE);
-  const thai = useFont(NOTO_THAI, FONT_SIZE);
+  const latin = useSkiaFont(INTER_FONT_ASSET, FONT_SIZE);
+  const arabic = useSkiaFont(NOTO_ARABIC, FONT_SIZE);
+  const bengali = useSkiaFont(NOTO_BENGALI, FONT_SIZE);
+  const devanagari = useSkiaFont(NOTO_DEVANAGARI, FONT_SIZE);
+  const myanmar = useSkiaFont(NOTO_MYANMAR, FONT_SIZE);
+  const thai = useSkiaFont(NOTO_THAI, FONT_SIZE);
 
-  const fontMap: Record<string, SkFont | null> = {
+  const fontMap: Record<string, SkFont> = {
     latin,
     arabic,
     bengali,

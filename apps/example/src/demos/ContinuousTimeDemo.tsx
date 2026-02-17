@@ -1,6 +1,6 @@
-import { Canvas, useFont } from "@shopify/react-native-skia";
+import { Canvas } from "@shopify/react-native-skia";
 import { TimeFlow } from "number-flow-react-native/native";
-import { SkiaTimeFlow } from "number-flow-react-native/skia";
+import { SkiaTimeFlow, useSkiaFont } from "number-flow-react-native/skia";
 import { useCallback, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { colors } from "../theme/colors";
@@ -58,9 +58,7 @@ const ActionButtons = ({
         alignItems: "center",
       }}
     >
-      <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
-        +1 Hour
-      </Text>
+      <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>+1 Hour</Text>
     </Pressable>
 
     <Pressable
@@ -73,9 +71,7 @@ const ActionButtons = ({
         alignItems: "center",
       }}
     >
-      <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
-        +1 Minute
-      </Text>
+      <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>+1 Minute</Text>
     </Pressable>
 
     <Pressable
@@ -88,9 +84,7 @@ const ActionButtons = ({
         alignItems: "center",
       }}
     >
-      <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
-        Reset
-      </Text>
+      <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>Reset</Text>
     </Pressable>
   </View>
 );
@@ -175,7 +169,7 @@ export const ContinuousTimeDemoNative = () => {
 };
 
 export const ContinuousTimeDemoSkia = () => {
-  const skiaFont = useFont(INTER_FONT_ASSET, FONT_SIZE);
+  const skiaFont = useSkiaFont(INTER_FONT_ASSET, FONT_SIZE);
   const { hours, minutes, seconds, incrementHour, incrementMinute, reset } =
     useContinuousTimeDemoState();
 

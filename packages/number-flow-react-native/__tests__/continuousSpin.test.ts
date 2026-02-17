@@ -1,5 +1,5 @@
-import { computeContinuousGenerations } from "../src/core/useContinuousSpin";
 import type { KeyedPart } from "../src/core/types";
+import { computeContinuousGenerations } from "../src/core/useContinuousSpin";
 
 function digit(key: string, value: number): KeyedPart {
   return { key, type: "digit", char: String(value), digitValue: value };
@@ -48,9 +48,7 @@ describe("computeContinuousGenerations", () => {
     const prev = integerParts(100);
     const current = integerParts(200);
 
-    const result = computeContinuousGenerations(
-      prev, current, new Map(),
-    );
+    const result = computeContinuousGenerations(prev, current, new Map());
 
     // integer:2 (hundreds) changed 1→2 — no spin
     expect(result.has("integer:2")).toBe(false);
@@ -66,9 +64,7 @@ describe("computeContinuousGenerations", () => {
     const prev = integerParts(100);
     const current = integerParts(101);
 
-    const result = computeContinuousGenerations(
-      prev, current, new Map(),
-    );
+    const result = computeContinuousGenerations(prev, current, new Map());
 
     // Only integer:0 changed (0→1), it's the most significant changed digit
     // No digits below it → nothing to spin
@@ -79,9 +75,7 @@ describe("computeContinuousGenerations", () => {
     const parts = integerParts(100);
     const prevGen = new Map([["integer:0", 3]]);
 
-    const result = computeContinuousGenerations(
-      parts, parts, prevGen,
-    );
+    const result = computeContinuousGenerations(parts, parts, prevGen);
 
     expect(result).toBe(prevGen);
   });
@@ -91,14 +85,10 @@ describe("computeContinuousGenerations", () => {
     const step2 = integerParts(200);
     const step3 = integerParts(300);
 
-    const gen1 = computeContinuousGenerations(
-      step1, step2, new Map(),
-    );
+    const gen1 = computeContinuousGenerations(step1, step2, new Map());
     expect(gen1.get("integer:0")).toBe(1);
 
-    const gen2 = computeContinuousGenerations(
-      step2, step3, gen1,
-    );
+    const gen2 = computeContinuousGenerations(step2, step3, gen1);
     expect(gen2.get("integer:0")).toBe(2);
     expect(gen2.get("integer:1")).toBe(2);
   });
@@ -108,9 +98,7 @@ describe("computeContinuousGenerations", () => {
     const prev = integerParts(9);
     const current = integerParts(10);
 
-    const result = computeContinuousGenerations(
-      prev, current, new Map(),
-    );
+    const result = computeContinuousGenerations(prev, current, new Map());
 
     // integer:1 is new (didn't exist in prev) — should not be marked for spin
     expect(result.has("integer:1")).toBe(false);
@@ -121,9 +109,7 @@ describe("computeContinuousGenerations", () => {
     const prev = integerParts(120);
     const current = integerParts(230);
 
-    const result = computeContinuousGenerations(
-      prev, current, new Map(),
-    );
+    const result = computeContinuousGenerations(prev, current, new Map());
 
     // integer:0 (ones) unchanged, pos 0 < maxChanged 2 — spins
     expect(result.get("integer:0")).toBe(1);
@@ -135,9 +121,7 @@ describe("computeContinuousGenerations", () => {
     const prev = timeParts(1, 0, 0);
     const current = timeParts(2, 0, 0);
 
-    const result = computeContinuousGenerations(
-      prev, current, new Map(),
-    );
+    const result = computeContinuousGenerations(prev, current, new Map());
 
     // h1 changed (1→2), maxChangedPos = 4
     // All unchanged digits below pos 4 should spin
@@ -151,20 +135,10 @@ describe("computeContinuousGenerations", () => {
   });
 
   test("symbols are ignored", () => {
-    const prev = [
-      digit("integer:1", 1),
-      symbol("group:0", ","),
-      digit("integer:0", 0),
-    ];
-    const current = [
-      digit("integer:1", 2),
-      symbol("group:0", ","),
-      digit("integer:0", 0),
-    ];
+    const prev = [digit("integer:1", 1), symbol("group:0", ","), digit("integer:0", 0)];
+    const current = [digit("integer:1", 2), symbol("group:0", ","), digit("integer:0", 0)];
 
-    const result = computeContinuousGenerations(
-      prev, current, new Map(),
-    );
+    const result = computeContinuousGenerations(prev, current, new Map());
 
     // Only integer:0 should be in the map, not group:0
     expect(result.get("integer:0")).toBe(1);

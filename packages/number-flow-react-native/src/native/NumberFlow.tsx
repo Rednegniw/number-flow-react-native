@@ -1,31 +1,16 @@
 import MaskedView from "@rednegniw/masked-view";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { View, type LayoutChangeEvent } from "react-native";
-import {
-  DEFAULT_OPACITY_TIMING,
-  DEFAULT_SPIN_TIMING,
-  DEFAULT_TRANSFORM_TIMING,
-  ZERO_TIMING,
-} from "../core/timing";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { type LayoutChangeEvent, Text, View } from "react-native";
 import { computeKeyedLayout } from "../core/layout";
-import { computeAdaptiveMaskHeights } from "../core/mask";
-import { useContinuousSpin } from "../core/useContinuousSpin";
-import { useLayoutDiff } from "../core/useLayoutDiff";
-import {
-  getFormatCharacters,
-  useNumberFormatting,
-} from "../core/useNumberFormatting";
-import { useCanAnimate } from "../core/useCanAnimate";
-import {
-  detectNumberingSystem,
-  getDigitStrings,
-} from "../core/numerals";
-import { getDigitCount, resolveTrend } from "../core/utils";
+import { detectNumberingSystem, getDigitStrings } from "../core/numerals";
+import { getFormatCharacters } from "../core/intlHelpers";
+import { useFlowPipeline } from "../core/useFlowPipeline";
+import { useNumberFormatting } from "../core/useNumberFormatting";
+import { getDigitCount } from "../core/utils";
 import { warnOnce } from "../core/warnings";
-import { DigitSlot } from "./DigitSlot";
-import { SymbolSlot } from "./SymbolSlot";
+import { renderSlots } from "./renderSlots";
 import type { NumberFlowProps } from "./types";
-import { useGlyphMetrics } from "./useGlyphMetrics";
+import { useMeasuredGlyphMetrics } from "./useMeasuredGlyphMetrics";
 
 export const NumberFlow = ({
   value,
@@ -50,42 +35,27 @@ export const NumberFlow = ({
 }: NumberFlowProps) => {
   const formatChars = useMemo(
     () => getFormatCharacters(locales, format, prefix, suffix),
-    [locales, format, prefix, suffix],
+    [locales, format, prefix, suffix]
   );
   const numberingSystem = useMemo(
     () => detectNumberingSystem(locales, format),
-    [locales, format],
+    [locales, format]
   );
   const digitStrings = useMemo(
     () => getDigitStrings(numberingSystem),
-    [numberingSystem],
+    [numberingSystem]
   );
-  const { metrics, MeasureElement } = useGlyphMetrics(nfStyle, formatChars, digitStrings);
+  const { metrics, MeasureElement } = useMeasuredGlyphMetrics(
+    nfStyle,
+    formatChars,
+    digitStrings
+  );
 
-  // Animated + reduced motion
-  const canAnimate = useCanAnimate(respectMotionPreference);
-  const shouldAnimate = (animated ?? true) && canAnimate;
-
-  const resolvedSpinTiming = shouldAnimate
-    ? (spinTiming ?? DEFAULT_SPIN_TIMING)
-    : ZERO_TIMING;
-  const resolvedOpacityTiming = shouldAnimate
-    ? (opacityTiming ?? DEFAULT_OPACITY_TIMING)
-    : ZERO_TIMING;
-  const resolvedTransformTiming = shouldAnimate
-    ? (transformTiming ?? DEFAULT_TRANSFORM_TIMING)
-    : ZERO_TIMING;
-
-  const prevValueRef = useRef<number | undefined>(value);
-  const resolvedTrend = resolveTrend(trend, prevValueRef.current, value);
-  prevValueRef.current = value;
-
-  // Dev warnings
   if (__DEV__) {
     if (!nfStyle.fontSize) {
       warnOnce(
         "nf-fontSize",
-        "style.fontSize is required for NumberFlow to measure glyphs.",
+        "style.fontSize is required for NumberFlow to measure glyphs."
       );
     }
     if (digits) {
@@ -93,7 +63,7 @@ export const NumberFlow = ({
         if (constraint.max < 1 || constraint.max > 9) {
           warnOnce(
             `nf-digit-max-${posStr}`,
-            `digits[${posStr}].max must be between 1 and 9, got ${constraint.max}.`,
+            `digits[${posStr}].max must be between 1 and 9, got ${constraint.max}.`
           );
         }
       }
@@ -105,13 +75,7 @@ export const NumberFlow = ({
     format,
     locales,
     prefix,
-    suffix,
-  );
-
-  const spinGenerations = useContinuousSpin(
-    keyedParts,
-    continuous,
-    resolvedTrend,
+    suffix
   );
 
   const [containerWidth, setContainerWidth] = useState(0);
@@ -119,89 +83,67 @@ export const NumberFlow = ({
     setContainerWidth(e.nativeEvent.layout.width);
   }, []);
 
-  const effectiveWidth = containerWidth;
-
   const layout = useMemo(() => {
     if (!metrics) return [];
 
     // Skip layout when container hasn't measured yet and alignment needs width.
     // Without this guard, center/right alignment computes with width=0,
     // then re-computes after onLayout — causing a visible slide-in animation.
-    if (effectiveWidth === 0 && textAlign !== "left") return [];
+    if (containerWidth === 0 && textAlign !== "left") return [];
 
     if (keyedParts.length === 0) return [];
-    return computeKeyedLayout(keyedParts, metrics, effectiveWidth, textAlign, digitStrings);
-  }, [
-    metrics,
+    return computeKeyedLayout(
+      keyedParts,
+      metrics,
+      containerWidth,
+      textAlign,
+      digitStrings
+    );
+  }, [metrics, keyedParts, containerWidth, textAlign, digitStrings]);
+
+  const {
+    resolvedSpinTiming,
+    resolvedOpacityTiming,
+    resolvedTransformTiming,
+    resolvedTrend,
+    spinGenerations,
+    prevMap,
+    isInitialRender,
+    exitingEntries,
+    onExitComplete,
+    accessibilityLabel,
+    adaptiveMask,
+  } = useFlowPipeline({
     keyedParts,
-    effectiveWidth,
-    textAlign,
-    digitStrings,
-  ]);
-
-  // Animation lifecycle callbacks — use refs to avoid stale closures in setTimeout
-  const onAnimationsStartRef = useRef(onAnimationsStart);
-  onAnimationsStartRef.current = onAnimationsStart;
-  const onAnimationsFinishRef = useRef(onAnimationsFinish);
-  onAnimationsFinishRef.current = onAnimationsFinish;
-
-  const prevLayoutRef = useRef(layout);
-  const prevLayoutLenRef = useRef(layout.length);
-  const animTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-
-  useEffect(() => {
-    if (
-      layout.length > 0 &&
-      prevLayoutLenRef.current > 0 &&
-      layout !== prevLayoutRef.current
-    ) {
-      onAnimationsStartRef.current?.();
-      if (animTimerRef.current) clearTimeout(animTimerRef.current);
-      const maxDur = Math.max(
-        resolvedSpinTiming.duration,
-        resolvedOpacityTiming.duration,
-        resolvedTransformTiming.duration,
-      );
-      animTimerRef.current = setTimeout(
-        () => onAnimationsFinishRef.current?.(),
-        maxDur,
-      );
-    }
-    prevLayoutRef.current = layout;
-    prevLayoutLenRef.current = layout.length;
-    return () => {
-      if (animTimerRef.current) clearTimeout(animTimerRef.current);
-    };
-  }, [layout, resolvedSpinTiming, resolvedOpacityTiming, resolvedTransformTiming]);
-
-  const { prevMap, isInitialRender, exitingEntries, onExitComplete } =
-    useLayoutDiff(layout);
+    trendValue: value,
+    layout,
+    metrics,
+    animated,
+    respectMotionPreference,
+    spinTiming,
+    opacityTiming,
+    transformTiming,
+    trend,
+    continuous,
+    mask,
+    onAnimationsStart,
+    onAnimationsFinish,
+  });
 
   const textStyle = useMemo(
     () => ({
       ...nfStyle,
       color: nfStyle.color ?? "#000000",
     }),
-    [nfStyle],
+    [nfStyle]
   );
 
-  const accessibilityLabel = useMemo(() => {
-    if (keyedParts.length === 0) return undefined;
-    return keyedParts.map((p) => p.char).join("");
-  }, [keyedParts]);
-
   const resolvedMask = mask ?? true;
-
-  const adaptiveMask = useMemo(() => {
-    if (!metrics || !resolvedMask) return { top: 0, bottom: 0, expansionTop: 0, expansionBottom: 0 };
-    return computeAdaptiveMaskHeights(layout, exitingEntries, metrics);
-  }, [metrics, resolvedMask, layout, exitingEntries]);
-
   const maskTop = adaptiveMask.top;
   const maskBottom = adaptiveMask.bottom;
   const { expansionTop, expansionBottom } = adaptiveMask;
 
-  // Step count scales with mask height — each step must be ≥1px (sub-pixel Views collapse to 0).
+  // Step count scales with mask height — each step must be >=1px (sub-pixel Views collapse to 0).
   const topSteps = Math.max(2, Math.round(maskTop));
   const bottomSteps = Math.max(2, Math.round(maskBottom));
 
@@ -209,7 +151,7 @@ export const NumberFlow = ({
     if (!resolvedMask || !metrics) return null;
     return (
       <View style={{ flex: 1, flexDirection: "column" }}>
-        {/* Top fade: transparent → opaque */}
+        {/* Top fade: transparent -> opaque */}
         {Array.from({ length: topSteps }, (_, i) => (
           <View
             key={`t${i}`}
@@ -219,9 +161,11 @@ export const NumberFlow = ({
             }}
           />
         ))}
+
         {/* Middle: fully opaque */}
         <View style={{ flex: 1, backgroundColor: "black" }} />
-        {/* Bottom fade: opaque → transparent */}
+
+        {/* Bottom fade: opaque -> transparent */}
         {Array.from({ length: bottomSteps }, (_, i) => (
           <View
             key={`b${i}`}
@@ -235,142 +179,90 @@ export const NumberFlow = ({
     );
   }, [resolvedMask, metrics, maskTop, maskBottom, topSteps, bottomSteps]);
 
-  if (!metrics) {
+  
+  const [slotsReady, setSlotsReady] = useState(false);
+  const metricsReady = !!metrics;
+
+  useEffect(() => {
+    if (!metricsReady) return;
+    const id = requestAnimationFrame(() => setSlotsReady(true));
+    return () => cancelAnimationFrame(id);
+  }, [metricsReady]);
+
+  if (!metrics || (layout.length === 0 && exitingEntries.size === 0)) {
     return (
-      <View onLayout={handleContainerLayout} style={containerStyle}>
+      <View
+        accessible
+        accessibilityRole="text"
+        accessibilityLabel={accessibilityLabel}
+        onLayout={handleContainerLayout}
+        style={containerStyle}
+      >
+        <Text style={[textStyle, { textAlign }]}>{accessibilityLabel}</Text>
         {MeasureElement}
       </View>
     );
   }
 
-  if (layout.length === 0 && exitingEntries.size === 0) {
+  // Placeholder branch: show plain Text while slot tree loads
+  if (!slotsReady) {
     return (
-      <View onLayout={handleContainerLayout} style={containerStyle}>
+      <View
+        accessible
+        accessibilityRole="text"
+        accessibilityLabel={accessibilityLabel}
+        onLayout={handleContainerLayout}
+        style={[
+          containerStyle,
+          {
+            height: metrics.lineHeight + expansionTop + expansionBottom,
+            marginTop: -expansionTop,
+            marginBottom: -expansionBottom,
+            position: "relative",
+            overflow: "hidden",
+          },
+        ]}
+      >
+        <Text style={[textStyle, { textAlign }]}>{accessibilityLabel}</Text>
         {MeasureElement}
       </View>
     );
   }
 
-  let digitIndex = 0;
-
-  const slots = (
-    <>
-      {layout.map((entry) => {
-        const isEntering = !isInitialRender && !prevMap.has(entry.key);
-        if (entry.isDigit) {
-          const digitCount = getDigitCount(digits, entry.key);
-          const spinGeneration = spinGenerations?.get(entry.key);
-
-          digitIndex++;
-          return (
-            <DigitSlot
-              charWidth={entry.width}
-              continuousSpinGeneration={spinGeneration}
-              digitCount={digitCount}
-              digitStrings={digitStrings}
-              digitValue={entry.digitValue}
-              entering={isEntering}
-              exiting={false}
-              key={entry.key}
-              lineHeight={metrics.lineHeight}
-              maskTop={maskTop}
-              maskBottom={maskBottom}
-              metrics={metrics}
-              opacityTiming={resolvedOpacityTiming}
-              spinTiming={resolvedSpinTiming}
-              superscript={entry.superscript}
-              targetX={entry.x}
-              textStyle={textStyle}
-              transformTiming={resolvedTransformTiming}
-              trend={resolvedTrend}
-            />
-          );
-        }
-        return (
-          <SymbolSlot
-            char={entry.char}
-            entering={isEntering}
-            exiting={false}
-            key={entry.key}
-            lineHeight={metrics.lineHeight}
-            opacityTiming={resolvedOpacityTiming}
-            superscript={entry.superscript}
-            targetX={entry.x}
-            textStyle={textStyle}
-            transformTiming={resolvedTransformTiming}
-          />
-        );
-      })}
-
-      {Array.from(exitingEntries.entries()).map(([key, entry]) => {
-        if (entry.isDigit) {
-          const digitCount = getDigitCount(digits, key);
-
-          return (
-            <DigitSlot
-              charWidth={entry.width}
-              digitCount={digitCount}
-              digitStrings={digitStrings}
-              digitValue={entry.digitValue}
-              entering={false}
-              exitKey={key}
-              exiting
-              key={key}
-              lineHeight={metrics.lineHeight}
-              maskTop={maskTop}
-              maskBottom={maskBottom}
-              metrics={metrics}
-              onExitComplete={onExitComplete}
-              opacityTiming={resolvedOpacityTiming}
-              spinTiming={resolvedSpinTiming}
-              superscript={entry.superscript}
-              targetX={entry.x}
-              textStyle={textStyle}
-              transformTiming={resolvedTransformTiming}
-              trend={resolvedTrend}
-            />
-          );
-        }
-        return (
-          <SymbolSlot
-            char={entry.char}
-            entering={false}
-            exitKey={key}
-            exiting
-            key={key}
-            lineHeight={metrics.lineHeight}
-            onExitComplete={onExitComplete}
-            opacityTiming={resolvedOpacityTiming}
-            superscript={entry.superscript}
-            targetX={entry.x}
-            textStyle={textStyle}
-            transformTiming={resolvedTransformTiming}
-          />
-        );
-      })}
-    </>
-  );
+  const slots = renderSlots({
+    layout,
+    exitingEntries,
+    prevMap,
+    isInitialRender,
+    onExitComplete,
+    metrics,
+    textStyle,
+    resolvedTrend,
+    spinTiming: resolvedSpinTiming,
+    opacityTiming: resolvedOpacityTiming,
+    transformTiming: resolvedTransformTiming,
+    spinGenerations,
+    digitCountResolver: (key) => getDigitCount(digits, key),
+    maskTop,
+    maskBottom,
+    digitStrings,
+  });
 
   // Optionally wrap in MaskedView for gradient edge fade.
-  // Content must be inside a single wrapper View so MaskedView's native
-  // didUpdateReactSubviews always sees one stable child — avoids Fabric
-  // "Attempt to recycle a mounted view" crash from dynamic slot churn.
-  const maskedContent = resolvedMask && gradientMaskElement ? (
-    <MaskedView
-      maskElement={gradientMaskElement}
-      style={{ flex: 1 }}
-    >
+  const maskedContent =
+    resolvedMask && gradientMaskElement ? (
+      <MaskedView maskElement={gradientMaskElement} style={{ flex: 1 }}>
+        <View style={{ flex: 1, position: "relative", top: expansionTop }}>
+          {MeasureElement}
+          {slots}
+        </View>
+      </MaskedView>
+    ) : (
       <View style={{ flex: 1, position: "relative", top: expansionTop }}>
         {MeasureElement}
         {slots}
       </View>
-    </MaskedView>
-  ) : (
-    <View style={{ flex: 1, position: "relative", top: expansionTop }}>
-      {MeasureElement}
-      {slots}
-    </View>
-  );
+    );
 
   return (
     <View

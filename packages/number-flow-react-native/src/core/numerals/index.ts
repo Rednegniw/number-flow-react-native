@@ -1,9 +1,10 @@
-export { detectOutputZeroCp, detectNumberingSystem } from "./detection";
+export { detectNumberingSystem, detectOutputZeroCodePoint } from "./detection";
 export {
-  getZeroCodePoint,
+  countDigits,
   getDigitStrings,
-  localeDigitValue,
-  isLocaleDigit,
+  getZeroCodePoint,
   hanidecDigitValue,
+  isDigitChar,
+  isLocaleDigit,
+  localeDigitValue,
 } from "./digits";
-export { HANIDEC_ZERO } from "./tables";

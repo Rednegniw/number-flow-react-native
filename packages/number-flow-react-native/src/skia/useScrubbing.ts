@@ -1,16 +1,16 @@
 import { useCallback, useMemo, useState } from "react";
 import {
-  type SharedValue,
   makeMutable,
   runOnJS,
+  type SharedValue,
   useAnimatedReaction,
   useDerivedValue,
 } from "react-native-reanimated";
-import type { CharLayout } from "../core/layout";
+import { assignXPositions, type CharLayout } from "../core/layout";
 import type { GlyphMetrics, TextAlign } from "../core/types";
 import { useDebouncedWidths } from "../core/useDebouncedWidths";
 import { useWorkletFormatting } from "../core/useWorkletFormatting";
-import { workletDigitValue } from "../core/utils";
+import { countDigits } from "../core/numerals";
 
 // ---------------------------------------------------------------------------
 // useScrubbingBridge
@@ -46,9 +46,7 @@ export function useScrubbingBridge({
   suffix,
   zeroCodePoint,
 }: UseScrubbingBridgeParams): UseScrubbingBridgeResult {
-  const [scrubbingValue, setScrubbingValue] = useState<number | undefined>(
-    undefined,
-  );
+  const [scrubbingValue, setScrubbingValue] = useState<number | undefined>(undefined);
 
   const handleScrubbingValueUpdate = useCallback((numericValue: number) => {
     if (numericValue < 0) {
@@ -76,16 +74,12 @@ export function useScrubbingBridge({
       }
 
       const fullText = prefix + current + suffix;
-      let digitCount = 0;
-      for (let i = 0; i < fullText.length; i++) {
-        const c = fullText.charCodeAt(i);
-        if (workletDigitValue(c, zeroCodePoint) >= 0) digitCount++;
-      }
+      const digitCount = countDigits(fullText, zeroCodePoint);
 
       if (digitCount !== prevWorkletDigitCount.value) {
         prevWorkletDigitCount.value = digitCount;
         const numericValue = parseFloat(current);
-        if (!isNaN(numericValue)) {
+        if (!Number.isNaN(numericValue)) {
           runOnJS(handleScrubbingValueUpdate)(numericValue);
         }
       }
@@ -143,12 +137,7 @@ export function useScrubbingLayout({
   width,
   textAlign,
 }: UseScrubbingLayoutParams): UseScrubbingLayoutResult {
-  const workletDigitValues = useWorkletFormatting(
-    sharedValue,
-    prefix,
-    suffix,
-    zeroCodePoint,
-  );
+  const workletDigitValues = useWorkletFormatting(sharedValue, prefix, suffix, zeroCodePoint);
 
   const digitWidths = useMemo(() => {
     if (!metrics) return null;
@@ -202,11 +191,7 @@ export function useScrubbingLayout({
      * layout positions to avoid index misalignment artifacts.
      */
     const fullText = prefix + sharedValue.value + suffix;
-    let workletDigitCount = 0;
-    for (let i = 0; i < fullText.length; i++) {
-      const c = fullText.charCodeAt(i);
-      if (workletDigitValue(c, zeroCodePoint) >= 0) workletDigitCount++;
-    }
+    const workletDigitCount = countDigits(fullText, zeroCodePoint);
     if (workletDigitCount !== layoutDigitCount) return [];
 
     const entries: { x: number; width: number }[] = [];
@@ -229,15 +214,7 @@ export function useScrubbingLayout({
       entries.push({ x: 0, width: slotWidth });
     }
 
-    let startX = 0;
-    if (textAlign === "right") startX = width - contentWidth;
-    else if (textAlign === "center") startX = (width - contentWidth) / 2;
-
-    let currentX = startX;
-    for (const entry of entries) {
-      entry.x = currentX;
-      currentX += entry.width;
-    }
+    assignXPositions(entries, width, textAlign, contentWidth);
 
     return entries;
   });

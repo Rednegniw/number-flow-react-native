@@ -1,10 +1,10 @@
 import {
   detectNumberingSystem,
-  detectOutputZeroCp,
-  getZeroCodePoint,
+  detectOutputZeroCodePoint,
   getDigitStrings,
-  localeDigitValue,
+  getZeroCodePoint,
   isLocaleDigit,
+  localeDigitValue,
 } from "../src/core/numerals";
 
 // ─── detectNumberingSystem ───
@@ -89,9 +89,7 @@ describe("getZeroCodePoint", () => {
 
 describe("getDigitStrings", () => {
   test("latn returns ASCII digits", () => {
-    expect(getDigitStrings("latn")).toEqual([
-      "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-    ]);
+    expect(getDigitStrings("latn")).toEqual(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]);
   });
 
   test("arab returns Arabic-Indic digits", () => {
@@ -138,51 +136,51 @@ describe("getDigitStrings", () => {
   });
 });
 
-// ─── detectOutputZeroCp ───
+// ─── detectOutputZeroCodePoint ───
 
-describe("detectOutputZeroCp", () => {
+describe("detectOutputZeroCodePoint", () => {
   test("Latin string → 0x0030", () => {
-    expect(detectOutputZeroCp("1,234.56")).toBe(0x0030);
+    expect(detectOutputZeroCodePoint("1,234.56")).toBe(0x0030);
   });
 
   test("Arabic string → 0x0660", () => {
-    expect(detectOutputZeroCp("١٬٢٣٤٫٥٦")).toBe(0x0660);
+    expect(detectOutputZeroCodePoint("١٬٢٣٤٫٥٦")).toBe(0x0660);
   });
 
   test("Extended Arabic string → 0x06F0", () => {
-    expect(detectOutputZeroCp("۱٬۲۳۴٫۵۶")).toBe(0x06f0);
+    expect(detectOutputZeroCodePoint("۱٬۲۳۴٫۵۶")).toBe(0x06f0);
   });
 
   test("Bengali string → 0x09E6", () => {
-    expect(detectOutputZeroCp("১,২৩৪.৫৬")).toBe(0x09e6);
+    expect(detectOutputZeroCodePoint("১,২৩৪.৫৬")).toBe(0x09e6);
   });
 
   test("Devanagari string → 0x0966", () => {
-    expect(detectOutputZeroCp("१,२३४.५६")).toBe(0x0966);
+    expect(detectOutputZeroCodePoint("१,२३४.५६")).toBe(0x0966);
   });
 
   test("Myanmar string → 0x1040", () => {
-    expect(detectOutputZeroCp("၁,၂၃၄.၅၆")).toBe(0x1040);
+    expect(detectOutputZeroCodePoint("၁,၂၃၄.၅၆")).toBe(0x1040);
   });
 
   test("no digits → falls back to Latin", () => {
-    expect(detectOutputZeroCp("$,.")).toBe(0x0030);
+    expect(detectOutputZeroCodePoint("$,.")).toBe(0x0030);
   });
 
   test("empty string → falls back to Latin", () => {
-    expect(detectOutputZeroCp("")).toBe(0x0030);
+    expect(detectOutputZeroCodePoint("")).toBe(0x0030);
   });
 
   test("mixed Latin and non-digit → Latin", () => {
-    expect(detectOutputZeroCp("$1,234.56")).toBe(0x0030);
+    expect(detectOutputZeroCodePoint("$1,234.56")).toBe(0x0030);
   });
 
   test("hanidec string → 0x3007 (sentinel)", () => {
-    expect(detectOutputZeroCp("一,二三四.五六")).toBe(0x3007);
+    expect(detectOutputZeroCodePoint("一,二三四.五六")).toBe(0x3007);
   });
 
   test("single hanidec digit detected", () => {
-    expect(detectOutputZeroCp("〇")).toBe(0x3007);
+    expect(detectOutputZeroCodePoint("〇")).toBe(0x3007);
   });
 });
 
@@ -201,10 +199,10 @@ describe("localeDigitValue", () => {
   });
 
   test("hanidec digits: 〇 → 0, 九 → 9", () => {
-    expect(localeDigitValue(0x3007, 0x3007)).toBe(0);  // 〇
-    expect(localeDigitValue(0x4e00, 0x3007)).toBe(1);  // 一
-    expect(localeDigitValue(0x4e94, 0x3007)).toBe(5);  // 五
-    expect(localeDigitValue(0x4e5d, 0x3007)).toBe(9);  // 九
+    expect(localeDigitValue(0x3007, 0x3007)).toBe(0); // 〇
+    expect(localeDigitValue(0x4e00, 0x3007)).toBe(1); // 一
+    expect(localeDigitValue(0x4e94, 0x3007)).toBe(5); // 五
+    expect(localeDigitValue(0x4e5d, 0x3007)).toBe(9); // 九
   });
 
   test("non-digit returns -1", () => {
@@ -246,9 +244,9 @@ describe("isLocaleDigit", () => {
   });
 
   test("hanidec digits are recognized", () => {
-    expect(isLocaleDigit(0x3007, 0x3007)).toBe(true);  // 〇
-    expect(isLocaleDigit(0x4e00, 0x3007)).toBe(true);  // 一
-    expect(isLocaleDigit(0x4e5d, 0x3007)).toBe(true);  // 九
+    expect(isLocaleDigit(0x3007, 0x3007)).toBe(true); // 〇
+    expect(isLocaleDigit(0x4e00, 0x3007)).toBe(true); // 一
+    expect(isLocaleDigit(0x4e5d, 0x3007)).toBe(true); // 九
   });
 
   test("hanidec rejects non-digit CJK", () => {
@@ -260,4 +258,3 @@ describe("isLocaleDigit", () => {
     expect(isLocaleDigit(58, 48)).toBe(false);
   });
 });
-

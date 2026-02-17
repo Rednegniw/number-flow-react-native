@@ -25,8 +25,7 @@ export interface MaskHeights {
  *
  * The gradient starts at the edge of the visible glyph content and extends
  * outward. If the "dead zone" inside lineHeight is smaller than the target
- * gradient size, the container expands beyond lineHeight (callers should
- * use negative margins to avoid affecting layout).
+ * gradient size, the container expands beyond lineHeight.
  */
 export function computeAdaptiveMaskHeights(
   layout: CharLayout[],
@@ -57,7 +56,7 @@ export function computeAdaptiveMaskHeights(
   const targetGradient = TARGET_GRADIENT_RATIO * metrics.lineHeight;
 
   // Dead zone: space within lineHeight not occupied by glyph content.
-  const deadZoneTop = Math.max(0, -metrics.ascent - (-maxAscent) - PADDING_PX);
+  const deadZoneTop = Math.max(0, -metrics.ascent - -maxAscent - PADDING_PX);
   const deadZoneBottom = Math.max(0, metrics.descent - maxDescent - PADDING_PX);
 
   // If the dead zone is smaller than the target, expand the container.

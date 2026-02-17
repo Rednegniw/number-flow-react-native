@@ -31,6 +31,41 @@ export type Trend = -1 | 0 | 1;
  */
 export type TrendProp = Trend | ((prev: number, next: number) => Trend);
 
+/**
+ * Animation behavior props shared by all Flow components (NumberFlow, TimeFlow,
+ * SkiaNumberFlow, SkiaTimeFlow). Controls how digit transitions behave.
+ */
+export interface AnimationBehaviorProps extends AnimationConfig {
+  /**
+   * Digit spin direction. When omitted, auto-detects from value changes:
+   * increasing values spin up, decreasing spin down.
+   * Pass `0` explicitly for shortest-path per-digit behavior.
+   */
+  trend?: TrendProp;
+
+  /** Set to false to disable animations and update instantly. Defaults to true. */
+  animated?: boolean;
+
+  /** When true (default), disables animations when the device's "Reduce Motion" setting is on. */
+  respectMotionPreference?: boolean;
+
+  /**
+   * When true, unchanged lower-significance digits spin through a full cycle
+   * during transitions, making the number appear to pass through intermediate values.
+   * Defaults to false.
+   */
+  continuous?: boolean;
+
+  /** Enable edge gradient fade masking on digit slots. Defaults to true. */
+  mask?: boolean;
+
+  /** Called when update animations begin */
+  onAnimationsStart?: () => void;
+
+  /** Called when all update animations complete */
+  onAnimationsFinish?: () => void;
+}
+
 /** A single character with a stable key from formatToParts RTL/LTR keying */
 export interface KeyedPart {
   /** Stable key: "integer:0" (ones), "integer:1" (tens), "fraction:0" (tenths), "decimal:0", etc. */
@@ -41,6 +76,14 @@ export interface KeyedPart {
   char: string;
   /** 0-9 for digits, -1 for symbols */
   digitValue: number;
+}
+
+export function digitPart(key: string, value: number): KeyedPart {
+  return { key, type: "digit", char: String(value), digitValue: value };
+}
+
+export function symbolPart(key: string, char: string): KeyedPart {
+  return { key, type: "symbol", char, digitValue: -1 };
 }
 
 export interface GlyphMetrics {
@@ -99,7 +142,7 @@ type SkiaNumberFlowValueProps =
       sharedValue: SharedValue<string>;
     };
 
-interface SkiaNumberFlowBaseProps extends AnimationConfig {
+interface SkiaNumberFlowBaseProps extends AnimationBehaviorProps {
   /** SkFont instance from useFont(). Required — renders empty until font loads. */
   font: SkFont | null;
   /** Text color (Skia color string). Defaults to "#000000". */
@@ -120,24 +163,6 @@ interface SkiaNumberFlowBaseProps extends AnimationConfig {
   opacity?: SharedValue<number>;
 
   /**
-   * Digit spin direction. When omitted, auto-detects from value changes:
-   * increasing values spin up, decreasing spin down.
-   * Pass `0` explicitly for shortest-path per-digit behavior.
-   */
-  trend?: TrendProp;
-  /** Set to false to disable animations and update instantly. Defaults to true. */
-  animated?: boolean;
-  /** When true (default), disables animations when the device's "Reduce Motion" setting is on. */
-  respectMotionPreference?: boolean;
-
-  /**
-   * When true, unchanged lower-significance digits spin through a full cycle
-   * during transitions, making the number appear to pass through intermediate values.
-   * Defaults to false.
-   */
-  continuous?: boolean;
-
-  /**
    * Per-position digit constraints. Maps integer position (0=ones, 1=tens, ...)
    * to { max: N } where N is the highest digit value (inclusive).
    * Example: { 1: { max: 5 } } for a wheel where tens go 0-5.
@@ -154,14 +179,6 @@ interface SkiaNumberFlowBaseProps extends AnimationConfig {
    * Only affects digits; symbols like "." keep their natural width.
    */
   scrubDigitWidthPercentile?: number;
-
-  /** Enable edge gradient fade masking on digit slots. Defaults to true. */
-  mask?: boolean;
-
-  /** Called when update animations begin */
-  onAnimationsStart?: () => void;
-  /** Called when all update animations complete */
-  onAnimationsFinish?: () => void;
 }
 
 /**

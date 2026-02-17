@@ -86,10 +86,10 @@ import { TimeFlow } from "number-flow-react-native/native";
 ### SkiaNumberFlow (Skia)
 
 ```tsx
-import { Canvas, useFont } from "@shopify/react-native-skia";
-import { SkiaNumberFlow } from "number-flow-react-native/skia";
+import { Canvas } from "@shopify/react-native-skia";
+import { SkiaNumberFlow, useSkiaFont } from "number-flow-react-native/skia";
 
-const font = useFont(require("./Inter-Bold.otf"), 32);
+const font = useSkiaFont(require("./Inter-Bold.otf"), 32);
 
 <Canvas style={{ width: 200, height: 40 }}>
   <SkiaNumberFlow
@@ -109,10 +109,10 @@ const font = useFont(require("./Inter-Bold.otf"), 32);
 ### SkiaTimeFlow (Skia)
 
 ```tsx
-import { Canvas, useFont } from "@shopify/react-native-skia";
-import { SkiaTimeFlow } from "number-flow-react-native/skia";
+import { Canvas } from "@shopify/react-native-skia";
+import { SkiaTimeFlow, useSkiaFont } from "number-flow-react-native/skia";
 
-const font = useFont(require("./Inter-Bold.otf"), 48);
+const font = useSkiaFont(require("./Inter-Bold.otf"), 48);
 
 <Canvas style={{ width: 200, height: 56 }}>
   <SkiaTimeFlow
@@ -126,6 +126,16 @@ const font = useFont(require("./Inter-Bold.otf"), 48);
     padHours={false}
   />
 </Canvas>;
+```
+
+### useSkiaFont
+
+Use `useSkiaFont` instead of Skia's `useFont` to load fonts for `SkiaNumberFlow` and `SkiaTimeFlow`. It has the same API but returns a system font fallback while the custom font loads, so you never get a blank canvas.
+
+```tsx
+import { useSkiaFont } from "number-flow-react-native/skia";
+
+const font = useSkiaFont(require("./MyFont.otf"), 32);
 ```
 
 ### Worklet-driven scrubbing
@@ -208,7 +218,7 @@ Same as `NumberFlow` plus Skia-specific props:
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `font` | `SkFont \| null` | — | **Required.** Skia font from `useFont()` |
+| `font` | `SkFont \| null` | — | **Required.** Skia font from `useSkiaFont()` or `useFont()` |
 | `color` | `string` | `"#000000"` | Text color |
 | `x` | `number` | `0` | X position in Canvas |
 | `y` | `number` | `0` | Y position (baseline) |

@@ -1,26 +1,14 @@
-import {
-  Group,
-  Paint,
-  Text as SkiaText,
-  rect,
-} from "@shopify/react-native-skia";
+import { Group, Paint, rect, Text as SkiaText } from "@shopify/react-native-skia";
 import React, { useMemo, useState } from "react";
 import {
-  type SharedValue,
   makeMutable,
+  type SharedValue,
   useAnimatedReaction,
   useDerivedValue,
 } from "react-native-reanimated";
-import {
-  DIGIT_COUNT,
-  SUPERSCRIPT_SCALE,
-} from "../core/constants";
-import type {
-  GlyphMetrics,
-  SkiaNumberFlowProps,
-  TimingConfig,
-  Trend,
-} from "../core/types";
+import { DIGIT_COUNT, SUPERSCRIPT_SCALE } from "../core/constants";
+import { getSuperscriptTransform } from "../core/superscript";
+import type { GlyphMetrics, SkiaNumberFlowProps, TimingConfig, Trend } from "../core/types";
 import { useAnimatedX } from "../core/useAnimatedX";
 import { useDigitAnimation } from "../core/useDigitAnimation";
 import { signedDigitOffset } from "../core/utils";
@@ -80,22 +68,22 @@ export const DigitSlot = React.memo(
     digitStrings,
   }: DigitSlotProps) => {
     const resolvedDigitCount = digitCount ?? DIGIT_COUNT;
-    const resolvedDigitStrings = digitStrings ?? Array.from({ length: resolvedDigitCount }, (_, i) => String(i));
+    const resolvedDigitStrings =
+      digitStrings ?? Array.from({ length: resolvedDigitCount }, (_, i) => String(i));
 
-    const { initialDigit, animDelta, currentDigitSV, slotOpacity } =
-      useDigitAnimation({
-        digitValue,
-        entering,
-        exiting,
-        trend,
-        spinTiming,
-        opacityTiming,
-        exitKey,
-        onExitComplete,
-        workletDigitValue,
-        digitCount: resolvedDigitCount,
-        continuousSpinGeneration,
-      });
+    const { initialDigit, animDelta, currentDigitSV, slotOpacity } = useDigitAnimation({
+      digitValue,
+      entering,
+      exiting,
+      trend,
+      spinTiming,
+      opacityTiming,
+      exitKey,
+      onExitComplete,
+      workletDigitValue,
+      digitCount: resolvedDigitCount,
+      continuousSpinGeneration,
+    });
 
     /**
      * Per-digit Y transforms: each digit independently positions itself
@@ -180,10 +168,7 @@ export const DigitSlot = React.memo(
       [baseY, metrics, effectiveMaskTop, effectiveMaskBottom],
     );
 
-    const opacityPaint = useMemo(
-      () => <Paint opacity={slotOpacity} />,
-      [slotOpacity],
-    );
+    const opacityPaint = useMemo(() => <Paint opacity={slotOpacity} />, [slotOpacity]);
 
     /**
      * Each digit gets its own Group transform driven by the position
@@ -203,23 +188,21 @@ export const DigitSlot = React.memo(
             />
           </Group>
         )),
-      [resolvedDigitCount, resolvedDigitStrings, baseY, color, font, digitXOffsets, digitYTransforms],
+      [
+        resolvedDigitCount,
+        resolvedDigitStrings,
+        baseY,
+        color,
+        font,
+        digitXOffsets,
+        digitYTransforms,
+      ],
     );
 
-    // Superscript: pivot-scale around text top so the digit shrinks downward
-    // within the mask region. No explicit raise needed — the smaller glyph
-    // naturally sits at the top of the line, producing a superscript appearance.
-    const superscriptTransform = useMemo(() => {
-      if (!superscript) return undefined;
-
-      const textTop = baseY + metrics.ascent;
-
-      return [
-        { translateY: textTop },
-        { scale: SUPERSCRIPT_SCALE },
-        { translateY: -textTop },
-      ];
-    }, [superscript, baseY, metrics]);
+    const superscriptTransform = useMemo(
+      () => (superscript ? getSuperscriptTransform(baseY, metrics.ascent) : undefined),
+      [superscript, baseY, metrics],
+    );
 
     const clipContent = <Group clip={clipRect}>{digitElements}</Group>;
 

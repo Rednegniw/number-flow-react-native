@@ -1,13 +1,5 @@
 import { useMemo } from "react";
-import type { KeyedPart } from "./types";
-
-function digitPart(key: string, value: number): KeyedPart {
-  return { key, type: "digit", char: String(value), digitValue: value };
-}
-
-function symbolPart(key: string, char: string): KeyedPart {
-  return { key, type: "symbol", char, digitValue: -1 };
-}
+import { digitPart, symbolPart, type KeyedPart } from "./types";
 
 /**
  * Converts 24h hours (0-23) to 12h display value (1-12).
