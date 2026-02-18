@@ -118,7 +118,6 @@ export const NumberFlow = ({
   const maskBottom = adaptiveMask.bottom;
   const { expansionTop, expansionBottom } = adaptiveMask;
 
-  // Step count scales with mask height — each step must be >=1px (sub-pixel Views collapse to 0).
   const topSteps = Math.max(2, Math.round(maskTop));
   const bottomSteps = Math.max(2, Math.round(maskBottom));
 
@@ -136,10 +135,8 @@ export const NumberFlow = ({
             }}
           />
         ))}
-
         {/* Middle: fully opaque */}
         <View style={{ flex: 1, backgroundColor: "black" }} />
-
         {/* Bottom fade: opaque -> transparent */}
         {Array.from({ length: bottomSteps }, (_, i) => (
           <View
@@ -222,22 +219,6 @@ export const NumberFlow = ({
     digitStrings,
   });
 
-  // Optionally wrap in MaskedView for gradient edge fade.
-  const maskedContent =
-    resolvedMask && gradientMaskElement && MaskedView ? (
-      <MaskedView maskElement={gradientMaskElement} style={{ flex: 1 }}>
-        <View style={{ flex: 1, position: "relative", top: expansionTop }}>
-          {MeasureElement}
-          {slots}
-        </View>
-      </MaskedView>
-    ) : (
-      <View style={{ flex: 1, position: "relative", top: expansionTop }}>
-        {MeasureElement}
-        {slots}
-      </View>
-    );
-
   return (
     <View
       accessible
@@ -255,7 +236,19 @@ export const NumberFlow = ({
         },
       ]}
     >
-      {maskedContent}
+      {resolvedMask && gradientMaskElement && MaskedView ? (
+        <MaskedView maskElement={gradientMaskElement} style={{ flex: 1 }}>
+          <View style={{ flex: 1, position: "relative", top: expansionTop }}>
+            {MeasureElement}
+            {slots}
+          </View>
+        </MaskedView>
+      ) : (
+        <View style={{ flex: 1, position: "relative", top: expansionTop }}>
+          {MeasureElement}
+          {slots}
+        </View>
+      )}
     </View>
   );
 };

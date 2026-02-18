@@ -14,24 +14,52 @@ import { useAnimatedX } from "../core/useAnimatedX";
 import { useDigitAnimation } from "../core/useDigitAnimation";
 import { signedDigitOffset } from "../core/utils";
 
+/**
+ * Maps a digit's clamped scroll offset to an opacity value for edge fading.
+ * Digits near center (offset ~ 0) are fully opaque; digits approaching the
+ * container edge fade to transparent over the mask zone.
+ *
+ * When mask is disabled (maskTop/Bottom = 0), fadeRatio = 0 → fadeStart = 1,
+ * so the function always returns 1 (no fade).
+ */
+function computeDigitOpacity(
+  clampedOffset: number,
+  maskTop: number,
+  maskBottom: number,
+  lineHeight: number,
+): number {
+  "worklet";
+  const absOffset = Math.abs(clampedOffset);
+  const fadeRatio = clampedOffset < 0 ? maskTop / lineHeight : maskBottom / lineHeight;
+  const fadeStart = Math.max(0, 1 - fadeRatio);
+
+  if (absOffset <= fadeStart) return 1;
+  if (absOffset >= 1) return 0;
+  return (1 - absOffset) / (1 - fadeStart);
+}
+
 // Extracted as its own component so useAnimatedStyle respects Rules of Hooks
 interface DigitElementProps {
   digitString: string;
   yValue: SharedValue<number>;
+  opacityValue: SharedValue<number>;
   textStyle: DigitSlotProps["textStyle"];
 }
 
-const DigitElement = React.memo(({ digitString, yValue, textStyle }: DigitElementProps) => {
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: yValue.value }],
-  }));
+const DigitElement = React.memo(
+  ({ digitString, yValue, opacityValue, textStyle }: DigitElementProps) => {
+    const animatedStyle = useAnimatedStyle(() => ({
+      transform: [{ translateY: yValue.value }],
+      opacity: opacityValue.value,
+    }));
 
-  return (
-    <Animated.View style={[styles.digitView, animatedStyle]}>
-      <Text style={textStyle}>{digitString}</Text>
-    </Animated.View>
-  );
-});
+    return (
+      <Animated.View style={[styles.digitView, animatedStyle]}>
+        <Text style={textStyle}>{digitString}</Text>
+      </Animated.View>
+    );
+  },
+);
 
 DigitElement.displayName = "DigitElement";
 
@@ -122,6 +150,17 @@ export const DigitSlot = React.memo(
       }),
     );
 
+    // Per-digit opacity for edge fading (replaces container-level MaskedView)
+    const [digitOpacities] = useState(() =>
+      Array.from({ length: resolvedDigitCount }, (_, n) => {
+        const offset = signedDigitOffset(n, initialDigit, resolvedDigitCount);
+        const clamped = Math.max(-1.5, Math.min(1.5, offset));
+        return makeMutable(
+          computeDigitOpacity(clamped, effectiveMaskTop, effectiveMaskBottom, effectiveLH),
+        );
+      }),
+    );
+
     /**
      * Mirrors NumberFlow's CSS mod(): each digit n computes its signed
      * offset from virtual position c, clamped to [-1.5, 1.5].
@@ -135,9 +174,15 @@ export const DigitSlot = React.memo(
           const offset = signedDigitOffset(n, c, resolvedDigitCount);
           const clamped = Math.max(-1.5, Math.min(1.5, offset));
           digitYValues[n].value = clamped * effectiveLH + effectiveMaskTop;
+          digitOpacities[n].value = computeDigitOpacity(
+            clamped,
+            effectiveMaskTop,
+            effectiveMaskBottom,
+            effectiveLH,
+          );
         }
       },
-      [effectiveLH, resolvedDigitCount, effectiveMaskTop],
+      [effectiveLH, resolvedDigitCount, effectiveMaskTop, effectiveMaskBottom],
     );
 
     const animatedX = useAnimatedX(targetX, exiting, transformTiming);
@@ -176,9 +221,10 @@ export const DigitSlot = React.memo(
             key={n}
             textStyle={effectiveTextStyle}
             yValue={digitYValues[n]}
+            opacityValue={digitOpacities[n]}
           />
         )),
-      [resolvedDigitCount, resolvedDigitStrings, digitYValues, effectiveTextStyle],
+      [resolvedDigitCount, resolvedDigitStrings, digitYValues, digitOpacities, effectiveTextStyle],
     );
 
     return (

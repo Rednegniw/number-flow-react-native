@@ -76,7 +76,7 @@ For `TimeFlow`, `useTimeFormatting` produces parts from hours/minutes/seconds wi
 
 The gradient mask creates the signature edge fade:
 
-- **Native** — `MaskedView` wraps the content. The mask element is a column of `View` strips with graduated opacity (`rgba(0,0,0,alpha)`) forming a gradient from transparent to opaque.
+- **Native** — When `@rednegniw/masked-view` is installed, the container is wrapped in a MaskedView with a stepped gradient mask element (transparent → opaque → transparent), providing smooth spatial fading at the edges. When the package isn't available, each digit computes its own opacity based on its signed scroll offset — as a digit approaches the container edge, its opacity fades from 1 → 0 over the mask zone. Both paths run inside the same worklet loop that positions digits, so fading is lock-step with scrolling.
 - **Skia** — Two `LinearGradient` + `DstIn` blend layers compose horizontal and vertical fades. `final_alpha = content × h_alpha × v_alpha`.
 
 The mask dimensions adapt to actual glyph bounds — taller characters get more mask headroom.

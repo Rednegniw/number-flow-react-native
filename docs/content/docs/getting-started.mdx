@@ -36,6 +36,7 @@ pnpm add number-flow-react-native
 | react-native | >= 0.73 | Yes |
 | react-native-reanimated | >= 3.0.0 | Yes |
 | @shopify/react-native-skia | >= 2.0.0 | Only for Skia components |
+| @rednegniw/masked-view | >= 0.4.0 | Optional — smooth gradient masking for native renderer |
 
 Install Reanimated if you don't already have it:
 
@@ -94,6 +95,35 @@ pnpm add @shopify/react-native-skia
 ```
 </Tab>
 </Tabs>
+
+For the best visual quality with the native renderer, install `@rednegniw/masked-view` to enable smooth gradient masking at digit edges. Without it, the native renderer falls back to per-digit opacity fading.
+
+<Tabs items={['bun', 'npm', 'yarn', 'pnpm']}>
+<Tab value="bun">
+```bash
+bun add @rednegniw/masked-view
+```
+</Tab>
+<Tab value="npm">
+```bash
+npm install @rednegniw/masked-view
+```
+</Tab>
+<Tab value="yarn">
+```bash
+yarn add @rednegniw/masked-view
+```
+</Tab>
+<Tab value="pnpm">
+```bash
+pnpm add @rednegniw/masked-view
+```
+</Tab>
+</Tabs>
+
+<Callout type="warn">
+`@rednegniw/masked-view` requires a dev build (Expo Dev Client or bare RN). It won't work in Expo Go or Snack — the native renderer will automatically fall back to per-digit opacity fading in those environments.
+</Callout>
 
 ## Quick Start
 
