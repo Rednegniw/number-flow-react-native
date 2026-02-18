@@ -2,13 +2,19 @@ import { Canvas, useFont } from "@shopify/react-native-skia";
 import { NumberFlow } from "number-flow-react-native/native";
 import { SkiaNumberFlow, useSkiaFont } from "number-flow-react-native/skia";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import { DemoButton } from "../components/DemoButton";
 import { colors } from "../theme/colors";
-import { FONT_REGULAR, INTER_FONT_ASSET } from "../theme/fonts";
+import {
+  CANVAS_HEIGHT,
+  CANVAS_WIDTH,
+  DEMO_FONT_FAMILY,
+  DEMO_FONT_SIZE,
+  DEMO_SKIA_FONT_ASSET,
+  DEMO_TEXT_COLOR,
+} from "../theme/demoConstants";
+import { INTER_FONT_ASSET } from "../theme/fonts";
 
-const FONT_SIZE = 36;
-const CANVAS_WIDTH = 280;
-const CANVAS_HEIGHT = 52;
 const TEST_VALUE = 12345;
 
 const FORMATTED_VALUE = new Intl.NumberFormat("en-US", {
@@ -125,7 +131,13 @@ function NativeTestRun({ onAllDone }: { onAllDone: (results: TimingResult[]) => 
           }}
         >
           <VisibilityProbe label="Text" onVisible={handleVisible} startTime={startTime}>
-            <Text style={{ fontFamily: FONT_REGULAR, fontSize: FONT_SIZE, color: colors.text }}>
+            <Text
+              style={{
+                fontFamily: DEMO_FONT_FAMILY,
+                fontSize: DEMO_FONT_SIZE,
+                color: DEMO_TEXT_COLOR,
+              }}
+            >
               {FORMATTED_VALUE}
             </Text>
           </VisibilityProbe>
@@ -157,7 +169,11 @@ function NativeTestRun({ onAllDone }: { onAllDone: (results: TimingResult[]) => 
               containerStyle={{ width: CANVAS_WIDTH }}
               format={FORMAT_OPTIONS}
               mask={false}
-              style={{ fontFamily: FONT_REGULAR, fontSize: FONT_SIZE, color: colors.text }}
+              style={{
+                fontFamily: DEMO_FONT_FAMILY,
+                fontSize: DEMO_FONT_SIZE,
+                color: DEMO_TEXT_COLOR,
+              }}
               textAlign="center"
               value={TEST_VALUE}
             />
@@ -201,22 +217,12 @@ export const PerformanceDemoNative = () => {
         })
       : [];
 
+  const buttonLabel = mounted ? "Re-run Test" : "Run Mount Test";
+
   return (
     <View style={{ gap: 16 }}>
       {/* Run button */}
-      <Pressable
-        onPress={runTest}
-        style={{
-          backgroundColor: colors.accent,
-          borderRadius: 8,
-          padding: 12,
-          alignItems: "center",
-        }}
-      >
-        <Text style={{ fontSize: 14, fontWeight: "600", color: "#FFFFFF" }}>
-          {mounted ? "Re-run Test" : "Run Mount Test"}
-        </Text>
-      </Pressable>
+      <DemoButton label={buttonLabel} onPress={runTest} variant="primary" />
 
       {/* Test components */}
       {mounted && <NativeTestRun key={runKey} onAllDone={handleAllDone} />}
@@ -307,10 +313,10 @@ function SkiaTestRun({
   onDone: (result: { fontLoadMs: number; cached: boolean }) => void;
 }) {
   // useFont path — returns null until font loads (internal matchFont fallback shows static text)
-  const rawFont = useFont(INTER_FONT_ASSET, FONT_SIZE);
+  const rawFont = useFont(INTER_FONT_ASSET, DEMO_FONT_SIZE);
 
   // useSkiaFont path — always non-null (system font → custom font swap)
-  const smartFont = useSkiaFont(INTER_FONT_ASSET, FONT_SIZE);
+  const smartFont = useSkiaFont(DEMO_SKIA_FONT_ASSET, DEMO_FONT_SIZE);
 
   const startTime = useRef(performance.now()).current;
   const [fontLoadMs, setFontLoadMs] = useState<number | null>(null);
@@ -360,14 +366,14 @@ function SkiaTestRun({
         >
           <Canvas style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
             <SkiaNumberFlow
-              color={colors.text}
+              color={DEMO_TEXT_COLOR}
               font={rawFont}
               format={FORMAT_OPTIONS}
               mask={false}
               textAlign="center"
               value={TEST_VALUE}
               width={CANVAS_WIDTH}
-              y={FONT_SIZE}
+              y={DEMO_FONT_SIZE}
             />
           </Canvas>
           {fontLoaded && <TimingBadge timeMs={fontLoadMs ?? undefined} />}
@@ -400,7 +406,7 @@ function SkiaTestRun({
               textAlign="center"
               value={TEST_VALUE}
               width={CANVAS_WIDTH}
-              y={FONT_SIZE}
+              y={DEMO_FONT_SIZE}
             />
           </Canvas>
           <TimingBadge timeMs={0} />
@@ -450,22 +456,12 @@ export const PerformanceDemoSkia = () => {
       ? cachedRuns.reduce((sum, r) => sum + r.fontLoadMs, 0) / cachedRuns.length
       : null;
 
+  const buttonLabel = mounted ? "Re-run Test" : "Run Mount Test";
+
   return (
     <View style={{ gap: 16 }}>
       {/* Run button */}
-      <Pressable
-        onPress={runTest}
-        style={{
-          backgroundColor: colors.accent,
-          borderRadius: 8,
-          padding: 12,
-          alignItems: "center",
-        }}
-      >
-        <Text style={{ fontSize: 14, fontWeight: "600", color: "#FFFFFF" }}>
-          {mounted ? "Re-run Test" : "Run Mount Test"}
-        </Text>
-      </Pressable>
+      <DemoButton label={buttonLabel} onPress={runTest} variant="primary" />
 
       {/* Test component */}
       {mounted && <SkiaTestRun key={runKey} onDone={handleDone} />}

@@ -11,11 +11,14 @@ import Animated, {
   useSharedValue,
 } from "react-native-reanimated";
 import { colors } from "../theme/colors";
-import { FONT_REGULAR, INTER_FONT_ASSET } from "../theme/fonts";
-
-const SKIA_FONT_SIZE = 28;
-const CANVAS_WIDTH = 280;
-const CANVAS_HEIGHT = 46;
+import {
+  CANVAS_HEIGHT,
+  CANVAS_WIDTH,
+  DEMO_FONT_FAMILY,
+  DEMO_FONT_SIZE,
+  DEMO_SKIA_FONT_ASSET,
+  DEMO_TEXT_COLOR,
+} from "../theme/demoConstants";
 
 const TRACK_WIDTH = 280;
 const TRACK_HEIGHT = 40;
@@ -23,7 +26,6 @@ const THUMB_SIZE = 28;
 const MIN_VALUE = 0;
 const MAX_VALUE = 999.9;
 
-// Shared slider track component
 const SliderTrack = ({
   thumbStyle,
   trackFillStyle,
@@ -91,7 +93,7 @@ const SliderTrack = ({
 );
 
 export const ScrubbingDemoSkia = () => {
-  const skiaFont = useSkiaFont(INTER_FONT_ASSET, SKIA_FONT_SIZE);
+  const skiaFont = useSkiaFont(DEMO_SKIA_FONT_ASSET, DEMO_FONT_SIZE);
 
   const thumbX = useSharedValue(TRACK_WIDTH / 2);
   const isScrubbing = useSharedValue(false);
@@ -101,7 +103,6 @@ export const ScrubbingDemoSkia = () => {
     setLastValue(v);
   }, []);
 
-  // Map thumb position to numeric value on the UI thread
   const formattedValue = useDerivedValue(() => {
     if (!isScrubbing.value) return "";
     const ratio = Math.max(0, Math.min(1, thumbX.value / TRACK_WIDTH));
@@ -153,13 +154,13 @@ export const ScrubbingDemoSkia = () => {
       >
         <Canvas style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
           <SkiaNumberFlow
-            color={colors.accent}
+            color={DEMO_TEXT_COLOR}
             font={skiaFont}
             sharedValue={formattedValue}
             suffix=" mg"
             textAlign="center"
             width={CANVAS_WIDTH}
-            y={SKIA_FONT_SIZE + 4}
+            y={DEMO_FONT_SIZE + 4}
           />
         </Canvas>
       </View>
@@ -237,7 +238,7 @@ export const ScrubbingDemoNative = () => {
         <NumberFlow
           containerStyle={{ width: CANVAS_WIDTH }}
           format={{ minimumFractionDigits: 1, maximumFractionDigits: 1 }}
-          style={{ fontFamily: FONT_REGULAR, fontSize: SKIA_FONT_SIZE, color: colors.accent }}
+          style={{ fontFamily: DEMO_FONT_FAMILY, fontSize: DEMO_FONT_SIZE, color: DEMO_TEXT_COLOR }}
           suffix=" mg"
           textAlign="center"
           value={value}

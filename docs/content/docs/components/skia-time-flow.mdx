@@ -13,14 +13,14 @@ import { SkiaTimeFlow, useSkiaFont } from 'number-flow-react-native/skia';
 
 ## Basic Usage
 
-```SnackPlayer name=SkiaTimeFlow dependencies=number-flow-react-native@0.1.4,react-native-reanimated,@shopify/react-native-skia
+```SnackPlayer name=SkiaTimeFlow dependencies=number-flow-react-native,react-native-reanimated,@shopify/react-native-skia
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
 import { SkiaTimeFlow, useSkiaFont } from 'number-flow-react-native/skia';
 
 function SkiaClock() {
-  const font = useSkiaFont(require('./assets/Inter-Bold.otf'), 48);
+  const font = useSkiaFont('https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYMZg.ttf', 48);
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
@@ -91,7 +91,7 @@ import { useDerivedValue, useSharedValue } from 'react-native-reanimated';
 import { SkiaTimeFlow, useSkiaFont } from 'number-flow-react-native/skia';
 
 function ScrubbableTime() {
-  const font = useSkiaFont(require('./assets/Inter.ttf'), 36);
+  const font = useSkiaFont('https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfMZg.ttf', 36);
   const totalSeconds = useSharedValue(3600);
 
   const formatted = useDerivedValue(() => {

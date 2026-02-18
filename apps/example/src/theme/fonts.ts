@@ -8,5 +8,6 @@ export const FONT_ASSETS = {
   [FONT_SEMIBOLD]: require("../../assets/fonts/Inter-SemiBold.ttf"),
 };
 
-// Skia font asset (require() for useFont)
+// Skia font assets (require() for useFont / useSkiaFont)
 export const INTER_FONT_ASSET = require("../../assets/fonts/Inter-Regular.ttf");
+export const INTER_SEMIBOLD_FONT_ASSET = require("../../assets/fonts/Inter-SemiBold.ttf");

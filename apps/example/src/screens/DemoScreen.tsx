@@ -3,7 +3,7 @@ import { useLayoutEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { type Renderer, RendererToggle } from "../components/RendererToggle";
-import { DEMO_REGISTRY } from "../config/demoRegistry";
+import { findDemoEntry } from "../config/demoRegistry";
 import type { RootStackParamList } from "../navigation/types";
 import { colors } from "../theme/colors";
 import { FONT_REGULAR } from "../theme/fonts";
@@ -12,22 +12,19 @@ type Props = NativeStackScreenProps<RootStackParamList, "Demo">;
 
 export const DemoScreen = ({ route, navigation }: Props) => {
   const { demoKey } = route.params;
-  const entry = DEMO_REGISTRY.find((d) => d.key === demoKey);
+  const entry = findDemoEntry(demoKey);
   const insets = useSafeAreaInsets();
   const [renderer, setRenderer] = useState<Renderer>("native");
 
-  // Configure header title and toggle
   useLayoutEffect(() => {
     navigation.setOptions({
       title: entry?.title ?? "Demo",
-      headerRight: entry?.supportsSkia
-        ? () => (
-            <RendererToggle
-              onToggle={() => setRenderer((r) => (r === "native" ? "skia" : "native"))}
-              value={renderer}
-            />
-          )
-        : undefined,
+      headerRight: () => (
+        <RendererToggle
+          onToggle={() => setRenderer((r) => (r === "native" ? "skia" : "native"))}
+          value={renderer}
+        />
+      ),
     });
   }, [navigation, entry, renderer]);
 
@@ -39,8 +36,7 @@ export const DemoScreen = ({ route, navigation }: Props) => {
     );
   }
 
-  const isSkia = renderer === "skia" && entry.supportsSkia;
-  const DemoComponent = isSkia ? entry.SkiaComponent! : entry.NativeComponent;
+  const DemoComponent = renderer === "skia" ? entry.SkiaComponent : entry.NativeComponent;
 
   return (
     <ScrollView
