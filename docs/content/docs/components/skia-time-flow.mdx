@@ -13,7 +13,7 @@ import { SkiaTimeFlow, useSkiaFont } from 'number-flow-react-native/skia';
 
 ## Basic Usage
 
-```tsx
+```SnackPlayer name=SkiaTimeFlow dependencies=number-flow-react-native@0.1.3,react-native-reanimated,@shopify/react-native-skia
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
@@ -119,5 +119,3 @@ function ScrubbableTime() {
 ## Accessibility
 
 Value changes are auto-announced via `AccessibilityInfo.announceForAccessibility`. For focus-based reading, set `accessibilityLabel` on the parent `Canvas`.
-
-<ExpoSnack title="SkiaTimeFlow" />

@@ -5,7 +5,7 @@ description: Animated speed display with SkiaNumberFlow and smooth scrubbing
 
 A dark, gesture-driven speedometer using `SkiaNumberFlow` with `sharedValue` for zero-latency worklet-driven updates. Drag up to accelerate, release to decelerate — all at 120Hz on the UI thread. No JS bridge, no frame drops.
 
-```tsx
+```SnackPlayer name=Speedometer dependencies=number-flow-react-native@0.1.3,react-native-reanimated,@shopify/react-native-skia,react-native-gesture-handler
 import { View, Text, Platform } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
 import {
@@ -169,5 +169,3 @@ JS Thread (idle during scrubbing)
 Only wakes up when digit COUNT changes
 (e.g. "99" → "100" adds a new slot)
 ```
-
-<ExpoSnack title="Speedometer" />

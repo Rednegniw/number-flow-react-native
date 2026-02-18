@@ -5,10 +5,10 @@ description: Multi-metric fitness display with calories, distance, and heart rat
 
 A dark fitness dashboard with vibrant metric cards, live-updating values, and the `continuous` odometer effect for accumulating metrics.
 
-```tsx
+```SnackPlayer name=Fitness%20Dashboard dependencies=number-flow-react-native@0.1.3,react-native-reanimated
 import { useEffect, useState } from 'react';
 import { View, Text, Platform } from 'react-native';
-import { NumberFlow } from 'number-flow-react-native/native';
+import { NumberFlow } from 'number-flow-react-native';
 
 interface Metric {
   label: string;
@@ -164,5 +164,3 @@ export default function FitnessDashboard() {
 <Callout type="info">
 Each `NumberFlow` instance manages its own animation state independently. When calories, distance, and heart rate update simultaneously (every 3 seconds in this example), all three animate concurrently without interfering with each other. The fixed slot pool means no component remounting even when digit counts change (e.g. calories going from `999` to `1000`).
 </Callout>
-
-<ExpoSnack title="Fitness Dashboard" />

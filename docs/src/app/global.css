@@ -17,3 +17,12 @@
 #nd-sidebar {
   @apply md:border-0!;
 }
+
+.snack-player {
+  overflow: hidden;
+  border: 1px solid var(--fd-border);
+  border-radius: 8px;
+  height: 505px;
+  width: 100%;
+  margin: 1rem 0;
+}

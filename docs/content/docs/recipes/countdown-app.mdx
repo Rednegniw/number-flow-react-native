@@ -5,10 +5,10 @@ description: Build a complete countdown timer with start, pause, and reset
 
 A polished Pomodoro-style countdown with large monospaced digits, pill-shaped controls, and a visual urgency shift in the final seconds.
 
-```tsx
+```SnackPlayer name=Countdown%20App dependencies=number-flow-react-native@0.1.3,react-native-reanimated
 import { useEffect, useRef, useState } from 'react';
 import { View, Text, Pressable, Platform } from 'react-native';
-import { TimeFlow } from 'number-flow-react-native/native';
+import { TimeFlow } from 'number-flow-react-native';
 
 const PRESETS = [
   { label: '1 min', seconds: 60 },
@@ -191,5 +191,3 @@ export default function CountdownApp() {
 <Callout type="info">
 The `trend={-1}` prop ensures digits always spin downward, matching the intuition of a countdown. Without it, going from `10` to `09` would spin the tens digit *up* (shortest path from 1→0), which feels wrong for a timer.
 </Callout>
-
-<ExpoSnack title="Countdown App" />

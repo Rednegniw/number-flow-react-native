@@ -5,7 +5,6 @@ import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
 import { Steps, Step } from 'fumadocs-ui/components/steps';
 import { Callout } from 'fumadocs-ui/components/callout';
 import type { MDXComponents } from 'mdx/types';
-import { ExpoSnack } from '@/components/expo-snack';
 import { VideoDemo } from '@/components/video-demo';
 
 const generator = createGenerator({
@@ -21,7 +20,6 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     Step,
     Callout,
     AutoTypeTable: (props) => <AutoTypeTable {...props} generator={generator} />,
-    ExpoSnack,
     VideoDemo,
     ...components,
   };

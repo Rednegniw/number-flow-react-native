@@ -17,7 +17,7 @@ import { SkiaNumberFlow, useSkiaFont } from 'number-flow-react-native/skia';
 
 ## Basic Usage
 
-```tsx
+```SnackPlayer name=SkiaNumberFlow%20Basic dependencies=number-flow-react-native@0.1.3,react-native-reanimated,@shopify/react-native-skia
 import { useState } from 'react';
 import { View, Button } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
@@ -142,5 +142,3 @@ const label = useFormattedValue(value, format);
   <SkiaNumberFlow value={value} font={font} format={format} />
 </Canvas>
 ```
-
-<ExpoSnack title="SkiaNumberFlow Basic" />

@@ -5,10 +5,10 @@ description: Animated currency conversion between multiple currencies
 
 A minimal currency converter with large animated values, locale-aware formatting, and a clean card-based layout. Watch the decimal separators, currency symbols, and digit grouping animate when switching between currencies.
 
-```tsx
+```SnackPlayer name=Currency%20Converter dependencies=number-flow-react-native@0.1.3,react-native-reanimated
 import { useState } from 'react';
 import { View, Text, Pressable, Platform } from 'react-native';
-import { NumberFlow } from 'number-flow-react-native/native';
+import { NumberFlow } from 'number-flow-react-native';
 
 const currencies = [
   { code: 'USD', locale: 'en-US', rate: 1, flag: '🇺🇸' },
@@ -222,5 +222,3 @@ function CurrencyPicker({
 <Callout type="info">
 When switching from USD (`$100.00`) to JPY (`¥14,950`), several things animate simultaneously: the currency symbol changes, the decimal point and fraction digits exit, and the integer digits change. All of these are driven by the character keying system — the library assigns stable keys to each character position, so React knows which characters are entering, exiting, or updating.
 </Callout>
-
-<ExpoSnack title="Currency Converter" />

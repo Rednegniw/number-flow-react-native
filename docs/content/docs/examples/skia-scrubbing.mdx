@@ -5,7 +5,7 @@ description: Zero-latency UI thread updates with SharedValue-driven scrubbing
 
 The `sharedValue` prop on `SkiaNumberFlow` enables worklet-driven rendering — the number display updates entirely on the UI thread without crossing the JS bridge. This means updates at 120Hz with zero frame drops.
 
-```tsx
+```SnackPlayer name=Skia%20Scrubbing dependencies=number-flow-react-native@0.1.3,react-native-reanimated,@shopify/react-native-skia,react-native-gesture-handler
 import { View, Text } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
 import { useSharedValue, useDerivedValue } from 'react-native-reanimated';
@@ -57,5 +57,3 @@ export default function ScrubExample() {
 <Callout type="info">
 The `scrubDigitWidthPercentile` prop (default: `0.75`) controls how wide each digit slot is during scrubbing. Since digit values change rapidly during gestures, the component needs a fixed width per slot. The percentile picks a width between the narrowest (`0`) and widest (`1`) digit glyph.
 </Callout>
-
-<ExpoSnack title="Skia Scrubbing" />

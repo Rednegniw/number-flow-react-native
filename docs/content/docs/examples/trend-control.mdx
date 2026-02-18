@@ -5,10 +5,10 @@ description: Control digit spin direction with static values or dynamic function
 
 The `trend` prop controls which direction digits spin during transitions. You can pass a static value or a function for dynamic control.
 
-```tsx
+```SnackPlayer name=Trend%20Control dependencies=number-flow-react-native@0.1.3,react-native-reanimated
 import { useState } from 'react';
 import { View, Button, Text } from 'react-native';
-import { NumberFlow } from 'number-flow-react-native/native';
+import { NumberFlow } from 'number-flow-react-native';
 import type { Trend } from 'number-flow-react-native';
 
 export default function TrendControl() {
@@ -69,5 +69,3 @@ You can also pass a function that receives the previous and next values:
   style={{ fontSize: 36, fontFamily: 'System', color: '#000' }}
 />
 ```
-
-<ExpoSnack title="Trend Control" />

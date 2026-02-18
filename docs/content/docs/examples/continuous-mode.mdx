@@ -5,10 +5,10 @@ description: Full-rotation cascading digits for odometer-like transitions
 
 Set `continuous={true}` to make unchanged lower-significance digits spin through a full rotation during transitions, creating an odometer-like effect.
 
-```tsx
+```SnackPlayer name=Continuous%20Mode dependencies=number-flow-react-native@0.1.3,react-native-reanimated
 import { useState } from 'react';
 import { View, Button, Text } from 'react-native';
-import { NumberFlow } from 'number-flow-react-native/native';
+import { NumberFlow } from 'number-flow-react-native';
 
 export default function ContinuousMode() {
   const [value, setValue] = useState(100);
@@ -47,5 +47,3 @@ export default function ContinuousMode() {
 ### How it works
 
 When `continuous` is enabled and a higher digit changes, lower digits that haven't changed still spin through a full 0–9 cycle. Going from `100` to `200`, the ones and tens digits both cascade through a complete rotation even though their final value hasn't changed. This creates the visual impression of the number "passing through" all intermediate values.
-
-<ExpoSnack title="Continuous Mode" />

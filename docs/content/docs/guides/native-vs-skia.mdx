@@ -41,18 +41,15 @@ The library ships two rendering backends that share the same core animation engi
 You can use both renderers in the same app. Import from the appropriate entry point:
 
 ```tsx
-// Native components only (no Skia dependency)
-import { NumberFlow, TimeFlow } from 'number-flow-react-native/native';
+// Native components (default — no Skia dependency)
+import { NumberFlow, TimeFlow } from 'number-flow-react-native';
 
-// Skia components only
+// Skia components (requires @shopify/react-native-skia)
 import { SkiaNumberFlow, SkiaTimeFlow, useSkiaFont } from 'number-flow-react-native/skia';
-
-// Everything (pulls in Skia as a dependency)
-import { NumberFlow, SkiaNumberFlow } from 'number-flow-react-native';
 ```
 
 <Callout type="info">
-If you're not using Skia, import from `number-flow-react-native/native` to avoid pulling in the optional `@shopify/react-native-skia` dependency.
+The root import only includes native components — it does **not** pull in `@shopify/react-native-skia`. You only need Skia installed if you import from `number-flow-react-native/skia`.
 </Callout>
 
 ### API differences

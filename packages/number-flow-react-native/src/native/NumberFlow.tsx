@@ -1,6 +1,6 @@
-import MaskedView from "@rednegniw/masked-view";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { type LayoutChangeEvent, Text, View } from "react-native";
+import MaskedView from "./MaskedView";
 import { getFormatCharacters } from "../core/intlHelpers";
 import { computeKeyedLayout } from "../core/layout";
 import { detectNumberingSystem, getDigitStrings } from "../core/numerals";
@@ -224,7 +224,7 @@ export const NumberFlow = ({
 
   // Optionally wrap in MaskedView for gradient edge fade.
   const maskedContent =
-    resolvedMask && gradientMaskElement ? (
+    resolvedMask && gradientMaskElement && MaskedView ? (
       <MaskedView maskElement={gradientMaskElement} style={{ flex: 1 }}>
         <View style={{ flex: 1, position: "relative", top: expansionTop }}>
           {MeasureElement}

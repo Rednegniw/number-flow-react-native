@@ -8,15 +8,15 @@ description: View-based animated number component with full Intl.NumberFormat su
 ## Import
 
 ```tsx
-import { NumberFlow } from 'number-flow-react-native/native';
+import { NumberFlow } from 'number-flow-react-native';
 ```
 
 ## Basic Usage
 
-```tsx
+```SnackPlayer name=NumberFlow%20Basic dependencies=number-flow-react-native@0.1.3,react-native-reanimated
 import { useState } from 'react';
 import { View, Button } from 'react-native';
-import { NumberFlow } from 'number-flow-react-native/native';
+import { NumberFlow } from 'number-flow-react-native';
 
 function PriceCounter() {
   const [price, setPrice] = useState(42.99);
@@ -91,5 +91,3 @@ type TrendProp = Trend | ((prev: number, next: number) => Trend);
 ## Accessibility
 
 `NumberFlow` automatically sets `accessibilityRole="text"` and an `accessibilityLabel` with the full formatted value. Screen readers announce the complete number (e.g. "$42.99") rather than individual digit changes.
-
-<ExpoSnack title="NumberFlow Basic" />

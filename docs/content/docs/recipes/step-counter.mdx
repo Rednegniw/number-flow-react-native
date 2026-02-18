@@ -5,10 +5,10 @@ description: Animated step counter with daily goal progress
 
 A clean health-app style step counter with large rounded typography, an animated progress bar, and the signature odometer roll for accumulating step counts.
 
-```tsx
+```SnackPlayer name=Step%20Counter dependencies=number-flow-react-native@0.1.3,react-native-reanimated
 import { useState } from 'react';
 import { View, Text, Pressable, Platform } from 'react-native';
-import { NumberFlow } from 'number-flow-react-native/native';
+import { NumberFlow } from 'number-flow-react-native';
 
 const DAILY_GOAL = 10000;
 
@@ -156,5 +156,3 @@ export default function StepCounter() {
 <Callout type="info">
 The `continuous` prop is especially satisfying for counters that increment by irregular amounts. Going from `4823` to `4971` rolls digits at different speeds — the thousands digit barely moves while the ones digit spins rapidly, creating a mechanical counter effect.
 </Callout>
-
-<ExpoSnack title="Step Counter" />

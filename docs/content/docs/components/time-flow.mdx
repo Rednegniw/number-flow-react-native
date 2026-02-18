@@ -8,17 +8,17 @@ description: View-based animated time display component (HH:MM:SS)
 ## Import
 
 ```tsx
-import { TimeFlow } from 'number-flow-react-native/native';
+import { TimeFlow } from 'number-flow-react-native';
 ```
 
 ## Basic Usage
 
 A live clock that updates every second:
 
-```tsx
+```SnackPlayer name=TimeFlow%20Clock dependencies=number-flow-react-native@0.1.3,react-native-reanimated
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
-import { TimeFlow } from 'number-flow-react-native/native';
+import { TimeFlow } from 'number-flow-react-native';
 
 function LiveClock() {
   const [now, setNow] = useState(Date.now());
@@ -79,7 +79,7 @@ Omit `hours` to show minutes and seconds only:
 ```tsx
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
-import { TimeFlow } from 'number-flow-react-native/native';
+import { TimeFlow } from 'number-flow-react-native';
 
 function CountdownTimer({ initialSeconds = 300 }) {
   const [remaining, setRemaining] = useState(initialSeconds);
@@ -137,5 +137,3 @@ const tokyoOffset = 9 * 60 * 60 * 1000; // UTC+9 in ms
 ## Accessibility
 
 `TimeFlow` sets `accessibilityRole="text"` and an `accessibilityLabel` with the full formatted time string automatically. Screen readers read the complete time (e.g. "14:30:00") rather than announcing individual digit changes.
-
-<ExpoSnack title="TimeFlow Clock" />

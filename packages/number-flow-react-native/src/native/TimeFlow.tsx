@@ -1,6 +1,6 @@
-import MaskedView from "@rednegniw/masked-view";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { type LayoutChangeEvent, Text, View } from "react-native";
+import MaskedView from "./MaskedView";
 import { computeKeyedLayout } from "../core/layout";
 import type { TimeFlowProps } from "../core/timeTypes";
 import { useFlowPipeline } from "../core/useFlowPipeline";
@@ -248,7 +248,7 @@ export const TimeFlow = ({
   // didUpdateReactSubviews always sees one stable child — avoids Fabric
   // "Attempt to recycle a mounted view" crash from dynamic slot churn.
   const maskedContent =
-    resolvedMask && gradientMaskElement ? (
+    resolvedMask && gradientMaskElement && MaskedView ? (
       <MaskedView maskElement={gradientMaskElement} style={{ flex: 1 }}>
         <View style={{ flex: 1, position: "relative", top: expansionTop }}>
           {MeasureElement}

@@ -102,7 +102,7 @@ pnpm add @shopify/react-native-skia
 ### Import NumberFlow
 
 ```tsx
-import { NumberFlow } from 'number-flow-react-native/native';
+import { NumberFlow } from 'number-flow-react-native';
 ```
 </Step>
 <Step>
@@ -133,19 +133,16 @@ Check out the [Components](/docs/components) section for all four components —
 
 ## Import Paths
 
-The library exposes three entry points:
+The library exposes two main entry points:
 
 ```tsx
-// All components
-import { NumberFlow, TimeFlow, SkiaNumberFlow, SkiaTimeFlow } from 'number-flow-react-native';
+// Native components (default)
+import { NumberFlow, TimeFlow } from 'number-flow-react-native';
 
-// Native only (smaller bundle if not using Skia)
-import { NumberFlow, TimeFlow } from 'number-flow-react-native/native';
-
-// Skia only
+// Skia components (requires @shopify/react-native-skia)
 import { SkiaNumberFlow, SkiaTimeFlow, useSkiaFont } from 'number-flow-react-native/skia';
 ```
 
 <Callout type="info">
-If you are not using Skia, import from `number-flow-react-native/native` to avoid pulling in the optional Skia dependency.
+The root import only includes native components — it does **not** pull in `@shopify/react-native-skia`. You only need Skia installed if you import from `number-flow-react-native/skia`.
 </Callout>

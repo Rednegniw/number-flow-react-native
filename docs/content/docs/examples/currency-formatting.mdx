@@ -5,10 +5,10 @@ description: Animated currency display with locale-aware formatting
 
 `NumberFlow` accepts `Intl.NumberFormatOptions` via the `format` prop. Combined with `locales`, you get locale-specific currency symbols, decimal separators, and grouping — all animating independently.
 
-```tsx
+```SnackPlayer name=Currency%20Formatting dependencies=number-flow-react-native@0.1.3,react-native-reanimated
 import { useState } from 'react';
 import { View, Button, Text } from 'react-native';
-import { NumberFlow } from 'number-flow-react-native/native';
+import { NumberFlow } from 'number-flow-react-native';
 
 const currencies = [
   { code: 'USD', locale: 'en-US', label: '$ USD' },
@@ -60,5 +60,3 @@ export default function CurrencyFormatting() {
 - When switching currencies, symbols like `$`, `€`, and `¥` animate in and out with opacity and vertical slide transitions.
 - The `locales` prop controls grouping separators (`1,234.56` in `en-US` vs `1.234,56` in `de-DE`) and currency symbol placement.
 - JPY uses `maximumFractionDigits: 0` by default, so the decimal part animates out when switching to Yen.
-
-<ExpoSnack title="Currency Formatting" />

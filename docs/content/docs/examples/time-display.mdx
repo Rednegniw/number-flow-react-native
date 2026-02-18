@@ -5,10 +5,10 @@ description: Animated clock with TimeFlow
 
 `TimeFlow` renders animated HH:MM:SS displays with independently rolling digit segments. It auto-constrains digits (tens of minutes: 0–5, tens of hours: 0–2) for correct clock behavior.
 
-```tsx
+```SnackPlayer name=Time%20Display dependencies=number-flow-react-native@0.1.3,react-native-reanimated
 import { useEffect, useState } from 'react';
 import { View, Text, Button } from 'react-native';
-import { TimeFlow } from 'number-flow-react-native/native';
+import { TimeFlow } from 'number-flow-react-native';
 
 export default function TimeDisplay() {
   const [now, setNow] = useState(Date.now());
@@ -47,5 +47,3 @@ export default function TimeDisplay() {
 - **Full time:** Pass `hours`, `minutes`, and `seconds` (or use `timestamp`)
 - **Hours + minutes:** Pass `hours` and `minutes`, omit `seconds`
 - **Minutes + seconds:** Omit `hours`, pass `minutes` and `seconds`
-
-<ExpoSnack title="Time Display" />
