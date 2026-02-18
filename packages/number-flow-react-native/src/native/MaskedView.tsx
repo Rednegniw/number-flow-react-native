@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import type { ViewProps } from "react-native";
+import { UIManager, type ViewProps } from "react-native";
 
 interface MaskedViewProps extends ViewProps {
 	maskElement: ReactElement;
@@ -10,15 +10,33 @@ interface MaskedViewProps extends ViewProps {
  * 1. `@rednegniw/masked-view` — Fabric-ready fork (dev builds)
  * 2. `@react-native-masked-view/masked-view` — bundled in Expo Go / Snack
  * 3. `null` — neither available, masking degrades gracefully
+ *
+ * A module may bundle successfully but its native component might not be
+ * registered (e.g. in Expo Go where only pre-bundled native modules exist).
+ * We verify via UIManager before accepting a resolved module.
  */
+function hasNativeView(name: string): boolean {
+	return UIManager.getViewManagerConfig?.(name) != null;
+}
+
 let Resolved: React.ComponentType<MaskedViewProps> | null = null;
 try {
-	Resolved = require("@rednegniw/masked-view").default;
+	const mod = require("@rednegniw/masked-view");
+	if (hasNativeView("NFMaskedView")) {
+		Resolved = mod.default;
+	}
 } catch {
+	// Module not available
+}
+
+if (!Resolved) {
 	try {
-		Resolved = require("@react-native-masked-view/masked-view").default;
+		const mod = require("@react-native-masked-view/masked-view");
+		if (hasNativeView("RNCMaskedView")) {
+			Resolved = mod.default;
+		}
 	} catch {
-		// Neither available — mask prop will be ignored
+		// Module not available
 	}
 }
 
