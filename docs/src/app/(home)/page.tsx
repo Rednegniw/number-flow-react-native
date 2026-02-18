@@ -1,5 +1,5 @@
-import Link from 'next/link';
-import { PhoneMockup } from '@/components/phone-mockup';
+import Link from "next/link";
+import { PhoneMockup } from "@/components/phone-mockup";
 
 export default function HomePage() {
   return (
@@ -7,21 +7,13 @@ export default function HomePage() {
       {/* Hero */}
       <section className="flex flex-col items-center gap-8 max-w-2xl text-center">
         <PhoneMockup>
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full object-cover"
-          >
+          <video autoPlay loop muted playsInline className="w-full h-full object-cover">
             <source src="/videos/hero-demo.mp4" type="video/mp4" />
           </video>
 
           {/* Placeholder overlay — remove once video exists */}
           <div className="absolute inset-0 flex items-center justify-center bg-fd-muted/80">
-            <p className="text-sm text-fd-muted-foreground">
-              Demo video coming soon
-            </p>
+            <p className="text-sm text-fd-muted-foreground">Demo video coming soon</p>
           </div>
         </PhoneMockup>
 
@@ -31,8 +23,7 @@ export default function HomePage() {
             Number Flow React Native
           </h1>
           <p className="text-lg text-fd-muted-foreground max-w-md mx-auto">
-            Smooth, digit-by-digit animated number transitions for React Native. Inspired
-            by{' '}
+            Smooth, digit-by-digit animated number transitions for React Native. Inspired by{" "}
             <a
               href="https://number-flow.barvian.me/"
               target="_blank"

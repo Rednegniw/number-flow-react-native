@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { createContext, use, useState, type ReactNode } from 'react';
-import { usePathname } from 'fumadocs-core/framework';
-import { SidebarItem } from 'fumadocs-ui/components/sidebar/base';
-import { AnimatePresence, motion } from 'motion/react';
-import { SectionIconBadge } from './sidebar-separator';
-import type * as PageTree from 'fumadocs-core/page-tree';
+import { usePathname } from "fumadocs-core/framework";
+import type * as PageTree from "fumadocs-core/page-tree";
+import { SidebarItem } from "fumadocs-ui/components/sidebar/base";
+import { AnimatePresence, motion } from "motion/react";
+import { createContext, type ReactNode, use, useState } from "react";
+import { SectionIconBadge } from "./sidebar-separator";
 
 // Shared hover context so layoutId animations work across all items
 const HoverContext = createContext<{
@@ -13,32 +13,23 @@ const HoverContext = createContext<{
   setHoveredItem: (id: string | null) => void;
 }>({ hoveredItem: null, setHoveredItem: () => {} });
 
-export function SidebarHoverProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function SidebarHoverProvider({ children }: { children: React.ReactNode }) {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
-  return (
-    <HoverContext value={{ hoveredItem, setHoveredItem }}>
-      {children}
-    </HoverContext>
-  );
+  return <HoverContext value={{ hoveredItem, setHoveredItem }}>{children}</HoverContext>;
 }
 
 // Spring configs
-const springSnappy = { type: 'spring' as const, stiffness: 500, damping: 35 };
-const springSoft = { type: 'spring' as const, stiffness: 200, damping: 20 };
+const springSnappy = { type: "spring" as const, stiffness: 500, damping: 35 };
+const springSoft = { type: "spring" as const, stiffness: 200, damping: 20 };
 
 function checkActive(href: string, pathname: string): boolean {
-  const norm = (s: string) =>
-    s.length > 1 && s.endsWith('/') ? s.slice(0, -1) : s;
+  const norm = (s: string) => (s.length > 1 && s.endsWith("/") ? s.slice(0, -1) : s);
   return norm(href) === norm(pathname);
 }
 
 const itemClassName =
-  'relative flex flex-row items-center gap-2 rounded-lg p-2 text-start !bg-transparent hover:!bg-transparent data-[active=true]:!bg-transparent ml-2 !pl-4';
+  "relative flex flex-row items-center gap-2 rounded-lg p-2 text-start !bg-transparent hover:!bg-transparent data-[active=true]:!bg-transparent ml-2 !pl-4";
 
 export function AnimatedSidebarItem({ item }: { item: PageTree.Item }) {
   const pathname = usePathname();
@@ -47,9 +38,7 @@ export function AnimatedSidebarItem({ item }: { item: PageTree.Item }) {
   const active = checkActive(item.url, pathname);
   const hovered = hoveredItem === item.url;
   const highlighted = active || hovered;
-  const textColorClass = highlighted
-    ? 'text-fd-foreground'
-    : 'text-fd-muted-foreground';
+  const textColorClass = highlighted ? "text-fd-foreground" : "text-fd-muted-foreground";
 
   return (
     <SidebarItem
@@ -102,11 +91,7 @@ export function AnimatedSidebarItem({ item }: { item: PageTree.Item }) {
   );
 }
 
-export function AnimatedSidebarSeparator({
-  item,
-}: {
-  item: PageTree.Separator;
-}) {
+export function AnimatedSidebarSeparator({ item }: { item: PageTree.Separator }) {
   return <SectionIconBadge name={item.name} />;
 }
 

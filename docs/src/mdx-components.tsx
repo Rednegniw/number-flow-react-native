@@ -1,14 +1,14 @@
-import { createGenerator, createFileSystemGeneratorCache } from 'fumadocs-typescript';
-import { AutoTypeTable } from 'fumadocs-typescript/ui';
-import defaultMdxComponents from 'fumadocs-ui/mdx';
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
-import { Steps, Step } from 'fumadocs-ui/components/steps';
-import { Callout } from 'fumadocs-ui/components/callout';
-import type { MDXComponents } from 'mdx/types';
-import { VideoDemo } from '@/components/video-demo';
+import { createFileSystemGeneratorCache, createGenerator } from "fumadocs-typescript";
+import { AutoTypeTable } from "fumadocs-typescript/ui";
+import { Callout } from "fumadocs-ui/components/callout";
+import { Step, Steps } from "fumadocs-ui/components/steps";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+import defaultMdxComponents from "fumadocs-ui/mdx";
+import type { MDXComponents } from "mdx/types";
+import { VideoDemo } from "@/components/video-demo";
 
 const generator = createGenerator({
-  cache: createFileSystemGeneratorCache('.next/fumadocs-typescript'),
+  cache: createFileSystemGeneratorCache(".next/fumadocs-typescript"),
 });
 
 export function getMDXComponents(components?: MDXComponents): MDXComponents {

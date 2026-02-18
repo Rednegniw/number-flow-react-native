@@ -1,13 +1,5 @@
-import type { ReactNode } from 'react';
-import {
-  Anchor,
-  BookOpen,
-  Boxes,
-  ChefHat,
-  Component,
-  Play,
-  type LucideIcon,
-} from 'lucide-react';
+import { Anchor, BookOpen, Boxes, ChefHat, Component, type LucideIcon, Play } from "lucide-react";
+import type { ReactNode } from "react";
 
 const sectionIcons: Record<string, LucideIcon> = {
   Components: Component,
@@ -19,7 +11,7 @@ const sectionIcons: Record<string, LucideIcon> = {
 };
 
 export function SectionIconBadge({ name }: { name: ReactNode }) {
-  const nameStr = typeof name === 'string' ? name : '';
+  const nameStr = typeof name === "string" ? name : "";
   const Icon = sectionIcons[nameStr];
 
   return (
@@ -33,9 +25,7 @@ export function SectionIconBadge({ name }: { name: ReactNode }) {
       )}
 
       {/* Section title */}
-      <span className="text-sm font-medium text-fd-muted-foreground">
-        {name}
-      </span>
+      <span className="text-sm font-medium text-fd-muted-foreground">{name}</span>
     </span>
   );
 }
