@@ -13,13 +13,13 @@ const config = {
         destination: '/llms.mdx/docs/:path*',
       },
 
-      // PostHog reverse proxy
+      // PostHog reverse proxy (path intentionally non-obvious to avoid ad-blocker filter lists)
       {
-        source: '/ingest/static/:path*',
+        source: '/ph/static/:path*',
         destination: 'https://us-assets.i.posthog.com/static/:path*',
       },
       {
-        source: '/ingest/:path*',
+        source: '/ph/:path*',
         destination: 'https://us.i.posthog.com/:path*',
       },
     ];
