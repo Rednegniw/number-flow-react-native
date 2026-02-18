@@ -140,7 +140,6 @@ export const TimeFlow = ({
   const maskBottom = adaptiveMask.bottom;
   const { expansionTop, expansionBottom } = adaptiveMask;
 
-  // Step count scales with mask height — each step must be >=1px (sub-pixel Views collapse to 0).
   const topSteps = Math.max(2, Math.round(maskTop));
   const bottomSteps = Math.max(2, Math.round(maskBottom));
 
@@ -243,25 +242,6 @@ export const TimeFlow = ({
     maskBottom,
   });
 
-  // Optionally wrap in MaskedView for gradient edge fade.
-  // Content must be inside a single wrapper View so MaskedView's native
-  // didUpdateReactSubviews always sees one stable child — avoids Fabric
-  // "Attempt to recycle a mounted view" crash from dynamic slot churn.
-  const maskedContent =
-    resolvedMask && gradientMaskElement && MaskedView ? (
-      <MaskedView maskElement={gradientMaskElement} style={{ flex: 1 }}>
-        <View style={{ flex: 1, position: "relative", top: expansionTop }}>
-          {MeasureElement}
-          {slots}
-        </View>
-      </MaskedView>
-    ) : (
-      <View style={{ flex: 1, position: "relative", top: expansionTop }}>
-        {MeasureElement}
-        {slots}
-      </View>
-    );
-
   return (
     <View
       accessible
@@ -279,7 +259,19 @@ export const TimeFlow = ({
         },
       ]}
     >
-      {maskedContent}
+      {resolvedMask && gradientMaskElement && MaskedView ? (
+        <MaskedView maskElement={gradientMaskElement} style={{ flex: 1 }}>
+          <View style={{ flex: 1, position: "relative", top: expansionTop }}>
+            {MeasureElement}
+            {slots}
+          </View>
+        </MaskedView>
+      ) : (
+        <View style={{ flex: 1, position: "relative", top: expansionTop }}>
+          {MeasureElement}
+          {slots}
+        </View>
+      )}
     </View>
   );
 };

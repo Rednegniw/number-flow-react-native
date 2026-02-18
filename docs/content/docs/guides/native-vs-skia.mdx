@@ -14,7 +14,7 @@ The library ships two rendering backends that share the same core animation engi
 | Rendering | React Native Animated Views | Skia Canvas primitives |
 | Worklet scrubbing | Not available | Yes (`sharedValue` prop) |
 | Text styling | `TextStyle` (fontFamily, system fonts) | `SkFont` (requires font file) |
-| Gradient mask | `MaskedView` + View strips | Skia `LinearGradient` + DstIn blending |
+| Gradient mask | MaskedView gradient (optional) or per-digit opacity fallback | Skia `LinearGradient` + DstIn blending |
 | Expo Snack | Full support | Limited (Skia WASM ~3MB) |
 | Best for | Standard UI, quick setup | Charts, complex Skia UIs, many instances |
 

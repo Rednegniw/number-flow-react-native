@@ -6,20 +6,19 @@ interface MaskedViewProps extends ViewProps {
 }
 
 /**
- * Resolves the best available MaskedView implementation:
- * 1. `@rednegniw/masked-view` — Fabric-ready fork (dev builds)
- * 2. `@react-native-masked-view/masked-view` — bundled in Expo Go / Snack
- * 3. `null` — neither available, masking degrades gracefully
+ * Resolves `@rednegniw/masked-view` if installed. Returns null when the
+ * package isn't available, allowing the caller to fall back to per-digit
+ * opacity fading.
+ *
+ * Only `@rednegniw/masked-view` (Fabric-compatible fork) is supported.
+ * The community `@react-native-masked-view/masked-view` is intentionally
+ * excluded because it crashes on Fabric (New Architecture).
  */
 let Resolved: React.ComponentType<MaskedViewProps> | null = null;
 try {
   Resolved = require("@rednegniw/masked-view").default;
 } catch {
-  try {
-    Resolved = require("@react-native-masked-view/masked-view").default;
-  } catch {
-    // Neither available — mask prop will be ignored
-  }
+  // Not installed — masking falls back to per-digit opacity
 }
 
 export default Resolved;
