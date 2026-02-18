@@ -3,6 +3,7 @@ import { RootProvider } from "fumadocs-ui/provider/next";
 import Script from "next/script";
 import "./global.css";
 import { Inter } from "next/font/google";
+import { SnackInitializer } from "@/components/SnackInitializer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -15,6 +16,7 @@ export default function Layout({ children }: LayoutProps<"/">) {
         <RootProvider>{children}</RootProvider>
         <Analytics />
         <Script src="https://snack.expo.dev/embed.js" strategy="lazyOnload" />
+        <SnackInitializer />
       </body>
     </html>
   );

@@ -2,13 +2,16 @@ import { Canvas } from "@shopify/react-native-skia";
 import { TimeFlow } from "number-flow-react-native/native";
 import { SkiaTimeFlow, useSkiaFont } from "number-flow-react-native/skia";
 import { useCallback, useRef, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { View } from "react-native";
+import { DemoButton } from "../components/DemoButton";
 import { colors } from "../theme/colors";
-import { FONT_REGULAR, INTER_FONT_ASSET } from "../theme/fonts";
-
-const FONT_SIZE = 40;
-const CANVAS_WIDTH = 200;
-const CANVAS_HEIGHT = 56;
+import {
+  CANVAS_HEIGHT,
+  CANVAS_WIDTH,
+  DEMO_FONT_FAMILY,
+  DEMO_FONT_SIZE,
+  DEMO_SKIA_FONT_ASSET,
+} from "../theme/demoConstants";
 
 function useCountdownDemoState() {
   const [minutes, setMinutes] = useState(5);
@@ -69,7 +72,11 @@ export const CountdownDemoNative = () => {
           containerStyle={{ width: CANVAS_WIDTH }}
           minutes={minutes}
           seconds={seconds}
-          style={{ fontFamily: FONT_REGULAR, fontSize: FONT_SIZE, color: "#FF3B30" }}
+          style={{
+            fontFamily: DEMO_FONT_FAMILY,
+            fontSize: DEMO_FONT_SIZE,
+            color: colors.countdown,
+          }}
           textAlign="center"
           trend={-1}
         />
@@ -77,40 +84,15 @@ export const CountdownDemoNative = () => {
 
       {/* Action buttons */}
       <View style={{ flexDirection: "row", gap: 8 }}>
-        <Pressable
-          onPress={toggle}
-          style={{
-            flex: 1,
-            backgroundColor: colors.buttonBackground,
-            borderRadius: 8,
-            padding: 12,
-            alignItems: "center",
-          }}
-        >
-          <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
-            Start / Pause
-          </Text>
-        </Pressable>
-
-        <Pressable
-          onPress={reset}
-          style={{
-            flex: 1,
-            backgroundColor: colors.buttonBackground,
-            borderRadius: 8,
-            padding: 12,
-            alignItems: "center",
-          }}
-        >
-          <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>Reset</Text>
-        </Pressable>
+        <DemoButton label="Start / Pause" onPress={toggle} style={{ flex: 1 }} />
+        <DemoButton label="Reset" onPress={reset} style={{ flex: 1 }} />
       </View>
     </View>
   );
 };
 
 export const CountdownDemoSkia = () => {
-  const skiaFont = useSkiaFont(INTER_FONT_ASSET, FONT_SIZE);
+  const skiaFont = useSkiaFont(DEMO_SKIA_FONT_ASSET, DEMO_FONT_SIZE);
   const { minutes, seconds, toggle, reset } = useCountdownDemoState();
 
   return (
@@ -128,47 +110,22 @@ export const CountdownDemoSkia = () => {
       >
         <Canvas style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
           <SkiaTimeFlow
-            color="#FF3B30"
+            color={colors.countdown}
             font={skiaFont}
             minutes={minutes}
             seconds={seconds}
             textAlign="center"
             trend={-1}
             width={CANVAS_WIDTH}
-            y={FONT_SIZE}
+            y={DEMO_FONT_SIZE}
           />
         </Canvas>
       </View>
 
       {/* Action buttons */}
       <View style={{ flexDirection: "row", gap: 8 }}>
-        <Pressable
-          onPress={toggle}
-          style={{
-            flex: 1,
-            backgroundColor: colors.buttonBackground,
-            borderRadius: 8,
-            padding: 12,
-            alignItems: "center",
-          }}
-        >
-          <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
-            Start / Pause
-          </Text>
-        </Pressable>
-
-        <Pressable
-          onPress={reset}
-          style={{
-            flex: 1,
-            backgroundColor: colors.buttonBackground,
-            borderRadius: 8,
-            padding: 12,
-            alignItems: "center",
-          }}
-        >
-          <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>Reset</Text>
-        </Pressable>
+        <DemoButton label="Start / Pause" onPress={toggle} style={{ flex: 1 }} />
+        <DemoButton label="Reset" onPress={reset} style={{ flex: 1 }} />
       </View>
     </View>
   );

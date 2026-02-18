@@ -1,0 +1,4 @@
+{
+  "main": "../lib/module/native/index.js",
+  "types": "../lib/typescript/native/index.d.ts"
+}

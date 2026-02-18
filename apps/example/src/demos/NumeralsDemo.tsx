@@ -3,14 +3,19 @@ import { detectNumberingSystem, getDigitStrings, getZeroCodePoint } from "number
 import { NumberFlow } from "number-flow-react-native/native";
 import { SkiaNumberFlow, useSkiaFont } from "number-flow-react-native/skia";
 import { useCallback, useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+import { DemoButton } from "../components/DemoButton";
 import { colors } from "../theme/colors";
-import { FONT_REGULAR, INTER_FONT_ASSET } from "../theme/fonts";
+import {
+  CANVAS_HEIGHT,
+  CANVAS_WIDTH,
+  DEMO_FONT_FAMILY,
+  DEMO_FONT_SIZE,
+  DEMO_SKIA_FONT_ASSET,
+  DEMO_TEXT_COLOR,
+} from "../theme/demoConstants";
+import { FONT_REGULAR } from "../theme/fonts";
 import { randomValue } from "./utils";
-
-const FONT_SIZE = 32;
-const CANVAS_WIDTH = 280;
-const CANVAS_HEIGHT = 48;
 
 // Script-specific Noto Sans fonts for Skia rendering
 const NOTO_ARABIC = require("../../assets/fonts/NotoSansArabic.ttf");
@@ -161,35 +166,33 @@ const NumeralChips = ({
   selectedIndex: number;
   onSelect: (i: number) => void;
 }) => (
-  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -4 }}>
-    <View style={{ flexDirection: "row", gap: 6, paddingHorizontal: 4 }}>
-      {SYSTEMS.map((sys, i) => {
-        const isSelected = i === selectedIndex;
-        return (
-          <Pressable
-            key={sys.locale}
-            onPress={() => onSelect(i)}
+  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
+    {SYSTEMS.map((sys, i) => {
+      const isSelected = i === selectedIndex;
+      return (
+        <Pressable
+          key={sys.locale}
+          onPress={() => onSelect(i)}
+          style={{
+            backgroundColor: isSelected ? colors.text : colors.buttonBackground,
+            borderRadius: 16,
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+          }}
+        >
+          <Text
             style={{
-              backgroundColor: isSelected ? colors.text : colors.buttonBackground,
-              borderRadius: 16,
-              paddingHorizontal: 12,
-              paddingVertical: 6,
+              fontSize: 12,
+              fontWeight: "500",
+              color: isSelected ? "#fff" : colors.buttonText,
             }}
           >
-            <Text
-              style={{
-                fontSize: 12,
-                fontWeight: "500",
-                color: isSelected ? "#fff" : colors.buttonText,
-              }}
-            >
-              {sys.label}
-            </Text>
-          </Pressable>
-        );
-      })}
-    </View>
-  </ScrollView>
+            {sys.label}
+          </Text>
+        </Pressable>
+      );
+    })}
+  </View>
 );
 
 const ActionButtons = ({
@@ -206,46 +209,20 @@ const ActionButtons = ({
   onToggleDebug: () => void;
 }) => (
   <View style={{ flexDirection: "row", gap: 8 }}>
-    <Pressable
-      onPress={onRandomize}
-      style={{
-        flex: 1,
-        backgroundColor: colors.buttonBackground,
-        borderRadius: 8,
-        padding: 12,
-        alignItems: "center",
-      }}
-    >
-      <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>Randomize</Text>
-    </Pressable>
-
-    <Pressable
+    <DemoButton label="Randomize" onPress={onRandomize} style={{ flex: 1 }} />
+    <DemoButton
+      active={currency}
+      label={currency ? "Currency" : "Decimal"}
       onPress={onToggleCurrency}
-      style={{
-        flex: 1,
-        backgroundColor: currency ? "#d4e8ff" : colors.buttonBackground,
-        borderRadius: 8,
-        padding: 12,
-        alignItems: "center",
-      }}
-    >
-      <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
-        {currency ? "Currency" : "Decimal"}
-      </Text>
-    </Pressable>
-
-    <Pressable
+      style={{ flex: 1 }}
+    />
+    <DemoButton
+      active={showDebug}
+      activeColor="#ffe0e0"
+      label="Debug"
       onPress={onToggleDebug}
-      style={{
-        backgroundColor: showDebug ? "#ffe0e0" : colors.buttonBackground,
-        borderRadius: 8,
-        padding: 12,
-        alignItems: "center",
-        paddingHorizontal: 16,
-      }}
-    >
-      <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>Debug</Text>
-    </Pressable>
+      style={{ paddingHorizontal: 16 }}
+    />
   </View>
 );
 
@@ -307,14 +284,13 @@ const CjkUnsupportedBanner = () => (
   </View>
 );
 
-// Hook to load all script fonts upfront (hooks must be called unconditionally)
 function useScriptFonts() {
-  const latin = useSkiaFont(INTER_FONT_ASSET, FONT_SIZE);
-  const arabic = useSkiaFont(NOTO_ARABIC, FONT_SIZE);
-  const bengali = useSkiaFont(NOTO_BENGALI, FONT_SIZE);
-  const devanagari = useSkiaFont(NOTO_DEVANAGARI, FONT_SIZE);
-  const myanmar = useSkiaFont(NOTO_MYANMAR, FONT_SIZE);
-  const thai = useSkiaFont(NOTO_THAI, FONT_SIZE);
+  const latin = useSkiaFont(DEMO_SKIA_FONT_ASSET, DEMO_FONT_SIZE);
+  const arabic = useSkiaFont(NOTO_ARABIC, DEMO_FONT_SIZE);
+  const bengali = useSkiaFont(NOTO_BENGALI, DEMO_FONT_SIZE);
+  const devanagari = useSkiaFont(NOTO_DEVANAGARI, DEMO_FONT_SIZE);
+  const myanmar = useSkiaFont(NOTO_MYANMAR, DEMO_FONT_SIZE);
+  const thai = useSkiaFont(NOTO_THAI, DEMO_FONT_SIZE);
 
   const fontMap: Record<string, SkFont> = {
     latin,
@@ -328,9 +304,8 @@ function useScriptFonts() {
   return fontMap;
 }
 
-// Map fontKey to a human-readable font name for the explainer
 const FONT_NAMES: Record<string, string> = {
-  latin: "Inter",
+  latin: "Inter SemiBold",
   arabic: "Noto Sans Arabic",
   bengali: "Noto Sans Bengali",
   devanagari: "Noto Sans Devanagari",
@@ -366,7 +341,7 @@ export const NumeralsDemoNative = () => {
           containerStyle={{ width: CANVAS_WIDTH }}
           format={state.format}
           locales={state.system.locale}
-          style={{ fontFamily: FONT_REGULAR, fontSize: FONT_SIZE, color: colors.text }}
+          style={{ fontFamily: DEMO_FONT_FAMILY, fontSize: DEMO_FONT_SIZE, color: DEMO_TEXT_COLOR }}
           textAlign="center"
           value={state.value}
         />
@@ -421,14 +396,14 @@ export const NumeralsDemoSkia = () => {
         >
           <Canvas style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
             <SkiaNumberFlow
-              color={colors.text}
+              color={DEMO_TEXT_COLOR}
               font={currentFont}
               format={state.format}
               locales={state.system.locale}
               textAlign="center"
               value={state.value}
               width={CANVAS_WIDTH}
-              y={FONT_SIZE}
+              y={DEMO_FONT_SIZE}
             />
           </Canvas>
         </View>

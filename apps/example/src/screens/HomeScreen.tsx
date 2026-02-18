@@ -1,82 +1,115 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback } from "react";
-import { FlatList, Pressable, Text, View } from "react-native";
+import { SectionList, Text } from "react-native";
+import Animated, { Easing, FadeIn, FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { DEMO_REGISTRY, type DemoEntry } from "../config/demoRegistry";
+import { RipplePressable } from "../components/RipplePressable";
+import { DEMO_SECTIONS, type DemoEntry, type DemoSection } from "../config/demoRegistry";
 import type { RootStackParamList } from "../navigation/types";
 import { colors } from "../theme/colors";
 import { FONT_REGULAR, FONT_SEMIBOLD } from "../theme/fonts";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
+// Precompute a flat index for each item to create continuous stagger delays across sections
+const STAGGER_INDICES = new Map<string, number>();
+let idx = 0;
+for (const section of DEMO_SECTIONS) {
+  STAGGER_INDICES.set(`section:${section.title}`, idx++);
+  for (const entry of section.data) {
+    STAGGER_INDICES.set(entry.key, idx++);
+  }
+}
+
+const STAGGER_DELAY = 60;
+const STAGGER_DURATION = 400;
+const STAGGER_EASING = Easing.out(Easing.cubic);
+
 const DemoCard = ({ entry, onPress }: { entry: DemoEntry; onPress: () => void }) => {
-  const badgeLabel = entry.supportsSkia ? "Skia + Native" : "Native only";
-  const badgeBg = entry.supportsSkia ? colors.badge.skia : colors.badge.nativeOnly;
-  const badgeText = entry.supportsSkia ? colors.badge.skiaText : colors.badge.nativeOnlyText;
+  const staggerIndex = STAGGER_INDICES.get(entry.key) ?? 0;
 
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => ({
-        backgroundColor: pressed ? colors.demoBackground : colors.card,
-        borderRadius: 14,
-        padding: 16,
-        borderWidth: 1,
-        borderColor: colors.cardBorder,
-      })}
+    <Animated.View
+      entering={FadeInDown.duration(STAGGER_DURATION)
+        .delay(staggerIndex * STAGGER_DELAY)
+        .easing(STAGGER_EASING)}
     >
-      {/* Title row */}
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+      <RipplePressable
+        onPress={onPress}
+        style={{
+          backgroundColor: colors.card,
+          borderRadius: 14,
+          padding: 16,
+          borderWidth: 1,
+          borderColor: colors.cardBorder,
+        }}
+      >
+        {/* Title */}
         <Text
           style={{
             fontSize: 16,
             fontFamily: FONT_SEMIBOLD,
             color: colors.text,
-            flex: 1,
           }}
         >
           {entry.title}
         </Text>
 
-        <View
+        {/* Description */}
+        <Text
           style={{
-            backgroundColor: badgeBg,
-            borderRadius: 6,
-            paddingHorizontal: 8,
-            paddingVertical: 3,
+            fontSize: 13,
+            fontFamily: FONT_REGULAR,
+            color: colors.textSecondary,
+            marginTop: 6,
+            lineHeight: 18,
           }}
         >
-          <Text style={{ fontSize: 11, fontWeight: "500", color: badgeText }}>{badgeLabel}</Text>
-        </View>
-      </View>
+          {entry.description}
+        </Text>
+      </RipplePressable>
+    </Animated.View>
+  );
+};
 
-      {/* Description */}
+const SectionHeader = ({ title }: { title: string }) => {
+  const staggerIndex = STAGGER_INDICES.get(`section:${title}`) ?? 0;
+
+  return (
+    <Animated.View
+      entering={FadeInDown.duration(STAGGER_DURATION)
+        .delay(staggerIndex * STAGGER_DELAY)
+        .easing(STAGGER_EASING)}
+    >
       <Text
         style={{
           fontSize: 13,
-          fontFamily: FONT_REGULAR,
-          color: colors.textSecondary,
-          marginTop: 6,
-          lineHeight: 18,
+          fontFamily: FONT_SEMIBOLD,
+          color: colors.textTertiary,
+          textTransform: "uppercase",
+          letterSpacing: 0.5,
+          paddingHorizontal: 4,
+          paddingTop: 12,
+          paddingBottom: 4,
         }}
       >
-        {entry.description}
+        {title}
       </Text>
-    </Pressable>
+    </Animated.View>
   );
 };
 
 const ListHeader = () => (
-  <View style={{ paddingHorizontal: 4, paddingBottom: 4 }}>
+  <Animated.View entering={FadeIn.duration(300)} style={{ paddingHorizontal: 4, paddingBottom: 4 }}>
     <Text
       style={{
-        fontSize: 32,
+        fontSize: 22,
         fontFamily: FONT_SEMIBOLD,
         color: colors.text,
         marginBottom: 4,
       }}
     >
-      NumberFlow
+      Number Flow React Native
     </Text>
     <Text
       style={{
@@ -86,9 +119,9 @@ const ListHeader = () => (
         lineHeight: 20,
       }}
     >
-      Animated number transitions for React Native
+      Animated number transitions
     </Text>
-  </View>
+  </Animated.View>
 );
 
 export const HomeScreen = ({ navigation }: Props) => {
@@ -101,21 +134,28 @@ export const HomeScreen = ({ navigation }: Props) => {
     [navigation],
   );
 
+  const renderSectionHeader = useCallback(
+    ({ section }: { section: DemoSection }) => <SectionHeader title={section.title} />,
+    [],
+  );
+
   const keyExtractor = useCallback((item: DemoEntry) => item.key, []);
 
   return (
-    <FlatList
+    <SectionList
       contentContainerStyle={{
         paddingTop: insets.top + 16,
         paddingBottom: insets.bottom + 20,
         paddingHorizontal: 16,
         gap: 10,
       }}
-      data={DEMO_REGISTRY}
       keyExtractor={keyExtractor}
       ListHeaderComponent={ListHeader}
       renderItem={renderItem}
+      renderSectionHeader={renderSectionHeader}
+      sections={DEMO_SECTIONS}
       showsVerticalScrollIndicator={false}
+      stickySectionHeadersEnabled={false}
       style={{ backgroundColor: colors.background }}
     />
   );

@@ -2,13 +2,17 @@ import { Canvas } from "@shopify/react-native-skia";
 import { TimeFlow } from "number-flow-react-native/native";
 import { SkiaTimeFlow, useSkiaFont } from "number-flow-react-native/skia";
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { View } from "react-native";
+import { DemoButton } from "../components/DemoButton";
 import { colors } from "../theme/colors";
-import { FONT_REGULAR, INTER_FONT_ASSET } from "../theme/fonts";
-
-const FONT_SIZE = 34;
-const CANVAS_WIDTH = 280;
-const CANVAS_HEIGHT = 48;
+import {
+  CANVAS_HEIGHT,
+  CANVAS_WIDTH,
+  DEMO_FONT_FAMILY,
+  DEMO_FONT_SIZE,
+  DEMO_SKIA_FONT_ASSET,
+  DEMO_TEXT_COLOR,
+} from "../theme/demoConstants";
 
 interface TransitionTest {
   label: string;
@@ -55,41 +59,13 @@ const TransitionButtons = ({ onRun }: { onRun: (t: TransitionTest) => void }) =>
   <View style={{ gap: 8 }}>
     <View style={{ flexDirection: "row", gap: 8 }}>
       {TRANSITIONS.slice(0, 2).map((t) => (
-        <Pressable
-          key={t.label}
-          onPress={() => onRun(t)}
-          style={{
-            flex: 1,
-            backgroundColor: colors.buttonBackground,
-            borderRadius: 8,
-            padding: 12,
-            alignItems: "center",
-          }}
-        >
-          <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
-            {t.label}
-          </Text>
-        </Pressable>
+        <DemoButton key={t.label} label={t.label} onPress={() => onRun(t)} style={{ flex: 1 }} />
       ))}
     </View>
 
     <View style={{ flexDirection: "row", gap: 8 }}>
       {TRANSITIONS.slice(2).map((t) => (
-        <Pressable
-          key={t.label}
-          onPress={() => onRun(t)}
-          style={{
-            flex: 1,
-            backgroundColor: colors.buttonBackground,
-            borderRadius: 8,
-            padding: 12,
-            alignItems: "center",
-          }}
-        >
-          <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
-            {t.label}
-          </Text>
-        </Pressable>
+        <DemoButton key={t.label} label={t.label} onPress={() => onRun(t)} style={{ flex: 1 }} />
       ))}
     </View>
   </View>
@@ -117,7 +93,7 @@ export const EdgeCaseDemoNative = () => {
           is24Hour={is24Hour}
           minutes={minutes}
           padHours={false}
-          style={{ fontFamily: FONT_REGULAR, fontSize: FONT_SIZE, color: colors.accent }}
+          style={{ fontFamily: DEMO_FONT_FAMILY, fontSize: DEMO_FONT_SIZE, color: DEMO_TEXT_COLOR }}
           textAlign="center"
         />
       </View>
@@ -129,7 +105,7 @@ export const EdgeCaseDemoNative = () => {
 };
 
 export const EdgeCaseDemoSkia = () => {
-  const skiaFont = useSkiaFont(INTER_FONT_ASSET, FONT_SIZE);
+  const skiaFont = useSkiaFont(DEMO_SKIA_FONT_ASSET, DEMO_FONT_SIZE);
   const { hours, minutes, is24Hour, runTransition } = useEdgeCaseDemoState();
 
   return (
@@ -147,7 +123,7 @@ export const EdgeCaseDemoSkia = () => {
       >
         <Canvas style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
           <SkiaTimeFlow
-            color={colors.accent}
+            color={DEMO_TEXT_COLOR}
             font={skiaFont}
             hours={hours}
             is24Hour={is24Hour}
@@ -155,7 +131,7 @@ export const EdgeCaseDemoSkia = () => {
             padHours={false}
             textAlign="center"
             width={CANVAS_WIDTH}
-            y={FONT_SIZE}
+            y={DEMO_FONT_SIZE}
           />
         </Canvas>
       </View>

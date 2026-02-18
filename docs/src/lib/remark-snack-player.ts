@@ -37,6 +37,7 @@ function toJsxNode(node: Code) {
   );
 
   const dependencies = params.dependencies ?? '';
+  const sdkVersion = params.sdkVersion ?? '54.0.0';
   const platform = params.platform ?? 'mydevice';
   const supportedPlatforms = params.supportedPlatforms ?? 'mydevice,ios,android';
   const theme = params.theme ?? 'dark';
@@ -52,6 +53,7 @@ function toJsxNode(node: Code) {
       attr('data-snack-description', description),
       attr('data-snack-files', files),
       attr('data-snack-dependencies', dependencies),
+      attr('data-snack-sdkversion', sdkVersion),
       attr('data-snack-platform', platform),
       attr('data-snack-supported-platforms', supportedPlatforms),
       attr('data-snack-theme', theme),

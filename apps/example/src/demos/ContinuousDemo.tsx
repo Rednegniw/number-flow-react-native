@@ -1,17 +1,22 @@
 import { Canvas } from "@shopify/react-native-skia";
-import { NumberFlow } from "number-flow-react-native/native";
-import { SkiaNumberFlow, useSkiaFont } from "number-flow-react-native/skia";
+import { NumberFlow, TimeFlow } from "number-flow-react-native/native";
+import { SkiaNumberFlow, SkiaTimeFlow, useSkiaFont } from "number-flow-react-native/skia";
 import { useCallback, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import { DemoButton } from "../components/DemoButton";
 import { colors } from "../theme/colors";
-import { FONT_REGULAR, INTER_FONT_ASSET } from "../theme/fonts";
+import {
+  CANVAS_HEIGHT_COMPACT,
+  CANVAS_WIDTH_COMPACT,
+  DEMO_FONT_FAMILY,
+  DEMO_FONT_SIZE_COMPACT,
+  DEMO_SKIA_FONT_ASSET,
+  DEMO_TEXT_COLOR,
+} from "../theme/demoConstants";
 
-const FONT_SIZE = 28;
-const CANVAS_WIDTH = 120;
-const CANVAS_HEIGHT = 42;
 const JUMPS = [100, 200, 500, 1000, 5000];
 
-function useContinuousDemoState() {
+function useContinuousNumberState() {
   const [value, setValue] = useState(100);
 
   const jump = useCallback(() => {
@@ -26,187 +31,259 @@ function useContinuousDemoState() {
   return { value, jump, reset };
 }
 
-const ActionButtons = ({ onJump, onReset }: { onJump: () => void; onReset: () => void }) => (
-  <View style={{ flexDirection: "row", gap: 8 }}>
-    <Pressable
-      onPress={onJump}
-      style={{
-        flex: 1,
-        backgroundColor: colors.buttonBackground,
-        borderRadius: 8,
-        padding: 12,
-        alignItems: "center",
-      }}
-    >
-      <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>
-        Jump +random
-      </Text>
-    </Pressable>
+function useContinuousTimeState() {
+  const [hours, setHours] = useState(10);
+  const [minutes, setMinutes] = useState(30);
+  const [seconds, setSeconds] = useState(0);
 
-    <Pressable
-      onPress={onReset}
-      style={{
-        flex: 1,
-        backgroundColor: colors.buttonBackground,
-        borderRadius: 8,
-        padding: 12,
-        alignItems: "center",
-      }}
-    >
-      <Text style={{ fontSize: 14, fontWeight: "500", color: colors.buttonText }}>Reset</Text>
-    </Pressable>
+  const incrementHour = useCallback(() => {
+    setHours((h) => (h + 1) % 24);
+  }, []);
+
+  const incrementMinute = useCallback(() => {
+    setMinutes((m) => {
+      if (m === 59) {
+        setHours((h) => (h + 1) % 24);
+        return 0;
+      }
+      return m + 1;
+    });
+  }, []);
+
+  const reset = useCallback(() => {
+    setHours(10);
+    setMinutes(30);
+    setSeconds(0);
+  }, []);
+
+  return { hours, minutes, seconds, incrementHour, incrementMinute, reset };
+}
+
+const ComparisonLabel = ({ label }: { label: string }) => (
+  <Text style={{ fontSize: 11, fontWeight: "500", color: colors.textSecondary }}>{label}</Text>
+);
+
+const ComparisonCard = ({ children, label }: { children: React.ReactNode; label: string }) => (
+  <View
+    style={{
+      flex: 1,
+      backgroundColor: colors.demoBackground,
+      borderRadius: 12,
+      padding: 12,
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 70,
+      gap: 4,
+    }}
+  >
+    <ComparisonLabel label={label} />
+    {children}
   </View>
 );
 
 export const ContinuousDemoNative = () => {
-  const { value, jump, reset } = useContinuousDemoState();
+  const number = useContinuousNumberState();
+  const time = useContinuousTimeState();
 
   return (
-    <View style={{ gap: 8 }}>
-      {/* Description */}
-      <Text style={{ fontSize: 11, color: colors.textSecondary }}>
-        Same value — left is default, right has continuous=true
-      </Text>
+    <View style={{ gap: 16 }}>
+      {/* NumberFlow comparison */}
+      <View style={{ gap: 8 }}>
+        <Text style={{ fontSize: 11, color: colors.textSecondary }}>
+          NumberFlow — left is default, right has continuous=true
+        </Text>
 
-      {/* Side-by-side comparison */}
-      <View style={{ flexDirection: "row", gap: 12 }}>
-        {/* Default mode */}
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: colors.demoBackground,
-            borderRadius: 12,
-            padding: 16,
-            alignItems: "center",
-            justifyContent: "center",
-            minHeight: 80,
-            gap: 8,
-          }}
-        >
-          <Text style={{ fontSize: 11, fontWeight: "500", color: colors.textSecondary }}>
-            Default
-          </Text>
-          <NumberFlow
-            containerStyle={{ width: CANVAS_WIDTH }}
-            format={{ useGrouping: true }}
-            style={{ fontFamily: FONT_REGULAR, fontSize: FONT_SIZE, color: colors.text }}
-            textAlign="center"
-            trend={1}
-            value={value}
-          />
+        <View style={{ flexDirection: "row", gap: 12 }}>
+          <ComparisonCard label="Default">
+            <NumberFlow
+              containerStyle={{ width: CANVAS_WIDTH_COMPACT }}
+              format={{ useGrouping: true }}
+              style={{
+                fontFamily: DEMO_FONT_FAMILY,
+                fontSize: DEMO_FONT_SIZE_COMPACT,
+                color: DEMO_TEXT_COLOR,
+              }}
+              textAlign="center"
+              trend={1}
+              value={number.value}
+            />
+          </ComparisonCard>
+
+          <ComparisonCard label="Continuous">
+            <NumberFlow
+              containerStyle={{ width: CANVAS_WIDTH_COMPACT }}
+              continuous
+              format={{ useGrouping: true }}
+              style={{
+                fontFamily: DEMO_FONT_FAMILY,
+                fontSize: DEMO_FONT_SIZE_COMPACT,
+                color: DEMO_TEXT_COLOR,
+              }}
+              textAlign="center"
+              trend={1}
+              value={number.value}
+            />
+          </ComparisonCard>
         </View>
 
-        {/* Continuous mode */}
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: colors.demoBackground,
-            borderRadius: 12,
-            padding: 16,
-            alignItems: "center",
-            justifyContent: "center",
-            minHeight: 80,
-            gap: 8,
-          }}
-        >
-          <Text style={{ fontSize: 11, fontWeight: "500", color: colors.textSecondary }}>
-            Continuous
-          </Text>
-          <NumberFlow
-            containerStyle={{ width: CANVAS_WIDTH }}
-            continuous
-            format={{ useGrouping: true }}
-            style={{ fontFamily: FONT_REGULAR, fontSize: FONT_SIZE, color: colors.text }}
-            textAlign="center"
-            trend={1}
-            value={value}
-          />
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <DemoButton label="Jump +random" onPress={number.jump} style={{ flex: 1 }} />
+          <DemoButton label="Reset" onPress={number.reset} style={{ flex: 1 }} />
         </View>
       </View>
 
-      {/* Action buttons */}
-      <ActionButtons onJump={jump} onReset={reset} />
+      {/* TimeFlow comparison */}
+      <View style={{ gap: 8 }}>
+        <Text style={{ fontSize: 11, color: colors.textSecondary }}>
+          TimeFlow — left is default, right has continuous=true — try +1 Hour
+        </Text>
+
+        <View style={{ flexDirection: "row", gap: 12 }}>
+          <ComparisonCard label="Default">
+            <TimeFlow
+              containerStyle={{ width: CANVAS_WIDTH_COMPACT + 20 }}
+              hours={time.hours}
+              minutes={time.minutes}
+              seconds={time.seconds}
+              style={{
+                fontFamily: DEMO_FONT_FAMILY,
+                fontSize: DEMO_FONT_SIZE_COMPACT,
+                color: DEMO_TEXT_COLOR,
+              }}
+              textAlign="center"
+              trend={1}
+            />
+          </ComparisonCard>
+
+          <ComparisonCard label="Continuous">
+            <TimeFlow
+              containerStyle={{ width: CANVAS_WIDTH_COMPACT + 20 }}
+              continuous
+              hours={time.hours}
+              minutes={time.minutes}
+              seconds={time.seconds}
+              style={{
+                fontFamily: DEMO_FONT_FAMILY,
+                fontSize: DEMO_FONT_SIZE_COMPACT,
+                color: DEMO_TEXT_COLOR,
+              }}
+              textAlign="center"
+              trend={1}
+            />
+          </ComparisonCard>
+        </View>
+
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <DemoButton label="+1 Hour" onPress={time.incrementHour} style={{ flex: 1 }} />
+          <DemoButton label="+1 Minute" onPress={time.incrementMinute} style={{ flex: 1 }} />
+          <DemoButton label="Reset" onPress={time.reset} style={{ flex: 1 }} />
+        </View>
+      </View>
     </View>
   );
 };
 
 export const ContinuousDemoSkia = () => {
-  const skiaFont = useSkiaFont(INTER_FONT_ASSET, FONT_SIZE);
-  const { value, jump, reset } = useContinuousDemoState();
+  const skiaFont = useSkiaFont(DEMO_SKIA_FONT_ASSET, DEMO_FONT_SIZE_COMPACT);
+  const number = useContinuousNumberState();
+  const time = useContinuousTimeState();
+
+  const timeCanvasWidth = CANVAS_WIDTH_COMPACT + 20;
 
   return (
-    <View style={{ gap: 8 }}>
-      {/* Description */}
-      <Text style={{ fontSize: 11, color: colors.textSecondary }}>
-        Same value — left is default, right has continuous=true
-      </Text>
+    <View style={{ gap: 16 }}>
+      {/* NumberFlow comparison */}
+      <View style={{ gap: 8 }}>
+        <Text style={{ fontSize: 11, color: colors.textSecondary }}>
+          NumberFlow — left is default, right has continuous=true
+        </Text>
 
-      {/* Side-by-side comparison */}
-      <View style={{ flexDirection: "row", gap: 12 }}>
-        {/* Default mode */}
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: colors.demoBackground,
-            borderRadius: 12,
-            padding: 16,
-            alignItems: "center",
-            justifyContent: "center",
-            minHeight: 80,
-            gap: 8,
-          }}
-        >
-          <Text style={{ fontSize: 11, fontWeight: "500", color: colors.textSecondary }}>
-            Default
-          </Text>
-          <Canvas style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
-            <SkiaNumberFlow
-              color={colors.text}
-              font={skiaFont}
-              format={{ useGrouping: true }}
-              textAlign="center"
-              trend={1}
-              value={value}
-              width={CANVAS_WIDTH}
-              y={FONT_SIZE}
-            />
-          </Canvas>
+        <View style={{ flexDirection: "row", gap: 12 }}>
+          <ComparisonCard label="Default">
+            <Canvas style={{ width: CANVAS_WIDTH_COMPACT, height: CANVAS_HEIGHT_COMPACT }}>
+              <SkiaNumberFlow
+                color={DEMO_TEXT_COLOR}
+                font={skiaFont}
+                format={{ useGrouping: true }}
+                textAlign="center"
+                trend={1}
+                value={number.value}
+                width={CANVAS_WIDTH_COMPACT}
+                y={DEMO_FONT_SIZE_COMPACT}
+              />
+            </Canvas>
+          </ComparisonCard>
+
+          <ComparisonCard label="Continuous">
+            <Canvas style={{ width: CANVAS_WIDTH_COMPACT, height: CANVAS_HEIGHT_COMPACT }}>
+              <SkiaNumberFlow
+                color={DEMO_TEXT_COLOR}
+                continuous
+                font={skiaFont}
+                format={{ useGrouping: true }}
+                textAlign="center"
+                trend={1}
+                value={number.value}
+                width={CANVAS_WIDTH_COMPACT}
+                y={DEMO_FONT_SIZE_COMPACT}
+              />
+            </Canvas>
+          </ComparisonCard>
         </View>
 
-        {/* Continuous mode */}
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: colors.demoBackground,
-            borderRadius: 12,
-            padding: 16,
-            alignItems: "center",
-            justifyContent: "center",
-            minHeight: 80,
-            gap: 8,
-          }}
-        >
-          <Text style={{ fontSize: 11, fontWeight: "500", color: colors.textSecondary }}>
-            Continuous
-          </Text>
-          <Canvas style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
-            <SkiaNumberFlow
-              color={colors.text}
-              continuous
-              font={skiaFont}
-              format={{ useGrouping: true }}
-              textAlign="center"
-              trend={1}
-              value={value}
-              width={CANVAS_WIDTH}
-              y={FONT_SIZE}
-            />
-          </Canvas>
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <DemoButton label="Jump +random" onPress={number.jump} style={{ flex: 1 }} />
+          <DemoButton label="Reset" onPress={number.reset} style={{ flex: 1 }} />
         </View>
       </View>
 
-      {/* Action buttons */}
-      <ActionButtons onJump={jump} onReset={reset} />
+      {/* TimeFlow comparison */}
+      <View style={{ gap: 8 }}>
+        <Text style={{ fontSize: 11, color: colors.textSecondary }}>
+          TimeFlow — left is default, right has continuous=true — try +1 Hour
+        </Text>
+
+        <View style={{ flexDirection: "row", gap: 12 }}>
+          <ComparisonCard label="Default">
+            <Canvas style={{ width: timeCanvasWidth, height: CANVAS_HEIGHT_COMPACT }}>
+              <SkiaTimeFlow
+                color={DEMO_TEXT_COLOR}
+                font={skiaFont}
+                hours={time.hours}
+                minutes={time.minutes}
+                seconds={time.seconds}
+                textAlign="center"
+                trend={1}
+                width={timeCanvasWidth}
+                y={DEMO_FONT_SIZE_COMPACT}
+              />
+            </Canvas>
+          </ComparisonCard>
+
+          <ComparisonCard label="Continuous">
+            <Canvas style={{ width: timeCanvasWidth, height: CANVAS_HEIGHT_COMPACT }}>
+              <SkiaTimeFlow
+                color={DEMO_TEXT_COLOR}
+                continuous
+                font={skiaFont}
+                hours={time.hours}
+                minutes={time.minutes}
+                seconds={time.seconds}
+                textAlign="center"
+                trend={1}
+                width={timeCanvasWidth}
+                y={DEMO_FONT_SIZE_COMPACT}
+              />
+            </Canvas>
+          </ComparisonCard>
+        </View>
+
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <DemoButton label="+1 Hour" onPress={time.incrementHour} style={{ flex: 1 }} />
+          <DemoButton label="+1 Minute" onPress={time.incrementMinute} style={{ flex: 1 }} />
+          <DemoButton label="Reset" onPress={time.reset} style={{ flex: 1 }} />
+        </View>
+      </View>
     </View>
   );
 };

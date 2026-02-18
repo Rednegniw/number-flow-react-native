@@ -5,7 +5,7 @@ description: Basic SkiaNumberFlow usage inside a Canvas
 
 `SkiaNumberFlow` renders inside a Skia `Canvas` and requires a loaded `SkFont`. Use `useSkiaFont` for a guaranteed non-null font with system-font fallback.
 
-```SnackPlayer name=Skia%20Basic dependencies=number-flow-react-native@0.1.4,react-native-reanimated,@shopify/react-native-skia
+```SnackPlayer name=Skia%20Basic dependencies=number-flow-react-native,react-native-reanimated,@shopify/react-native-skia
 import { useState } from 'react';
 import { View, Button } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
@@ -13,7 +13,7 @@ import { SkiaNumberFlow, useSkiaFont } from 'number-flow-react-native/skia';
 
 export default function SkiaBasic() {
   const [value, setValue] = useState(1234);
-  const font = useSkiaFont(require('./assets/Inter.ttf'), 48);
+  const font = useSkiaFont('https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfMZg.ttf', 48);
 
   return (
     <View style={{ alignItems: 'center', gap: 16, padding: 32 }}>

@@ -17,7 +17,7 @@ import { SkiaNumberFlow, useSkiaFont } from 'number-flow-react-native/skia';
 
 ## Basic Usage
 
-```SnackPlayer name=SkiaNumberFlow%20Basic dependencies=number-flow-react-native@0.1.4,react-native-reanimated,@shopify/react-native-skia
+```SnackPlayer name=SkiaNumberFlow%20Basic dependencies=number-flow-react-native,react-native-reanimated,@shopify/react-native-skia
 import { useState } from 'react';
 import { View, Button } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
@@ -25,7 +25,7 @@ import { SkiaNumberFlow, useSkiaFont } from 'number-flow-react-native/skia';
 
 function SkiaPrice() {
   const [price, setPrice] = useState(42.99);
-  const font = useSkiaFont(require('./assets/Inter-Bold.otf'), 48);
+  const font = useSkiaFont('https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYMZg.ttf', 48);
 
   return (
     <View style={{ alignItems: 'center', gap: 16, padding: 24 }}>
@@ -95,7 +95,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { SkiaNumberFlow, useSkiaFont } from 'number-flow-react-native/skia';
 
 function ScrubSlider() {
-  const font = useSkiaFont(require('./assets/Inter-Medium.otf'), 32);
+  const font = useSkiaFont('https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuI6fMZg.ttf', 32);
   const progress = useSharedValue(0);
 
   const formattedValue = useDerivedValue(() => {

@@ -1,7 +1,7 @@
 import { Canvas } from "@shopify/react-native-skia";
 import { TimeFlow } from "number-flow-react-native/native";
 import { SkiaTimeFlow, useSkiaFont } from "number-flow-react-native/skia";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { View } from "react-native";
 import { DemoButton } from "../components/DemoButton";
 import { colors } from "../theme/colors";
@@ -13,37 +13,37 @@ import {
   DEMO_SKIA_FONT_ASSET,
   DEMO_TEXT_COLOR,
 } from "../theme/demoConstants";
+import { randomInt } from "./utils";
 
-function useFullClockDemoState() {
+function useClockDemoState() {
+  const [hours, setHours] = useState(14);
+  const [minutes, setMinutes] = useState(30);
   const [is24Hour, setIs24Hour] = useState(true);
-  const [hours, setHours] = useState(() => new Date().getHours());
-  const [minutes, setMinutes] = useState(() => new Date().getMinutes());
-  const [seconds, setSeconds] = useState(() => new Date().getSeconds());
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => {
-    const update = () => {
-      const d = new Date();
-      setHours(d.getHours());
-      setMinutes(d.getMinutes());
-      setSeconds(d.getSeconds());
-    };
-    update();
-    intervalRef.current = setInterval(update, 1000);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
+  const increment = useCallback(() => {
+    setMinutes((prev) => {
+      if (prev === 59) {
+        setHours((h) => (h + 1) % 24);
+        return 0;
+      }
+      return prev + 1;
+    });
+  }, []);
+
+  const randomize = useCallback(() => {
+    setHours(randomInt(0, 23));
+    setMinutes(randomInt(0, 59));
   }, []);
 
   const toggle24h = useCallback(() => {
     setIs24Hour((v) => !v);
   }, []);
 
-  return { hours, minutes, seconds, is24Hour, toggle24h };
+  return { hours, minutes, is24Hour, increment, randomize, toggle24h };
 }
 
-export const FullClockDemoNative = () => {
-  const { hours, minutes, seconds, is24Hour, toggle24h } = useFullClockDemoState();
+export const ClockDemoNative = () => {
+  const { hours, minutes, is24Hour, increment, randomize, toggle24h } = useClockDemoState();
 
   return (
     <View style={{ gap: 8 }}>
@@ -63,21 +63,25 @@ export const FullClockDemoNative = () => {
           hours={hours}
           is24Hour={is24Hour}
           minutes={minutes}
-          seconds={seconds}
+          padHours={false}
           style={{ fontFamily: DEMO_FONT_FAMILY, fontSize: DEMO_FONT_SIZE, color: DEMO_TEXT_COLOR }}
           textAlign="center"
         />
       </View>
 
-      {/* Action button */}
-      <DemoButton label="Toggle 12h/24h" onPress={toggle24h} />
+      {/* Action buttons */}
+      <View style={{ flexDirection: "row", gap: 8 }}>
+        <DemoButton label="+1 Minute" onPress={increment} style={{ flex: 1 }} />
+        <DemoButton label="Random" onPress={randomize} style={{ flex: 1 }} />
+        <DemoButton label={is24Hour ? "12h" : "24h"} onPress={toggle24h} style={{ flex: 1 }} />
+      </View>
     </View>
   );
 };
 
-export const FullClockDemoSkia = () => {
+export const ClockDemoSkia = () => {
   const skiaFont = useSkiaFont(DEMO_SKIA_FONT_ASSET, DEMO_FONT_SIZE);
-  const { hours, minutes, seconds, is24Hour, toggle24h } = useFullClockDemoState();
+  const { hours, minutes, is24Hour, increment, randomize, toggle24h } = useClockDemoState();
 
   return (
     <View style={{ gap: 8 }}>
@@ -99,7 +103,7 @@ export const FullClockDemoSkia = () => {
             hours={hours}
             is24Hour={is24Hour}
             minutes={minutes}
-            seconds={seconds}
+            padHours={false}
             textAlign="center"
             width={CANVAS_WIDTH}
             y={DEMO_FONT_SIZE}
@@ -107,8 +111,12 @@ export const FullClockDemoSkia = () => {
         </Canvas>
       </View>
 
-      {/* Action button */}
-      <DemoButton label="Toggle 12h/24h" onPress={toggle24h} />
+      {/* Action buttons */}
+      <View style={{ flexDirection: "row", gap: 8 }}>
+        <DemoButton label="+1 Minute" onPress={increment} style={{ flex: 1 }} />
+        <DemoButton label="Random" onPress={randomize} style={{ flex: 1 }} />
+        <DemoButton label={is24Hour ? "12h" : "24h"} onPress={toggle24h} style={{ flex: 1 }} />
+      </View>
     </View>
   );
 };
