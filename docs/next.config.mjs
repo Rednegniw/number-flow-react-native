@@ -5,11 +5,22 @@ const withMDX = createMDX();
 /** @type {import('next').NextConfig} */
 const config = {
   reactStrictMode: true,
+  skipTrailingSlashRedirect: true,
   async rewrites() {
     return [
       {
         source: '/docs/:path*.mdx',
         destination: '/llms.mdx/docs/:path*',
+      },
+
+      // PostHog reverse proxy
+      {
+        source: '/ingest/static/:path*',
+        destination: 'https://us-assets.i.posthog.com/static/:path*',
+      },
+      {
+        source: '/ingest/:path*',
+        destination: 'https://us.i.posthog.com/:path*',
       },
     ];
   },
