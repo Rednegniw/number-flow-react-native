@@ -14,13 +14,14 @@ const config = {
       },
 
       // PostHog reverse proxy (path intentionally non-obvious to avoid ad-blocker filter lists)
+      // Uses :match(.*) instead of :path* to handle trailing slashes in PostHog URLs
       {
-        source: '/ph/static/:path*',
-        destination: 'https://us-assets.i.posthog.com/static/:path*',
+        source: '/ph/static/:match(.*)',
+        destination: 'https://us-assets.i.posthog.com/static/:match',
       },
       {
-        source: '/ph/:path*',
-        destination: 'https://us.i.posthog.com/:path*',
+        source: '/ph/:match(.*)',
+        destination: 'https://us.i.posthog.com/:match',
       },
     ];
   },
