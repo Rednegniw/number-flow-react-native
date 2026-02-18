@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { type LayoutChangeEvent, Text, View } from "react-native";
-import MaskedView from "./MaskedView";
 import { computeKeyedLayout } from "../core/layout";
 import type { TimeFlowProps } from "../core/timeTypes";
 import { useFlowPipeline } from "../core/useFlowPipeline";
 import { useTimeFormatting } from "../core/useTimeFormatting";
 import { TIME_DIGIT_COUNTS } from "../core/utils";
 import { warnOnce } from "../core/warnings";
+import MaskedView from "./MaskedView";
 import { renderSlots } from "./renderSlots";
 import { useMeasuredGlyphMetrics } from "./useMeasuredGlyphMetrics";
 

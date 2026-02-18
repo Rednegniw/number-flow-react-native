@@ -7,6 +7,7 @@
     "docs"
   ],
   "scripts": {
+    "prepare": "lefthook install",
     "lib": "bun --cwd packages/number-flow-react-native",
     "example": "bun --cwd apps/example",
     "docs": "bun --cwd docs",
@@ -22,7 +23,8 @@
   "devDependencies": {
     "@biomejs/biome": "^2.4.0",
     "@changesets/changelog-github": "^0.5.2",
-    "@changesets/cli": "^2.29.0"
+    "@changesets/cli": "^2.29.0",
+    "lefthook": "^2.1.1"
   },
   "trustedDependencies": [
     "@shopify/react-native-skia"

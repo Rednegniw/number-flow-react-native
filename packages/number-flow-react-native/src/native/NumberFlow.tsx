@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { type LayoutChangeEvent, Text, View } from "react-native";
-import MaskedView from "./MaskedView";
 import { getFormatCharacters } from "../core/intlHelpers";
 import { computeKeyedLayout } from "../core/layout";
 import { detectNumberingSystem, getDigitStrings } from "../core/numerals";
@@ -8,6 +7,7 @@ import { useFlowPipeline } from "../core/useFlowPipeline";
 import { useNumberFormatting } from "../core/useNumberFormatting";
 import { getDigitCount } from "../core/utils";
 import { warnOnce } from "../core/warnings";
+import MaskedView from "./MaskedView";
 import { renderSlots } from "./renderSlots";
 import type { NumberFlowProps } from "./types";
 import { useMeasuredGlyphMetrics } from "./useMeasuredGlyphMetrics";

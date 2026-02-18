@@ -7,7 +7,9 @@
       "!**/node_modules",
       "!**/lib",
       "!**/dist",
-      "!**/docs",
+      "!**/docs/node_modules",
+      "!**/docs/.next",
+      "!**/docs/.source",
       "!**/.expo",
       "!**/.next",
       "!**/.source",
@@ -39,6 +41,12 @@
     "indentStyle": "space",
     "indentWidth": 2,
     "lineWidth": 100
+  },
+  "css": {
+    "parser": {
+      "cssModules": true,
+      "tailwindDirectives": true
+    }
   },
   "javascript": {
     "formatter": {

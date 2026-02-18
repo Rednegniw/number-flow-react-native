@@ -2,7 +2,7 @@ import type { ReactElement } from "react";
 import { UIManager, type ViewProps } from "react-native";
 
 interface MaskedViewProps extends ViewProps {
-	maskElement: ReactElement;
+  maskElement: ReactElement;
 }
 
 /**
@@ -16,28 +16,28 @@ interface MaskedViewProps extends ViewProps {
  * We verify via UIManager before accepting a resolved module.
  */
 function hasNativeView(name: string): boolean {
-	return UIManager.getViewManagerConfig?.(name) != null;
+  return UIManager.getViewManagerConfig?.(name) != null;
 }
 
 let Resolved: React.ComponentType<MaskedViewProps> | null = null;
 try {
-	const mod = require("@rednegniw/masked-view");
-	if (hasNativeView("NFMaskedView")) {
-		Resolved = mod.default;
-	}
+  const mod = require("@rednegniw/masked-view");
+  if (hasNativeView("NFMaskedView")) {
+    Resolved = mod.default;
+  }
 } catch {
-	// Module not available
+  // Module not available
 }
 
 if (!Resolved) {
-	try {
-		const mod = require("@react-native-masked-view/masked-view");
-		if (hasNativeView("RNCMaskedView")) {
-			Resolved = mod.default;
-		}
-	} catch {
-		// Module not available
-	}
+  try {
+    const mod = require("@react-native-masked-view/masked-view");
+    if (hasNativeView("RNCMaskedView")) {
+      Resolved = mod.default;
+    }
+  } catch {
+    // Module not available
+  }
 }
 
 export default Resolved;

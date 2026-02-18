@@ -1,8 +1,4 @@
 {
   "title": "Hooks",
-  "pages": [
-    "use-skia-font",
-    "use-formatted-value",
-    "use-can-animate"
-  ]
+  "pages": ["use-skia-font", "use-formatted-value", "use-can-animate"]
 }

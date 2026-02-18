@@ -1,14 +1,14 @@
-import { source } from '@/lib/source';
-import { DocsLayout } from 'fumadocs-ui/layouts/docs';
-import { baseOptions } from '@/lib/layout.shared';
+import { DocsLayout } from "fumadocs-ui/layouts/docs";
 import {
-  SidebarHoverProvider,
+  AnimatedSidebarFolder,
   AnimatedSidebarItem,
   AnimatedSidebarSeparator,
-  AnimatedSidebarFolder,
-} from '@/components/docs-sidebar';
+  SidebarHoverProvider,
+} from "@/components/docs-sidebar";
+import { baseOptions } from "@/lib/layout.shared";
+import { source } from "@/lib/source";
 
-export default function Layout({ children }: LayoutProps<'/docs'>) {
+export default function Layout({ children }: LayoutProps<"/docs">) {
   return (
     <SidebarHoverProvider>
       <DocsLayout
