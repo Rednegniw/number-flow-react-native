@@ -20,7 +20,7 @@ import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { TimeFlow } from 'number-flow-react-native';
 
-function LiveClock() {
+export default function LiveClock() {
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {

@@ -18,7 +18,7 @@ import { useState } from 'react';
 import { View, Button } from 'react-native';
 import { NumberFlow } from 'number-flow-react-native';
 
-function PriceCounter() {
+export default function PriceCounter() {
   const [price, setPrice] = useState(42.99);
 
   return (
@@ -69,7 +69,7 @@ Every time `price` changes, each digit rolls independently to its new value.
 | `animated` | `boolean` | `true` | Set to `false` to disable all animations and update instantly. |
 | `respectMotionPreference` | `boolean` | `true` | Disables animations when the device "Reduce Motion" setting is on. |
 | `continuous` | `boolean` | `false` | When `true`, unchanged lower-significance digits spin through a full cycle during transitions, making the number appear to pass through intermediate values. |
-| `mask` | `boolean` | `true` | Enable edge gradient fade masking on digit slots. Uses `MaskedView` with View-strip gradients. |
+| `mask` | `boolean` | `true` | Enable edge gradient fade on digit slots. When `@rednegniw/masked-view` is installed, uses a MaskedView for smooth spatial gradient masking. Otherwise falls back to per-digit opacity fading. Set to `false` to disable masking entirely. |
 | `transformTiming` | `TimingConfig` | 900ms deceleration | Timing for layout transforms (position, width changes). Uses NumberFlow's signature deceleration curve. |
 | `spinTiming` | `TimingConfig` | Falls back to `transformTiming` | Timing for digit spin/rolling. |
 | `opacityTiming` | `TimingConfig` | 450ms ease-out | Timing for enter/exit opacity transitions. |
