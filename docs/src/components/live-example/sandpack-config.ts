@@ -15,6 +15,8 @@ const extensions = [
 ];
 
 export default defineConfig({
+  clearScreen: false,
+  logLevel: "silent",
   plugins: [react()],
   define: {
     global: "window",
