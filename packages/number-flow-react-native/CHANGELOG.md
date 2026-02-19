@@ -1,5 +1,11 @@
 # number-flow-react-native
 
+## 0.1.11
+
+### Patch Changes
+
+- [`147a5a9`](https://github.com/Rednegniw/number-flow-react-native/commit/147a5a9c1dab892a084be77bbc4a341128c8e368) Thanks [@Rednegniw](https://github.com/Rednegniw)! - Fix container collapsing to 0 width on web when parent uses `alignItems: 'center'`
+
 ## 0.1.10
 
 ### Patch Changes
