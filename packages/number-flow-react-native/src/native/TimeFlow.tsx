@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { type LayoutChangeEvent, Text, View } from "react-native";
+import Animated, { makeMutable, useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { computeKeyedLayout } from "../core/layout";
 import type { TimeFlowProps } from "../core/timeTypes";
 import { useFlowPipeline } from "../core/useFlowPipeline";
@@ -129,6 +130,31 @@ export const TimeFlow = ({
     adaptiveMask,
   } = pipeline;
 
+  // Animate container minWidth so width changes are smooth instead of snapping
+  const [animatedWidth] = useState(() => makeMutable(contentWidth));
+  const prevWidthRef = useRef(contentWidth);
+
+  useLayoutEffect(() => {
+    if (prevWidthRef.current !== contentWidth) {
+      const shouldAnimate = prevWidthRef.current > 0;
+      prevWidthRef.current = contentWidth;
+
+      if (shouldAnimate) {
+        animatedWidth.value = withTiming(contentWidth, {
+          duration: resolvedTransformTiming.duration,
+          easing: resolvedTransformTiming.easing,
+        });
+      } else {
+        animatedWidth.value = contentWidth;
+      }
+    }
+  }, [contentWidth, resolvedTransformTiming, animatedWidth]);
+
+  const animatedWidthStyle = useAnimatedStyle(
+    () => ({ minWidth: animatedWidth.value }),
+    [animatedWidth],
+  );
+
   const textStyle = useMemo(
     () => ({
       ...nfStyle,
@@ -213,7 +239,7 @@ export const TimeFlow = ({
   });
 
   return (
-    <View
+    <Animated.View
       accessible
       accessibilityRole="text"
       accessibilityLabel={accessibilityLabel}
@@ -226,8 +252,8 @@ export const TimeFlow = ({
           marginBottom: -expansionBottom,
           position: "relative",
           overflow: "hidden",
-          minWidth: contentWidth,
         },
+        animatedWidthStyle,
       ]}
     >
       <GradientMask
@@ -241,6 +267,6 @@ export const TimeFlow = ({
           {slots}
         </View>
       </GradientMask>
-    </View>
+    </Animated.View>
   );
 };

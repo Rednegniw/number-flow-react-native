@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { type LayoutChangeEvent, Text, View } from "react-native";
+import Animated, { makeMutable, useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { getFormatCharacters } from "../core/intlHelpers";
 import { computeKeyedLayout } from "../core/layout";
 import { detectNumberingSystem, getDigitStrings } from "../core/numerals";
@@ -110,6 +111,31 @@ export const NumberFlow = ({
     onAnimationsFinish,
   });
 
+  // Animate container minWidth so width changes are smooth instead of snapping
+  const [animatedWidth] = useState(() => makeMutable(contentWidth));
+  const prevWidthRef = useRef(contentWidth);
+
+  useLayoutEffect(() => {
+    if (prevWidthRef.current !== contentWidth) {
+      const shouldAnimate = prevWidthRef.current > 0;
+      prevWidthRef.current = contentWidth;
+
+      if (shouldAnimate) {
+        animatedWidth.value = withTiming(contentWidth, {
+          duration: resolvedTransformTiming.duration,
+          easing: resolvedTransformTiming.easing,
+        });
+      } else {
+        animatedWidth.value = contentWidth;
+      }
+    }
+  }, [contentWidth, resolvedTransformTiming, animatedWidth]);
+
+  const animatedWidthStyle = useAnimatedStyle(
+    () => ({ minWidth: animatedWidth.value }),
+    [animatedWidth],
+  );
+
   const textStyle = useMemo(
     () => ({
       ...nfStyle,
@@ -193,7 +219,7 @@ export const NumberFlow = ({
   });
 
   return (
-    <View
+    <Animated.View
       accessible
       accessibilityRole="text"
       accessibilityLabel={accessibilityLabel}
@@ -206,8 +232,8 @@ export const NumberFlow = ({
           marginBottom: -expansionBottom,
           position: "relative",
           overflow: "hidden",
-          minWidth: contentWidth,
         },
+        animatedWidthStyle,
       ]}
     >
       <GradientMask
@@ -221,6 +247,6 @@ export const NumberFlow = ({
           {slots}
         </View>
       </GradientMask>
-    </View>
+    </Animated.View>
   );
 };
