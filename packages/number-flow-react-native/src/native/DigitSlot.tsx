@@ -48,10 +48,13 @@ interface DigitElementProps {
 
 const DigitElement = React.memo(
   ({ digitString, yValue, opacityValue, textStyle }: DigitElementProps) => {
-    const animatedStyle = useAnimatedStyle(() => ({
-      transform: [{ translateY: yValue.value }],
-      opacity: opacityValue.value,
-    }));
+    const animatedStyle = useAnimatedStyle(
+      () => ({
+        transform: [{ translateY: yValue.value }],
+        opacity: opacityValue.value,
+      }),
+      [yValue, opacityValue],
+    );
 
     return (
       <Animated.View style={[styles.digitView, animatedStyle]}>
@@ -200,18 +203,24 @@ export const DigitSlot = React.memo(
       }
     }, [charWidth, exiting, transformTiming, animatedClipWidth]);
 
-    const animatedStyle = useAnimatedStyle(() => ({
-      transform: [{ translateX: animatedX.value }, { translateY: -effectiveMaskTop }],
-      opacity: slotOpacity.value,
-    }));
+    const animatedStyle = useAnimatedStyle(
+      () => ({
+        transform: [{ translateX: animatedX.value }, { translateY: -effectiveMaskTop }],
+        opacity: slotOpacity.value,
+      }),
+      [animatedX, effectiveMaskTop, slotOpacity],
+    );
 
     const expandedHeight = effectiveLH + effectiveMaskTop + effectiveMaskBottom;
 
-    const animatedClipStyle = useAnimatedStyle(() => ({
-      overflow: "hidden" as const,
-      height: expandedHeight,
-      width: animatedClipWidth.value,
-    }));
+    const animatedClipStyle = useAnimatedStyle(
+      () => ({
+        overflow: "hidden" as const,
+        height: expandedHeight,
+        width: animatedClipWidth.value,
+      }),
+      [expandedHeight, animatedClipWidth],
+    );
 
     const digitElements = useMemo(
       () =>
