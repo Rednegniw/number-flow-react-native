@@ -1,4 +1,5 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { Platform } from "react-native";
 import { DemoScreen } from "../screens/DemoScreen";
 import { HomeScreen } from "../screens/HomeScreen";
 import { colors } from "../theme/colors";
@@ -6,6 +7,10 @@ import { FONT_SEMIBOLD } from "../theme/fonts";
 import type { RootStackParamList } from "./types";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+// Lazy-import ShowcaseScreen to avoid pulling in @shopify/react-native-skia on web
+const LazyShowcase =
+  Platform.OS === "web" ? undefined : require("../screens/ShowcaseScreen").ShowcaseScreen;
 
 export const RootNavigator = () => (
   <Stack.Navigator
@@ -19,5 +24,8 @@ export const RootNavigator = () => (
   >
     <Stack.Screen component={HomeScreen} name="Home" options={{ headerShown: false }} />
     <Stack.Screen component={DemoScreen} name="Demo" />
+    {LazyShowcase && (
+      <Stack.Screen component={LazyShowcase} name="Showcase" options={{ headerShown: false }} />
+    )}
   </Stack.Navigator>
 );

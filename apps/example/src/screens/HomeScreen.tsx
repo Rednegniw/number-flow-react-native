@@ -1,6 +1,6 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback } from "react";
-import { SectionList, Text } from "react-native";
+import { Platform, SectionList, Text } from "react-native";
 import Animated, { Easing, FadeIn, FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { RipplePressable } from "../components/RipplePressable";
@@ -23,7 +23,9 @@ for (const section of DEMO_SECTIONS) {
 
 const STAGGER_DELAY = 60;
 const STAGGER_DURATION = 400;
-const STAGGER_EASING = Easing.out(Easing.cubic);
+// cubic-bezier equivalent of Easing.out(Easing.cubic), so Reanimated can map
+// it to a CSS cubic-bezier() on web instead of warning about unsupported easing
+const STAGGER_EASING = Easing.bezier(0.33, 1, 0.68, 1);
 
 const DemoCard = ({ entry, onPress }: { entry: DemoEntry; onPress: () => void }) => {
   const staggerIndex = STAGGER_INDICES.get(entry.key) ?? 0;
@@ -99,7 +101,9 @@ const SectionHeader = ({ title }: { title: string }) => {
   );
 };
 
-const ListHeader = () => (
+const isWeb = Platform.OS === "web";
+
+const ListHeader = ({ onShowcase }: { onShowcase: () => void }) => (
   <Animated.View entering={FadeIn.duration(300)} style={{ paddingHorizontal: 4, paddingBottom: 4 }}>
     <Text
       style={{
@@ -121,6 +125,40 @@ const ListHeader = () => (
     >
       Animated number transitions
     </Text>
+
+    {/* Showcase button — hidden on web (requires Skia) */}
+    {!isWeb && (
+      <RipplePressable
+        onPress={onShowcase}
+        style={{
+          backgroundColor: "#0A0A0A",
+          borderRadius: 14,
+          padding: 16,
+          marginTop: 16,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 16,
+            fontFamily: FONT_SEMIBOLD,
+            color: "#FFFFFF",
+          }}
+        >
+          Showcase
+        </Text>
+        <Text
+          style={{
+            fontSize: 13,
+            fontFamily: FONT_REGULAR,
+            color: "#9CA3AF",
+            marginTop: 4,
+            lineHeight: 18,
+          }}
+        >
+          Cinematic auto-playing demo reel
+        </Text>
+      </RipplePressable>
+    )}
   </Animated.View>
 );
 
@@ -150,7 +188,7 @@ export const HomeScreen = ({ navigation }: Props) => {
         gap: 10,
       }}
       keyExtractor={keyExtractor}
-      ListHeaderComponent={ListHeader}
+      ListHeaderComponent={<ListHeader onShowcase={() => navigation.navigate("Showcase")} />}
       renderItem={renderItem}
       renderSectionHeader={renderSectionHeader}
       sections={DEMO_SECTIONS}
