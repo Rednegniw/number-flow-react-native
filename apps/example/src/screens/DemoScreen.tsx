@@ -1,12 +1,14 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useLayoutEffect, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Platform, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { type Renderer, RendererToggle } from "../components/RendererToggle";
 import { findDemoEntry } from "../config/demoRegistry";
 import type { RootStackParamList } from "../navigation/types";
 import { colors } from "../theme/colors";
 import { FONT_REGULAR } from "../theme/fonts";
+
+const isWeb = Platform.OS === "web";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Demo">;
 
@@ -19,12 +21,14 @@ export const DemoScreen = ({ route, navigation }: Props) => {
   useLayoutEffect(() => {
     navigation.setOptions({
       title: entry?.title ?? "Demo",
-      headerRight: () => (
-        <RendererToggle
-          onToggle={() => setRenderer((r) => (r === "native" ? "skia" : "native"))}
-          value={renderer}
-        />
-      ),
+      headerRight: isWeb
+        ? undefined
+        : () => (
+            <RendererToggle
+              onToggle={() => setRenderer((r) => (r === "native" ? "skia" : "native"))}
+              value={renderer}
+            />
+          ),
     });
   }, [navigation, entry, renderer]);
 
@@ -36,7 +40,8 @@ export const DemoScreen = ({ route, navigation }: Props) => {
     );
   }
 
-  const DemoComponent = renderer === "skia" ? entry.SkiaComponent : entry.NativeComponent;
+  const effectiveRenderer = isWeb ? "native" : renderer;
+  const DemoComponent = effectiveRenderer === "skia" ? entry.SkiaComponent : entry.NativeComponent;
 
   return (
     <ScrollView
