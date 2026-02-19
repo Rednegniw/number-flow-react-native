@@ -1,4 +1,6 @@
 {
   "main": "../lib/module/native/index.js",
+  "react-native": "../src/native/index.ts",
+  "browser": "../src/native/index.ts",
   "types": "../lib/typescript/native/index.d.ts"
 }

@@ -11,18 +11,21 @@
     ".": {
       "source": "./src/index.ts",
       "react-native": "./src/index.ts",
+      "browser": "./src/index.ts",
       "types": "./lib/typescript/index.d.ts",
       "default": "./lib/module/index.js"
     },
     "./skia": {
       "source": "./src/skia/index.ts",
       "react-native": "./src/skia/index.ts",
+      "browser": "./src/skia/index.ts",
       "types": "./lib/typescript/skia/index.d.ts",
       "default": "./lib/module/skia/index.js"
     },
     "./native": {
       "source": "./src/native/index.ts",
       "react-native": "./src/native/index.ts",
+      "browser": "./src/native/index.ts",
       "types": "./lib/typescript/native/index.d.ts",
       "default": "./lib/module/native/index.js"
     },
