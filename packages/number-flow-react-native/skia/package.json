@@ -1,4 +1,6 @@
 {
   "main": "../lib/module/skia/index.js",
+  "react-native": "../src/skia/index.ts",
+  "browser": "../src/skia/index.ts",
   "types": "../lib/typescript/skia/index.d.ts"
 }
