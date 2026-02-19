@@ -117,7 +117,7 @@ export const DigitSlot = React.memo(
           digitYTransforms[n].value = [{ translateY: clamped * lh }];
         }
       },
-      [metrics.lineHeight, resolvedDigitCount],
+      [currentDigitSV, animDelta, metrics.lineHeight, resolvedDigitCount],
     );
 
     const animatedX = useAnimatedX(targetX, exiting, transformTiming);
