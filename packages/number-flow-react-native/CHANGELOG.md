@@ -1,5 +1,11 @@
 # number-flow-react-native
 
+## 0.1.7
+
+### Patch Changes
+
+- Add explicit dependency arrays to all `useAnimatedStyle` hooks in native renderer, enabling web support without the Reanimated Babel plugin (e.g. Sandpack, plain webpack/Vite setups).
+
 ## 0.1.6
 
 ### Patch Changes
