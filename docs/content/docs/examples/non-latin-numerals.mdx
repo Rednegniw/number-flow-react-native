@@ -1,20 +1,22 @@
 ---
 title: Non-Latin Numerals
 description: 34 Unicode numeral systems including Arabic-Indic, Devanagari, and Thai
+full: true
 ---
 
 The library auto-detects the numeral system from the `locales` and `format` props and renders the appropriate Unicode digits. 34 numeral systems are supported.
 
-```SnackPlayer name=Non-Latin%20Numerals dependencies=number-flow-react-native,react-native-reanimated
+```LiveExample
 import { useState } from 'react';
-import { View, Button, Text } from 'react-native';
+import { View, Text } from 'react-native';
 import { NumberFlow } from 'number-flow-react-native';
+import { ExampleLayout, Button } from './ExampleUI';
 
 const numeralSystems = [
   { locale: 'en-US', label: 'Latin (0-9)' },
-  { locale: 'ar-SA', label: 'Arabic-Indic (٠-٩)' },
-  { locale: 'hi-IN', label: 'Devanagari (०-९)' },
-  { locale: 'th-TH', label: 'Thai (๐-๙)' },
+  { locale: 'ar-SA', label: 'Arabic-Indic' },
+  { locale: 'hi-IN', label: 'Devanagari' },
+  { locale: 'th-TH', label: 'Thai' },
 ];
 
 export default function NonLatinNumerals() {
@@ -24,12 +26,12 @@ export default function NonLatinNumerals() {
   const current = numeralSystems[localeIndex];
 
   return (
-    <View style={{ alignItems: 'center', gap: 24, padding: 32 }}>
-      <Text style={{ fontSize: 14, color: '#666' }}>{current.label}</Text>
+    <ExampleLayout>
+      <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>{current.label}</Text>
       <NumberFlow
         value={value}
         locales={current.locale}
-        style={{ fontSize: 40, fontFamily: 'System', color: '#000' }}
+        style={{ fontSize: 40, color: '#fff' }}
       />
 
       {/* Locale selector */}
@@ -39,7 +41,6 @@ export default function NonLatinNumerals() {
             key={ns.locale}
             title={ns.label}
             onPress={() => setLocaleIndex(i)}
-            color={i === localeIndex ? '#007AFF' : '#999'}
           />
         ))}
       </View>
@@ -48,7 +49,7 @@ export default function NonLatinNumerals() {
         title="Randomize"
         onPress={() => setValue(Math.floor(Math.random() * 10000000))}
       />
-    </View>
+    </ExampleLayout>
   );
 }
 ```

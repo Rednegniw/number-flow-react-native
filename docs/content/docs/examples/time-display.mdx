@@ -1,14 +1,16 @@
 ---
 title: Time Display
 description: Animated clock with TimeFlow
+full: true
 ---
 
 `TimeFlow` renders animated HH:MM:SS displays with independently rolling digit segments. It auto-constrains digits (tens of minutes: 0–5, tens of hours: 0–2) for correct clock behavior.
 
-```SnackPlayer name=Time%20Display dependencies=number-flow-react-native,react-native-reanimated
+```LiveExample
 import { useEffect, useState } from 'react';
-import { View, Text, Button } from 'react-native';
+import { View, Text } from 'react-native';
 import { TimeFlow } from 'number-flow-react-native';
+import { ExampleLayout, Button } from './ExampleUI';
 
 export default function TimeDisplay() {
   const [now, setNow] = useState(Date.now());
@@ -20,16 +22,16 @@ export default function TimeDisplay() {
   }, []);
 
   return (
-    <View style={{ alignItems: 'center', gap: 24, padding: 32 }}>
-      {/* 24-hour clock */}
+    <ExampleLayout>
+      {/* Clock display */}
       <View style={{ alignItems: 'center', gap: 4 }}>
-        <Text style={{ fontSize: 14, color: '#666' }}>
+        <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>
           {is24h ? '24-hour' : '12-hour'}
         </Text>
         <TimeFlow
           timestamp={now}
           is24Hour={is24h}
-          style={{ fontSize: 56, fontWeight: '600', color: '#1a1a1a' }}
+          style={{ fontSize: 56, fontWeight: '600', color: '#fff' }}
         />
       </View>
 
@@ -37,7 +39,7 @@ export default function TimeDisplay() {
         title={is24h ? 'Switch to 12h' : 'Switch to 24h'}
         onPress={() => setIs24h(v => !v)}
       />
-    </View>
+    </ExampleLayout>
   );
 }
 ```

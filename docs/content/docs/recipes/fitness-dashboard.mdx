@@ -1,14 +1,16 @@
 ---
 title: Fitness Dashboard
 description: Multi-metric fitness display with calories, distance, and heart rate
+full: true
 ---
 
 A dark fitness dashboard with vibrant metric cards, live-updating values, and the `continuous` odometer effect for accumulating metrics.
 
-```SnackPlayer name=Fitness%20Dashboard dependencies=number-flow-react-native,react-native-reanimated
+```LiveExample
 import { useEffect, useState } from 'react';
 import { View, Text, Platform } from 'react-native';
 import { NumberFlow } from 'number-flow-react-native';
+import { ExampleLayout } from './ExampleUI';
 
 interface Metric {
   label: string;
@@ -66,13 +68,7 @@ export default function FitnessDashboard() {
   ];
 
   return (
-    <View style={{
-      flex: 1,
-      justifyContent: 'center',
-      backgroundColor: '#09090b',
-      padding: 20,
-      gap: 12,
-    }}>
+    <ExampleLayout>
       {/* Header */}
       <View style={{ paddingHorizontal: 4, marginBottom: 8 }}>
         <Text style={{
@@ -149,7 +145,7 @@ export default function FitnessDashboard() {
           </View>
         </View>
       ))}
-    </View>
+    </ExampleLayout>
   );
 }
 ```

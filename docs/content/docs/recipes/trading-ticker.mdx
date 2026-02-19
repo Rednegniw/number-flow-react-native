@@ -1,15 +1,17 @@
 ---
 title: Trading Ticker
 description: Real-time stock price ticker with color-coded trend
+full: true
 ---
 
 A dark-themed financial terminal with monospaced pricing, color-coded trend indicators, and a dynamic `trend` function that directs digit spin based on price movement.
 
-```SnackPlayer name=Trading%20Ticker dependencies=number-flow-react-native,react-native-reanimated
+```LiveExample
 import { useEffect, useState } from 'react';
 import { View, Text, Platform } from 'react-native';
 import { NumberFlow } from 'number-flow-react-native';
 import type { Trend } from 'number-flow-react-native';
+import { ExampleLayout } from './ExampleUI';
 
 interface Stock {
   symbol: string;
@@ -54,12 +56,7 @@ export default function TradingTicker() {
   }, []);
 
   return (
-    <View style={{
-      flex: 1,
-      justifyContent: 'center',
-      backgroundColor: '#09090b',
-      padding: 20,
-    }}>
+    <ExampleLayout>
       {/* Header */}
       <View style={{
         flexDirection: 'row',
@@ -158,7 +155,7 @@ export default function TradingTicker() {
           </View>
         );
       })}
-    </View>
+    </ExampleLayout>
   );
 }
 ```

@@ -1,26 +1,28 @@
 ---
 title: Trend Control
 description: Control digit spin direction with static values or dynamic functions
+full: true
 ---
 
 The `trend` prop controls which direction digits spin during transitions. You can pass a static value or a function for dynamic control.
 
-```SnackPlayer name=Trend%20Control dependencies=number-flow-react-native,react-native-reanimated
+```LiveExample
 import { useState } from 'react';
-import { View, Button, Text } from 'react-native';
+import { View, Text } from 'react-native';
 import { NumberFlow } from 'number-flow-react-native';
 import type { Trend } from 'number-flow-react-native';
+import { ExampleLayout, Button } from './ExampleUI';
 
 export default function TrendControl() {
   const [value, setValue] = useState(50);
   const [trend, setTrend] = useState<Trend | undefined>(undefined);
 
   return (
-    <View style={{ alignItems: 'center', gap: 24, padding: 32 }}>
+    <ExampleLayout>
       <NumberFlow
         value={value}
         trend={trend}
-        style={{ fontSize: 48, fontFamily: 'System', color: '#000' }}
+        style={{ fontSize: 48, color: '#fff' }}
       />
 
       {/* Value controls */}
@@ -32,15 +34,15 @@ export default function TrendControl() {
 
       {/* Trend controls */}
       <View style={{ gap: 8 }}>
-        <Text style={{ fontSize: 14, color: '#666', textAlign: 'center' }}>Trend Direction</Text>
+        <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', textAlign: 'center' }}>Trend Direction</Text>
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Button title="Auto" onPress={() => setTrend(undefined)} color={trend === undefined ? '#007AFF' : '#999'} />
-          <Button title="Up (1)" onPress={() => setTrend(1)} color={trend === 1 ? '#007AFF' : '#999'} />
-          <Button title="Down (-1)" onPress={() => setTrend(-1)} color={trend === -1 ? '#007AFF' : '#999'} />
-          <Button title="Shortest (0)" onPress={() => setTrend(0)} color={trend === 0 ? '#007AFF' : '#999'} />
+          <Button title="Auto" onPress={() => setTrend(undefined)} />
+          <Button title="Up (1)" onPress={() => setTrend(1)} />
+          <Button title="Down (-1)" onPress={() => setTrend(-1)} />
+          <Button title="Shortest (0)" onPress={() => setTrend(0)} />
         </View>
       </View>
-    </View>
+    </ExampleLayout>
   );
 }
 ```
@@ -66,6 +68,6 @@ You can also pass a function that receives the previous and next values:
     if (next < prev) return -1; // Price down → spin down
     return 0;                    // Same → shortest path
   }}
-  style={{ fontSize: 36, fontFamily: 'System', color: '#000' }}
+  style={{ fontSize: 36, color: '#fff' }}
 />
 ```

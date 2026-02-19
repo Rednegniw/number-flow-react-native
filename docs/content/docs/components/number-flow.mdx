@@ -13,27 +13,28 @@ import { NumberFlow } from 'number-flow-react-native';
 
 ## Basic Usage
 
-```SnackPlayer name=NumberFlow%20Basic dependencies=number-flow-react-native,react-native-reanimated
+```LiveExample
 import { useState } from 'react';
-import { View, Button } from 'react-native';
+import { View } from 'react-native';
 import { NumberFlow } from 'number-flow-react-native';
+import { ExampleLayout, Button } from './ExampleUI';
 
 export default function PriceCounter() {
   const [price, setPrice] = useState(42.99);
 
   return (
-    <View style={{ alignItems: 'center', gap: 16, padding: 32 }}>
+    <ExampleLayout>
       <NumberFlow
         value={price}
         format={{ style: 'currency', currency: 'USD' }}
-        style={{ fontSize: 48, fontWeight: '600', color: '#1a1a1a' }}
+        style={{ fontSize: 48, fontWeight: '600', color: '#fff' }}
       />
       <View style={{ flexDirection: 'row', gap: 8 }}>
         <Button title="-1" onPress={() => setPrice(v => v - 1)} />
         <Button title="+1" onPress={() => setPrice(v => v + 1)} />
         <Button title="Random" onPress={() => setPrice(Math.random() * 100)} />
       </View>
-    </View>
+    </ExampleLayout>
   );
 }
 ```

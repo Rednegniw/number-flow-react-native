@@ -1,31 +1,33 @@
 ---
 title: Basic Number
 description: Simple animated number display with increment/decrement controls
+full: true
 ---
 
 The simplest `NumberFlow` usage — a number that rolls digit-by-digit when the value changes.
 
-```SnackPlayer name=Basic%20Number dependencies=number-flow-react-native,react-native-reanimated
+```LiveExample
 import { useState } from 'react';
-import { View, Button } from 'react-native';
+import { View } from 'react-native';
 import { NumberFlow } from 'number-flow-react-native';
+import { ExampleLayout, Button } from './ExampleUI';
 
 export default function BasicNumber() {
   const [value, setValue] = useState(42);
 
   return (
-    <View style={{ alignItems: 'center', gap: 16, padding: 32 }}>
+    <ExampleLayout>
       <NumberFlow
         value={value}
-        style={{ fontSize: 48, fontFamily: 'System', color: '#000' }}
+        style={{ fontSize: 48, fontWeight: '600', color: '#fff' }}
       />
-      <View style={{ flexDirection: 'row', gap: 8 }}>
+      <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'center' }}>
         <Button title="-10" onPress={() => setValue(v => v - 10)} />
         <Button title="-1" onPress={() => setValue(v => v - 1)} />
         <Button title="+1" onPress={() => setValue(v => v + 1)} />
         <Button title="+10" onPress={() => setValue(v => v + 10)} />
       </View>
-    </View>
+    </ExampleLayout>
   );
 }
 ```

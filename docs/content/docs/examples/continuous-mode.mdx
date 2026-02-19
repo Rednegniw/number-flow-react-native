@@ -1,36 +1,38 @@
 ---
 title: Continuous Mode
 description: Full-rotation cascading digits for odometer-like transitions
+full: true
 ---
 
 Set `continuous={true}` to make unchanged lower-significance digits spin through a full rotation during transitions, creating an odometer-like effect.
 
-```SnackPlayer name=Continuous%20Mode dependencies=number-flow-react-native,react-native-reanimated
+```LiveExample
 import { useState } from 'react';
-import { View, Button, Text } from 'react-native';
+import { View, Text } from 'react-native';
 import { NumberFlow } from 'number-flow-react-native';
+import { ExampleLayout, Button } from './ExampleUI';
 
 export default function ContinuousMode() {
   const [value, setValue] = useState(100);
 
   return (
-    <View style={{ alignItems: 'center', gap: 24, padding: 32 }}>
+    <ExampleLayout>
       {/* With continuous mode */}
       <View style={{ alignItems: 'center', gap: 8 }}>
-        <Text style={{ fontSize: 14, color: '#666' }}>continuous={'{true}'}</Text>
+        <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>continuous={'{true}'}</Text>
         <NumberFlow
           value={value}
           continuous
-          style={{ fontSize: 48, fontFamily: 'System', color: '#000' }}
+          style={{ fontSize: 48, color: '#fff' }}
         />
       </View>
 
       {/* Without continuous mode */}
       <View style={{ alignItems: 'center', gap: 8 }}>
-        <Text style={{ fontSize: 14, color: '#666' }}>continuous={'{false}'}</Text>
+        <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>continuous={'{false}'}</Text>
         <NumberFlow
           value={value}
-          style={{ fontSize: 48, fontFamily: 'System', color: '#000' }}
+          style={{ fontSize: 48, color: '#fff' }}
         />
       </View>
 
@@ -39,7 +41,7 @@ export default function ContinuousMode() {
         <Button title="+10" onPress={() => setValue(v => v + 10)} />
         <Button title="+100" onPress={() => setValue(v => v + 100)} />
       </View>
-    </View>
+    </ExampleLayout>
   );
 }
 ```

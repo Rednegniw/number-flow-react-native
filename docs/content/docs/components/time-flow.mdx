@@ -15,10 +15,11 @@ import { TimeFlow } from 'number-flow-react-native';
 
 A live clock that updates every second:
 
-```SnackPlayer name=TimeFlow%20Clock dependencies=number-flow-react-native,react-native-reanimated
+```LiveExample
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { TimeFlow } from 'number-flow-react-native';
+import { ExampleLayout } from './ExampleUI';
 
 export default function LiveClock() {
   const [now, setNow] = useState(Date.now());
@@ -29,12 +30,12 @@ export default function LiveClock() {
   }, []);
 
   return (
-    <View style={{ alignItems: 'center', padding: 24 }}>
+    <ExampleLayout>
       <TimeFlow
         timestamp={now}
-        style={{ fontSize: 48, fontWeight: '600', color: '#1a1a1a' }}
+        style={{ fontSize: 48, fontWeight: '600', color: '#fff' }}
       />
-    </View>
+    </ExampleLayout>
   );
 }
 ```

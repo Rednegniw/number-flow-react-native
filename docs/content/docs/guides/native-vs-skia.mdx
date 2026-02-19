@@ -15,7 +15,7 @@ The library ships two rendering backends that share the same core animation engi
 | Worklet scrubbing | Not available | Yes (`sharedValue` prop) |
 | Text styling | `TextStyle` (fontFamily, system fonts) | `SkFont` (requires font file) |
 | Gradient mask | MaskedView gradient (optional) or per-digit opacity fallback | Skia `LinearGradient` + DstIn blending |
-| Expo Snack | Full support | Limited (Skia WASM ~3MB) |
+| Web support | Full (react-native-web) | Not available (Skia native only) |
 | Best for | Standard UI, quick setup | Charts, complex Skia UIs, many instances |
 
 ## Choosing a renderer
@@ -24,7 +24,7 @@ The library ships two rendering backends that share the same core animation engi
 
 - **Quick setup** — system fonts work out of the box, no font file needed
 - **Standard UI** — card layouts, list items, form fields where the number is part of regular React Native views
-- **Expo Snack demos** — Skia's WASM bundle is ~3MB, making Snack embeds slow to load
+- **Web support** — works with react-native-web out of the box
 - **Fewer dependencies** — no need to add `@shopify/react-native-skia`
 
 ### When to choose Skia

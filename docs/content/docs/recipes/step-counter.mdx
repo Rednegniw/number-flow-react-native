@@ -1,14 +1,16 @@
 ---
 title: Step Counter
 description: Animated step counter with daily goal progress
+full: true
 ---
 
 A clean health-app style step counter with large rounded typography, an animated progress bar, and the signature odometer roll for accumulating step counts.
 
-```SnackPlayer name=Step%20Counter dependencies=number-flow-react-native,react-native-reanimated
+```LiveExample
 import { useState } from 'react';
 import { View, Text, Pressable, Platform } from 'react-native';
 import { NumberFlow } from 'number-flow-react-native';
+import { ExampleLayout } from './ExampleUI';
 
 const DAILY_GOAL = 10000;
 
@@ -27,14 +29,7 @@ export default function StepCounter() {
   };
 
   return (
-    <View style={{
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: '#0a0a0a',
-      padding: 32,
-      gap: 40,
-    }}>
+    <ExampleLayout>
       {/* Header */}
       <View style={{ alignItems: 'center', gap: 4 }}>
         <Text style={{
@@ -141,7 +136,7 @@ export default function StepCounter() {
           </Text>
         </Pressable>
       </View>
-    </View>
+    </ExampleLayout>
   );
 }
 ```

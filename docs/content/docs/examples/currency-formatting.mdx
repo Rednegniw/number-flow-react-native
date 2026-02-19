@@ -1,14 +1,16 @@
 ---
 title: Currency Formatting
 description: Animated currency display with locale-aware formatting
+full: true
 ---
 
 `NumberFlow` accepts `Intl.NumberFormatOptions` via the `format` prop. Combined with `locales`, you get locale-specific currency symbols, decimal separators, and grouping — all animating independently.
 
-```SnackPlayer name=Currency%20Formatting dependencies=number-flow-react-native,react-native-reanimated
+```LiveExample
 import { useState } from 'react';
-import { View, Button, Text } from 'react-native';
+import { View } from 'react-native';
 import { NumberFlow } from 'number-flow-react-native';
+import { ExampleLayout, Button } from './ExampleUI';
 
 const currencies = [
   { code: 'USD', locale: 'en-US', label: '$ USD' },
@@ -23,12 +25,12 @@ export default function CurrencyFormatting() {
   const currency = currencies[currencyIndex];
 
   return (
-    <View style={{ alignItems: 'center', gap: 24, padding: 32 }}>
+    <ExampleLayout>
       <NumberFlow
         value={amount}
         format={{ style: 'currency', currency: currency.code }}
         locales={currency.locale}
-        style={{ fontSize: 40, fontFamily: 'System', color: '#000' }}
+        style={{ fontSize: 40, color: '#fff' }}
       />
 
       {/* Currency selector */}
@@ -38,7 +40,6 @@ export default function CurrencyFormatting() {
             key={c.code}
             title={c.label}
             onPress={() => setCurrencyIndex(i)}
-            color={i === currencyIndex ? '#007AFF' : '#999'}
           />
         ))}
       </View>
@@ -49,7 +50,7 @@ export default function CurrencyFormatting() {
         <Button title="+100" onPress={() => setAmount(v => v + 100)} />
         <Button title="Random" onPress={() => setAmount(Math.random() * 10000)} />
       </View>
-    </View>
+    </ExampleLayout>
   );
 }
 ```
