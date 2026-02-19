@@ -4,7 +4,11 @@ description: Animated percentages and compact number formatting
 full: true
 ---
 
-`NumberFlow` supports all `Intl.NumberFormat` notation styles. This example shows `style: 'percent'` and `notation: 'compact'` side by side.
+`NumberFlow` supports all `Intl.NumberFormat` notation styles. This example shows `style: 'percent'` and `notation: 'compact'`.
+
+## Percentage
+
+`style: 'percent'` multiplies the value by 100 and appends `%`. Pass `0.42` to display `42.0%`.
 
 ```LiveExample
 import { useState } from 'react';
@@ -12,50 +16,55 @@ import { View, Text } from 'react-native';
 import { NumberFlow } from 'number-flow-react-native';
 import { ExampleLayout, Button } from './ExampleUI';
 
-export default function PercentageCompact() {
+export default function Percentage() {
   const [percent, setPercent] = useState(0.42);
-  const [bigNumber, setBigNumber] = useState(1500);
 
   return (
     <ExampleLayout>
-      {/* Percentage display */}
-      <View style={{ alignItems: 'center', gap: 8 }}>
-        <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>Percentage</Text>
-        <NumberFlow
-          value={percent}
-          format={{ style: 'percent', minimumFractionDigits: 1 }}
-          style={{ fontSize: 40, color: '#fff' }}
-        />
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Button title="-5%" onPress={() => setPercent(v => v - 0.05)} />
-          <Button title="+5%" onPress={() => setPercent(v => v + 0.05)} />
-        </View>
-      </View>
-
-      {/* Compact notation display */}
-      <View style={{ alignItems: 'center', gap: 8 }}>
-        <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>Compact Notation</Text>
-        <NumberFlow
-          value={bigNumber}
-          format={{ notation: 'compact', maximumFractionDigits: 1 }}
-          style={{ fontSize: 40, color: '#fff' }}
-        />
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Button title="1.5K" onPress={() => setBigNumber(1500)} />
-          <Button title="25K" onPress={() => setBigNumber(25000)} />
-          <Button title="1.2M" onPress={() => setBigNumber(1200000)} />
-          <Button title="3.5B" onPress={() => setBigNumber(3500000000)} />
-        </View>
+      <NumberFlow
+        value={percent}
+        format={{ style: 'percent', minimumFractionDigits: 1 }}
+        style={{ fontSize: 40, color: '#fff' }}
+      />
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <Button title="-5%" onPress={() => setPercent(v => v - 0.05)} />
+        <Button title="+5%" onPress={() => setPercent(v => v + 0.05)} />
       </View>
     </ExampleLayout>
   );
 }
 ```
 
-### How it works
+## Compact Notation
 
-- **Percentage:** `style: 'percent'` multiplies the value by 100 and appends `%`. Pass `0.42` to display `42.0%`.
-- **Compact:** `notation: 'compact'` abbreviates large numbers with locale-appropriate suffixes like `K`, `M`, `B`. The suffix characters animate in and out as the magnitude changes.
+`notation: 'compact'` abbreviates large numbers with locale-appropriate suffixes like `K`, `M`, `B`. The suffix characters animate in and out as the magnitude changes.
+
+```LiveExample
+import { useState } from 'react';
+import { View, Text } from 'react-native';
+import { NumberFlow } from 'number-flow-react-native';
+import { ExampleLayout, Button } from './ExampleUI';
+
+function randomBigNumber() {
+  const exponent = Math.floor(Math.random() * 7) + 3;
+  return Math.floor(Math.random() * 9 * 10 ** exponent + 10 ** exponent);
+}
+
+export default function CompactNotation() {
+  const [bigNumber, setBigNumber] = useState(() => randomBigNumber());
+
+  return (
+    <ExampleLayout>
+      <NumberFlow
+        value={bigNumber}
+        format={{ notation: 'compact', maximumFractionDigits: 1 }}
+        style={{ fontSize: 40, color: '#fff' }}
+      />
+      <Button title="Random number" onPress={() => setBigNumber(randomBigNumber())} />
+    </ExampleLayout>
+  );
+}
+```
 
 <Callout type="info">
 Compact notation suffixes are locale-dependent. For example, `en-US` uses "K", "M", "B" while `ja-JP` uses "万", "億".
