@@ -1,5 +1,11 @@
 # number-flow-react-native
 
+## 0.1.11
+
+### Patch Changes
+
+- Fix overlapping characters for multi-character currency symbols (e.g. "US$" in non-US locales). All formatToParts symbol strings are now split into individual characters to match the glyph measurement granularity.
+
 ## 0.1.10
 
 ### Patch Changes
