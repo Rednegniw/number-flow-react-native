@@ -96,6 +96,8 @@ export const TimeFlow = ({
     return computeKeyedLayout(keyedParts, metrics, containerWidth, textAlign);
   }, [metrics, keyedParts, containerWidth, textAlign]);
 
+  const contentWidth = useMemo(() => layout.reduce((sum, entry) => sum + entry.width, 0), [layout]);
+
   const pipeline = useFlowPipeline({
     keyedParts,
     trendValue: totalSeconds,
@@ -182,6 +184,7 @@ export const TimeFlow = ({
             marginBottom: -expansionBottom,
             position: "relative",
             overflow: "hidden",
+            minWidth: contentWidth,
           },
         ]}
       >
@@ -223,6 +226,7 @@ export const TimeFlow = ({
           marginBottom: -expansionBottom,
           position: "relative",
           overflow: "hidden",
+          minWidth: contentWidth,
         },
       ]}
     >

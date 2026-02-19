@@ -76,6 +76,11 @@ export const NumberFlow = ({
     return computeKeyedLayout(keyedParts, metrics, containerWidth, textAlign, digitStrings);
   }, [metrics, keyedParts, containerWidth, textAlign, digitStrings]);
 
+  // On web, all children are position:'absolute' so the container has 0 intrinsic
+  // width. With alignItems:'center' on a parent, the container collapses. Setting
+  // minWidth to the sum of character widths prevents the collapse.
+  const contentWidth = useMemo(() => layout.reduce((sum, entry) => sum + entry.width, 0), [layout]);
+
   const {
     resolvedSpinTiming,
     resolvedOpacityTiming,
@@ -158,6 +163,7 @@ export const NumberFlow = ({
             marginBottom: -expansionBottom,
             position: "relative",
             overflow: "hidden",
+            minWidth: contentWidth,
           },
         ]}
       >
@@ -200,6 +206,7 @@ export const NumberFlow = ({
           marginBottom: -expansionBottom,
           position: "relative",
           overflow: "hidden",
+          minWidth: contentWidth,
         },
       ]}
     >
