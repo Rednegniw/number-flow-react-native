@@ -1,14 +1,16 @@
 ---
 title: Countdown Timer
 description: Animated countdown timer using TimeFlow
+full: true
 ---
 
 A countdown timer using `TimeFlow` in MM:SS mode. Set `trend={-1}` to force all digits to always spin downward.
 
-```SnackPlayer name=Countdown%20Timer dependencies=number-flow-react-native,react-native-reanimated
+```LiveExample
 import { useEffect, useState } from 'react';
-import { View, Button } from 'react-native';
+import { View } from 'react-native';
 import { TimeFlow } from 'number-flow-react-native';
+import { ExampleLayout, Button } from './ExampleUI';
 
 export default function CountdownTimer() {
   const [remaining, setRemaining] = useState(300);
@@ -26,11 +28,11 @@ export default function CountdownTimer() {
   const secs = remaining % 60;
 
   return (
-    <View style={{ alignItems: 'center', gap: 24, padding: 32 }}>
+    <ExampleLayout>
       <TimeFlow
         minutes={mins}
         seconds={secs}
-        style={{ fontSize: 72, fontWeight: '700', color: remaining < 10 ? '#e53e3e' : '#1a1a1a' }}
+        style={{ fontSize: 72, fontWeight: '700', color: remaining < 10 ? '#ef4444' : '#fff' }}
         trend={-1}
       />
       <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -43,7 +45,7 @@ export default function CountdownTimer() {
           onPress={() => { setRunning(false); setRemaining(300); }}
         />
       </View>
-    </View>
+    </ExampleLayout>
   );
 }
 ```

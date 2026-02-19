@@ -1,47 +1,49 @@
 ---
 title: Scientific & Engineering Notation
 description: Animated numbers in scientific and engineering notation with superscript exponents
+full: true
 ---
 
 `NumberFlow` supports scientific and engineering notation via `Intl.NumberFormat`. Exponents are rendered automatically as superscripts at 60% scale.
 
-```SnackPlayer name=Scientific%20%26%20Engineering dependencies=number-flow-react-native,react-native-reanimated
+```LiveExample
 import { useState } from 'react';
-import { View, Button, Text } from 'react-native';
+import { View, Text } from 'react-native';
 import { NumberFlow } from 'number-flow-react-native';
+import { ExampleLayout, Button } from './ExampleUI';
 
 export default function ScientificEngineering() {
   const [value, setValue] = useState(6.022e23);
 
   return (
-    <View style={{ alignItems: 'center', gap: 32, padding: 32 }}>
+    <ExampleLayout>
       {/* Scientific notation */}
       <View style={{ alignItems: 'center', gap: 8 }}>
-        <Text style={{ fontSize: 14, color: '#666' }}>Scientific</Text>
+        <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>Scientific</Text>
         <NumberFlow
           value={value}
           format={{ notation: 'scientific', maximumFractionDigits: 3 }}
-          style={{ fontSize: 36, fontFamily: 'System', color: '#000' }}
+          style={{ fontSize: 36, color: '#fff' }}
         />
       </View>
 
       {/* Engineering notation */}
       <View style={{ alignItems: 'center', gap: 8 }}>
-        <Text style={{ fontSize: 14, color: '#666' }}>Engineering</Text>
+        <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>Engineering</Text>
         <NumberFlow
           value={value}
           format={{ notation: 'engineering', maximumFractionDigits: 2 }}
-          style={{ fontSize: 36, fontFamily: 'System', color: '#000' }}
+          style={{ fontSize: 36, color: '#fff' }}
         />
       </View>
 
-      <View style={{ flexDirection: 'row', gap: 8 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
         <Button title="6.022e23" onPress={() => setValue(6.022e23)} />
         <Button title="1.38e-23" onPress={() => setValue(1.38e-23)} />
         <Button title="9.81" onPress={() => setValue(9.81)} />
         <Button title="299792458" onPress={() => setValue(299792458)} />
       </View>
-    </View>
+    </ExampleLayout>
   );
 }
 ```

@@ -1,14 +1,16 @@
 ---
 title: Currency Converter
 description: Animated currency conversion between multiple currencies
+full: true
 ---
 
 A minimal currency converter with large animated values, locale-aware formatting, and a clean card-based layout. Watch the decimal separators, currency symbols, and digit grouping animate when switching between currencies.
 
-```SnackPlayer name=Currency%20Converter dependencies=number-flow-react-native,react-native-reanimated
+```LiveExample
 import { useState } from 'react';
 import { View, Text, Pressable, Platform } from 'react-native';
 import { NumberFlow } from 'number-flow-react-native';
+import { ExampleLayout } from './ExampleUI';
 
 const currencies = [
   { code: 'USD', locale: 'en-US', rate: 1, flag: '🇺🇸' },
@@ -34,13 +36,7 @@ export default function CurrencyConverter() {
   };
 
   return (
-    <View style={{
-      flex: 1,
-      justifyContent: 'center',
-      backgroundColor: '#fafaf9',
-      padding: 24,
-      gap: 20,
-    }}>
+    <ExampleLayout>
       {/* From card */}
       <View style={{
         backgroundColor: '#ffffff',
@@ -160,7 +156,7 @@ export default function CurrencyConverter() {
           );
         })}
       </View>
-    </View>
+    </ExampleLayout>
   );
 }
 
