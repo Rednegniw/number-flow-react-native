@@ -1,11 +1,18 @@
 {
   "name": "number-flow-react-native-monorepo",
+  "version": "1.0.0",
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.0",
+    "@changesets/changelog-github": "^0.5.2",
+    "@changesets/cli": "^2.29.0",
+    "lefthook": "^2.1.1"
+  },
+  "overrides": {
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-native": "0.81.5"
+  },
   "private": true,
-  "workspaces": [
-    "packages/*",
-    "apps/*",
-    "docs"
-  ],
   "scripts": {
     "prepare": "lefthook install",
     "lib": "bun --cwd packages/number-flow-react-native",
@@ -20,18 +27,12 @@
     "android": "expo run:android",
     "ios": "expo run:ios"
   },
-  "devDependencies": {
-    "@biomejs/biome": "^2.4.0",
-    "@changesets/changelog-github": "^0.5.2",
-    "@changesets/cli": "^2.29.0",
-    "lefthook": "^2.1.1"
-  },
   "trustedDependencies": [
     "@shopify/react-native-skia"
   ],
-  "overrides": {
-    "react": "19.1.0",
-    "react-native": "0.81.5"
-  },
-  "version": "1.0.0"
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "docs"
+  ]
 }
