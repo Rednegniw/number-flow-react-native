@@ -62,13 +62,10 @@ export function formatToKeyedParts(
       continue;
     }
 
-    // Flatten digit sequences into individual characters
-    if (type === "integer" || type === "fraction" || type === "exponentInteger") {
-      for (const char of part.value) {
-        flatChars.push({ sourceType: type, char });
-      }
-    } else {
-      flatChars.push({ sourceType: type, char: part.value });
+    // Flatten all parts into individual characters so each char has a
+    // corresponding entry in the glyph measurement map (charWidths).
+    for (const char of part.value) {
+      flatChars.push({ sourceType: type, char });
     }
   }
 
