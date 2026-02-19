@@ -2,7 +2,7 @@ export const SANDPACK_DEPENDENCIES: Record<string, string> = {
   "react-native-web": "~0.19.13",
   "react-native-reanimated": "~4.1.0",
   "react-native-worklets": "~0.7.0",
-  "number-flow-react-native": "0.1.10",
+  "number-flow-react-native": "^0.1.11",
 };
 
 export const VITE_CONFIG_CODE = `import { defineConfig } from "vite";
