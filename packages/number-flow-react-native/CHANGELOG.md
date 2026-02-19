@@ -1,5 +1,11 @@
 # number-flow-react-native
 
+## 0.1.10
+
+### Patch Changes
+
+- [`07e01d8`](https://github.com/Rednegniw/number-flow-react-native/commit/07e01d801540949f46c07feec39f36bf39a3bc94) Thanks [@Rednegniw](https://github.com/Rednegniw)! - Animate container width transitions instead of snapping when digit widths change
+
 ## 0.1.9
 
 ### Patch Changes
