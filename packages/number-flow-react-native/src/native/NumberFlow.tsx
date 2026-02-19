@@ -7,7 +7,7 @@ import { useFlowPipeline } from "../core/useFlowPipeline";
 import { useNumberFormatting } from "../core/useNumberFormatting";
 import { getDigitCount } from "../core/utils";
 import { warnOnce } from "../core/warnings";
-import MaskedView from "./MaskedView";
+import { GradientMask } from "./GradientMask";
 import { renderSlots } from "./renderSlots";
 import type { NumberFlowProps } from "./types";
 import { useMeasuredGlyphMetrics } from "./useMeasuredGlyphMetrics";
@@ -118,39 +118,6 @@ export const NumberFlow = ({
   const maskBottom = adaptiveMask.bottom;
   const { expansionTop, expansionBottom } = adaptiveMask;
 
-  const topSteps = Math.max(2, Math.round(maskTop));
-  const bottomSteps = Math.max(2, Math.round(maskBottom));
-
-  const gradientMaskElement = useMemo(() => {
-    if (!resolvedMask || !metrics) return null;
-    return (
-      <View style={{ flex: 1, flexDirection: "column" }}>
-        {/* Top fade: transparent -> opaque */}
-        {Array.from({ length: topSteps }, (_, i) => (
-          <View
-            key={`t${i}`}
-            style={{
-              height: maskTop / topSteps,
-              backgroundColor: `rgba(0,0,0,${i / (topSteps - 1)})`,
-            }}
-          />
-        ))}
-        {/* Middle: fully opaque */}
-        <View style={{ flex: 1, backgroundColor: "black" }} />
-        {/* Bottom fade: opaque -> transparent */}
-        {Array.from({ length: bottomSteps }, (_, i) => (
-          <View
-            key={`b${i}`}
-            style={{
-              height: maskBottom / bottomSteps,
-              backgroundColor: `rgba(0,0,0,${1 - i / (bottomSteps - 1)})`,
-            }}
-          />
-        ))}
-      </View>
-    );
-  }, [resolvedMask, metrics, maskTop, maskBottom, topSteps, bottomSteps]);
-
   const [slotsReady, setSlotsReady] = useState(false);
   const metricsReady = !!metrics;
 
@@ -236,19 +203,17 @@ export const NumberFlow = ({
         },
       ]}
     >
-      {resolvedMask && gradientMaskElement && MaskedView ? (
-        <MaskedView maskElement={gradientMaskElement} style={{ flex: 1 }}>
-          <View style={{ flex: 1, position: "relative", top: expansionTop }}>
-            {MeasureElement}
-            {slots}
-          </View>
-        </MaskedView>
-      ) : (
+      <GradientMask
+        maskTop={maskTop}
+        maskBottom={maskBottom}
+        enabled={resolvedMask}
+        style={{ flex: 1 }}
+      >
         <View style={{ flex: 1, position: "relative", top: expansionTop }}>
           {MeasureElement}
           {slots}
         </View>
-      )}
+      </GradientMask>
     </View>
   );
 };
