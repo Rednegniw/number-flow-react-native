@@ -1,13 +1,7 @@
-<p align="center">
-  <img src="https://github.com/Rednegniw/number-flow-react-native/raw/main/.github/assets/demo.gif" alt="number-flow-react-native demo" width="300" />
-</p>
+<h1 align="center">Number Flow React Native</h1>
 
-<h1 align="center">number-flow-react-native</h1>
-
-<p align="center">
-  An animated number component for React Native.
-  <br />
-  Inspired by <a href="https://number-flow.barvian.me/">NumberFlow</a>.
+<p align="center" style="font-size: 1.2em;">
+  The best animated number component for React Native.
 </p>
 
 <p align="center">
@@ -26,18 +20,18 @@ npm install number-flow-react-native react-native-reanimated
 ```
 
 ```tsx
-import { NumberFlow } from "number-flow-react-native/native";
+import { NumberFlow } from "number-flow-react-native";
 
 <NumberFlow
   value={1234.56}
-  format={{ style: "currency", currency: "USD" }}
-  style={{ fontSize: 32, color: "#000" }}
 />;
 ```
 
 ## Attribution
 
-This library is a React Native reimplementation inspired by [NumberFlow](https://number-flow.barvian.me/) by [Maxwell Barvian](https://github.com/barvian). The animation patterns, easing curves, and digit-rolling approach are adapted from the original web implementation. All code is original — no source code is shared.
+This library is a complete React Native reimplementation of [NumberFlow](https://number-flow.barvian.me/) by Max Barvian. Please check it if you need an animated number component for the web.
+
+The animation patterns, easing curves, and digit-rolling approach are adapted from the original web implementation. All code is original — no source code is shared.
 
 ## License
 

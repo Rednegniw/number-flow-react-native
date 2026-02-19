@@ -14,11 +14,33 @@ function getContext(): CanvasRenderingContext2D {
   return offscreenCtx;
 }
 
+/**
+ * Maps RN font names to CSS font stacks the same way react-native-web does
+ * in createReactDOMStyle.js, so Canvas measurement matches actual rendering.
+ */
+const SYSTEM_FONT_STACK =
+  '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
+const MONOSPACE_FONT_STACK = "monospace,monospace";
+
+function resolveWebFontFamily(family: string): string {
+  if (family.indexOf("System") > -1) {
+    const stack = family.split(/,\s*/);
+    stack[stack.indexOf("System")] = SYSTEM_FONT_STACK;
+    return stack.join(",");
+  }
+
+  if (family === "monospace") {
+    return MONOSPACE_FONT_STACK;
+  }
+
+  return family;
+}
+
 function buildCSSFont(style: NumberFlowStyle): string {
   const weight = style.fontWeight ?? "normal";
   const fontStyle = style.fontStyle ?? "normal";
   const size = `${style.fontSize}px`;
-  const family = style.fontFamily ?? "system-ui";
+  const family = resolveWebFontFamily(style.fontFamily ?? "system-ui");
   return `${fontStyle} ${weight} ${size} ${family}`;
 }
 

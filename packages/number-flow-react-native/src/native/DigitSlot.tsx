@@ -185,7 +185,14 @@ export const DigitSlot = React.memo(
           );
         }
       },
-      [effectiveLH, resolvedDigitCount, effectiveMaskTop, effectiveMaskBottom],
+      [
+        currentDigitSV,
+        animDelta,
+        effectiveLH,
+        resolvedDigitCount,
+        effectiveMaskTop,
+        effectiveMaskBottom,
+      ],
     );
 
     const animatedX = useAnimatedX(targetX, exiting, transformTiming);
