@@ -4,7 +4,7 @@ description: Animated numbers in scientific and engineering notation with supers
 full: true
 ---
 
-`NumberFlow` supports scientific and engineering notation via `Intl.NumberFormat`. Exponents are rendered automatically as superscripts at 60% scale.
+`NumberFlow` supports scientific and engineering notation via `Intl.NumberFormat`. Exponents are rendered automatically as superscripts at 60% scale. They are also animated independently, so changes to the exponent (e.g. `E23` → `E24`) roll correctly!
 
 ```LiveExample
 import { useState } from 'react';
@@ -17,38 +17,40 @@ export default function ScientificEngineering() {
 
   return (
     <ExampleLayout>
-      {/* Scientific notation */}
-      <View style={{ alignItems: 'center', gap: 8 }}>
-        <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>Scientific</Text>
-        <NumberFlow
-          value={value}
-          format={{ notation: 'scientific', maximumFractionDigits: 3 }}
-          style={{ fontSize: 36, color: '#fff' }}
-        />
-      </View>
+      <View style={{ gap: 24 }}>
+        {/* Scientific notation */}
+        <View style={{ gap: 4 }}>
+          <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>Scientific</Text>
+          <NumberFlow
+            value={value}
+            format={{ notation: 'scientific', maximumFractionDigits: 3 }}
+            style={{ fontSize: 36, color: '#fff' }}
+          />
+        </View>
 
-      {/* Engineering notation */}
-      <View style={{ alignItems: 'center', gap: 8 }}>
-        <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>Engineering</Text>
-        <NumberFlow
-          value={value}
-          format={{ notation: 'engineering', maximumFractionDigits: 2 }}
-          style={{ fontSize: 36, color: '#fff' }}
-        />
-      </View>
+        {/* Engineering notation */}
+        <View style={{ gap: 4 }}>
+          <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>Engineering</Text>
+          <NumberFlow
+            value={value}
+            format={{ notation: 'engineering', maximumFractionDigits: 2 }}
+            style={{ fontSize: 36, color: '#fff' }}
+          />
+        </View>
 
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
-        <Button title="6.022e23" onPress={() => setValue(6.022e23)} />
-        <Button title="1.38e-23" onPress={() => setValue(1.38e-23)} />
-        <Button title="9.81" onPress={() => setValue(9.81)} />
-        <Button title="299792458" onPress={() => setValue(299792458)} />
+        <View style={{ marginTop: 12, alignSelf: 'stretch', justifyContent: 'center', flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          <Button title="6.022e23" onPress={() => setValue(6.022e23)} />
+          <Button title="1.38e-23" onPress={() => setValue(1.38e-23)} />
+          <Button title="9.81" onPress={() => setValue(9.81)} />
+          <Button title="299792458" onPress={() => setValue(299792458)} />
+        </View>
       </View>
     </ExampleLayout>
   );
 }
 ```
 
-### How it works
+### Notes
 
 - The exponent part (e.g. `E23`) is detected during formatting and rendered at 60% of the base font size using a pivot-scale transform.
 - Exponent digits roll independently, just like the mantissa digits.

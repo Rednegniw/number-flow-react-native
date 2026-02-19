@@ -18,11 +18,16 @@ const currencies = [
   { code: 'JPY', locale: 'ja-JP', label: '¥ JPY' },
 ];
 
-export default function CurrencyFormatting() {
-  const [amount, setAmount] = useState(1234.56);
-  const [currencyIndex, setCurrencyIndex] = useState(0);
+function randomize() {
+  const amount = Math.floor(Math.random() * 9999) + 1;
+  const index = Math.floor(Math.random() * currencies.length);
+  return { amount, index };
+}
 
-  const currency = currencies[currencyIndex];
+export default function CurrencyFormatting() {
+  const [{ amount, index }, setState] = useState(() => randomize());
+
+  const currency = currencies[index];
 
   return (
     <ExampleLayout>
@@ -33,23 +38,7 @@ export default function CurrencyFormatting() {
         style={{ fontSize: 40, color: '#fff' }}
       />
 
-      {/* Currency selector */}
-      <View style={{ flexDirection: 'row', gap: 8 }}>
-        {currencies.map((c, i) => (
-          <Button
-            key={c.code}
-            title={c.label}
-            onPress={() => setCurrencyIndex(i)}
-          />
-        ))}
-      </View>
-
-      {/* Amount controls */}
-      <View style={{ flexDirection: 'row', gap: 8 }}>
-        <Button title="-100" onPress={() => setAmount(v => v - 100)} />
-        <Button title="+100" onPress={() => setAmount(v => v + 100)} />
-        <Button title="Random" onPress={() => setAmount(Math.random() * 10000)} />
-      </View>
+      <Button title="Randomize" onPress={() => setState(randomize())} />
     </ExampleLayout>
   );
 }
@@ -60,4 +49,3 @@ export default function CurrencyFormatting() {
 - The `format` prop is passed directly to `Intl.NumberFormat`. Any option that works with `Intl.NumberFormat` works here.
 - When switching currencies, symbols like `$`, `€`, and `¥` animate in and out with opacity and vertical slide transitions.
 - The `locales` prop controls grouping separators (`1,234.56` in `en-US` vs `1.234,56` in `de-DE`) and currency symbol placement.
-- JPY uses `maximumFractionDigits: 0` by default, so the decimal part animates out when switching to Yen.

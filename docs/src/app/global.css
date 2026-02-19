@@ -3,15 +3,13 @@
 @import "fumadocs-ui/css/preset.css";
 
 @theme {
-  --color-fd-primary: hsl(210, 80%, 45%);
-  --color-fd-primary-foreground: hsl(0, 0%, 98%);
-  --color-fd-ring: hsl(210, 80%, 45%);
-}
-
-.dark {
   --color-fd-primary: hsl(205, 100%, 70%);
   --color-fd-primary-foreground: hsl(0, 0%, 9%);
   --color-fd-ring: hsl(205, 100%, 70%);
+}
+
+.prose > :not(:first-child) {
+  margin-top: 1.5em;
 }
 
 #nd-sidebar {
@@ -20,4 +18,8 @@
 
 #nd-page {
   max-width: 1050px;
+}
+
+#nd-page > .prose + * {
+  margin-top: 2rem;
 }

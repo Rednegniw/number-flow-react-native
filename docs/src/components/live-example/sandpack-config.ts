@@ -51,7 +51,8 @@ AppRegistry.runApplication("App", {
 });
 `;
 
-export const EXAMPLE_UI_CODE = `import { Pressable, Text, View } from "react-native";
+export const EXAMPLE_UI_CODE = `import { useCallback, useRef, useState } from "react";
+import { Animated, Pressable, Text, View } from "react-native";
 
 export function ExampleLayout({ children }) {
   return (
@@ -69,18 +70,60 @@ export function ExampleLayout({ children }) {
 }
 
 export function Button({ title, onPress }) {
+  const scale = useRef(new Animated.Value(0)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
+  const [ripple, setRipple] = useState({ x: 0, y: 0, size: 0 });
+  const layout = useRef({ width: 0, height: 0 });
+
+  const handlePressIn = useCallback((e) => {
+    const { locationX, locationY } = e.nativeEvent;
+    const { width, height } = layout.current;
+    const radius = Math.sqrt(
+      Math.max(locationX, width - locationX) ** 2 +
+      Math.max(locationY, height - locationY) ** 2
+    );
+
+    setRipple({ x: locationX, y: locationY, size: radius * 2 });
+    scale.setValue(0);
+    opacity.setValue(1);
+    Animated.timing(scale, { toValue: 1, duration: 250, useNativeDriver: false }).start();
+  }, []);
+
+  const handlePressOut = useCallback(() => {
+    Animated.timing(opacity, { toValue: 0, duration: 350, useNativeDriver: false }).start();
+  }, []);
+
   return (
     <Pressable
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       onPress={onPress}
-      style={({ pressed }) => ({
+      onLayout={(e) => {
+        layout.current = { width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height };
+      }}
+      style={{
+        overflow: "hidden",
         paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 20,
         borderWidth: 1,
-        borderColor: "rgba(255,255,255,0.25)",
-        backgroundColor: pressed ? "rgba(255,255,255,0.1)" : "transparent",
-      })}
+        borderColor: "rgba(255,255,255,0.2)",
+      }}
     >
+      <Animated.View
+        pointerEvents="none"
+        style={{
+          position: "absolute",
+          left: ripple.x - ripple.size / 2,
+          top: ripple.y - ripple.size / 2,
+          width: ripple.size,
+          height: ripple.size,
+          borderRadius: ripple.size / 2,
+          backgroundColor: "rgba(255,255,255,0.15)",
+          transform: [{ scale }],
+          opacity,
+        }}
+      />
       <Text style={{ color: "#fff", fontSize: 15, fontWeight: "500" }}>
         {title}
       </Text>
@@ -94,6 +137,9 @@ export const INDEX_HTML_CODE = `<!DOCTYPE html>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>
