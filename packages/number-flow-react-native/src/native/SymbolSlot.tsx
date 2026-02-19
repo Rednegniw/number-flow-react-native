@@ -52,10 +52,13 @@ export const SymbolSlot = React.memo(
 
     const animatedX = useAnimatedX(targetX, exiting, transformTiming);
 
-    const animatedStyle = useAnimatedStyle(() => ({
-      transform: [{ translateX: animatedX.value }],
-      opacity: slotOpacity.value,
-    }));
+    const animatedStyle = useAnimatedStyle(
+      () => ({
+        transform: [{ translateX: animatedX.value }],
+        opacity: slotOpacity.value,
+      }),
+      [animatedX, slotOpacity],
+    );
 
     return (
       <Animated.View style={[{ position: "absolute", height: effectiveHeight }, animatedStyle]}>
