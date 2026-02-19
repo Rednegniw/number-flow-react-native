@@ -1,6 +1,6 @@
 node_modules/
 dist/
-lib/
+packages/*/lib/
 .DS_Store
 *.tsbuildinfo
 /*.md
