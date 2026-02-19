@@ -1,6 +1,7 @@
 ---
 title: Skia Worklet Scrubbing
 description: Zero-latency UI thread updates with SharedValue-driven scrubbing
+full: true
 ---
 
 The `sharedValue` prop on `SkiaNumberFlow` enables worklet-driven rendering — the number display updates entirely on the UI thread without crossing the JS bridge. This means updates at 120Hz with zero frame drops.

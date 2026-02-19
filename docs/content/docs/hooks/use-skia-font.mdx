@@ -1,6 +1,7 @@
 ---
 title: useSkiaFont
 description: Load a Skia font with system-font fallback for instant rendering
+full: true
 ---
 
 Loads a custom Skia font asynchronously while providing a synchronous system-font fallback via `matchFont`. Guarantees a non-null `SkFont` from the very first render, so components can run the full animated pipeline immediately instead of showing a blank canvas.
