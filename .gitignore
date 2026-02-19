@@ -22,7 +22,8 @@ docs/.source/
 docs/.next/
 docs/out/
 
-# Example app (Expo)
+# Expo
+.expo/
 apps/example/.expo/
 apps/example/android/
 apps/example/ios/
