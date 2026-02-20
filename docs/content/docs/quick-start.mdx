@@ -1,0 +1,55 @@
+---
+title: Quick Start
+description: Display your first animated number with Number Flow React Native
+full: true
+---
+
+<Steps>
+<Step>
+### Import NumberFlow
+
+```tsx
+import { NumberFlow } from 'number-flow-react-native';
+```
+</Step>
+<Step>
+### Use it with a value
+
+```tsx
+function PriceDisplay() {
+  const [price, setPrice] = useState(42.99);
+
+  return (
+    <NumberFlow
+      value={price}
+      format={{ style: 'currency', currency: 'USD' }}
+      style={{ fontSize: 32, fontFamily: 'System', color: '#000' }}
+    />
+  );
+}
+```
+
+Every time `price` changes, each digit rolls smoothly to its new value.
+</Step>
+<Step>
+### Explore the components
+
+Check out the [Components](/docs/components) section for all four components — `NumberFlow`, `TimeFlow`, `SkiaNumberFlow`, and `SkiaTimeFlow` — with full prop references.
+</Step>
+</Steps>
+
+## Import Paths
+
+The library exposes two main entry points:
+
+```tsx
+// Native components (default)
+import { NumberFlow, TimeFlow } from 'number-flow-react-native';
+
+// Skia components (requires @shopify/react-native-skia)
+import { SkiaNumberFlow, SkiaTimeFlow, useSkiaFont } from 'number-flow-react-native/skia';
+```
+
+<Callout type="info">
+The root import only includes native components — it does **not** pull in `@shopify/react-native-skia`. You only need Skia installed if you import from `number-flow-react-native/skia`.
+</Callout>

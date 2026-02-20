@@ -27,6 +27,15 @@
   }
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .prose > :not(:first-child) {
   margin-top: 1.5em;
 }
@@ -41,4 +50,15 @@
 
 #nd-page > .prose + * {
   margin-top: 2rem;
+}
+
+/* Callout: more left padding */
+.rounded-xl.border.bg-fd-card {
+  padding-inline-start: 0.5rem;
+}
+
+/* Callout: code blocks extend under the icon row */
+.rounded-xl.border.bg-fd-card > .flex-1 figure {
+  margin-inline-start: calc(-1.25rem - 0.3rem);
+  width: calc(100% + 1.25rem + 0.5rem);
 }

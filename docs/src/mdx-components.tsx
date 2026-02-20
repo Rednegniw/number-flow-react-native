@@ -6,6 +6,7 @@ import defaultMdxComponents from "fumadocs-ui/mdx";
 import type { MDXComponents } from "mdx/types";
 import { AnimatedCodeBlock } from "@/components/animated-copy-button";
 import { AnimatedTab, AnimatedTabs } from "@/components/animated-tabs";
+import { FeatureCards } from "@/components/feature-cards";
 import { LiveExample } from "@/components/live-example/LiveExample";
 import { VideoDemo } from "@/components/video-demo";
 import { VideoExample } from "@/components/video-example/VideoExample";
@@ -23,6 +24,7 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     Step,
     Callout,
     AutoTypeTable: (props) => <AutoTypeTable {...props} generator={generator} />,
+    FeatureCards,
     VideoDemo,
     VideoExample,
     LiveExample,

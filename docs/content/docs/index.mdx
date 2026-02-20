@@ -8,33 +8,7 @@ full: true
 
 ## Features
 
-- Smooth digit-by-digit rolling with automatic direction detection
-- Two renderers: View-based (`NumberFlow`, `TimeFlow`) and Skia (`SkiaNumberFlow`, `SkiaTimeFlow`)
-- Full `Intl.NumberFormat` support (currencies, percentages, compact, units, locales)
-- Scientific and engineering notation with superscript exponents
-- `TimeFlow` for animated HH:MM:SS displays (12h/24h, countdown)
-- Continuous mode — unchanged lower digits cascade through full rotations
-- Worklet-driven scrubbing for zero-latency UI thread updates (Skia)
-- Prefix and suffix text with animated enter/exit
-- Per-position digit constraints (e.g. minutes tens: 0-5)
-- 34 Unicode numeral systems (Arabic-Indic, Devanagari, Thai, CJK, etc.)
-- Accessibility support (screen reader labels + announcements)
-- Respects device Reduce Motion setting
-- Hermes `formatToParts()` compatibility layer
-- StrictMode safe
-
-## Native vs Skia
-
-| Feature | Native (View) | Skia (Canvas) |
-|---|---|---|
-| Extra dependency | None | @shopify/react-native-skia |
-| Components | NumberFlow, TimeFlow | SkiaNumberFlow, SkiaTimeFlow |
-| Rendering | React Native Animated Views | Skia Canvas |
-| Worklet scrubbing | Not available | Yes (`sharedValue` prop) |
-| Text styling | `TextStyle` (fontFamily, system fonts) | `SkFont` (requires font file) |
-| Gradient mask | MaskedView gradient (optional) or per-digit opacity fallback | Skia LinearGradient + DstIn blending |
-| Web support | Full (react-native-web) | Not available (Skia native only) |
-| Best for | Standard UI, quick setup | Charts, complex Skia UIs, many instances |
+<FeatureCards />
 
 ## Attribution
 

@@ -6,6 +6,23 @@ const withMDX = createMDX();
 const config = {
   reactStrictMode: true,
   skipTrailingSlashRedirect: true,
+  transpilePackages: ["number-flow-react-native", "react-native-reanimated"],
+  turbopack: {
+    resolveAlias: {
+      "react-native": "react-native-web",
+    },
+    resolveExtensions: [
+      ".web.tsx",
+      ".web.ts",
+      ".web.js",
+      ".tsx",
+      ".ts",
+      ".jsx",
+      ".js",
+      ".mjs",
+      ".json",
+    ],
+  },
   async rewrites() {
     return [
       {
