@@ -2,10 +2,29 @@
 @import "fumadocs-ui/css/neutral.css";
 @import "fumadocs-ui/css/preset.css";
 
+@layer base {
+  button,
+  [role="tab"] {
+    cursor: pointer;
+  }
+}
+
 @theme {
   --color-fd-primary: hsl(205, 100%, 70%);
   --color-fd-primary-foreground: hsl(0, 0%, 9%);
   --color-fd-ring: hsl(205, 100%, 70%);
+  --animate-tab-slide-in: tab-slide-in 0.2s ease-out;
+}
+
+@keyframes tab-slide-in {
+  from {
+    opacity: 0.5;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .prose > :not(:first-child) {

@@ -2,9 +2,10 @@ import { createFileSystemGeneratorCache, createGenerator } from "fumadocs-typesc
 import { AutoTypeTable } from "fumadocs-typescript/ui";
 import { Callout } from "fumadocs-ui/components/callout";
 import { Step, Steps } from "fumadocs-ui/components/steps";
-import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 import defaultMdxComponents from "fumadocs-ui/mdx";
 import type { MDXComponents } from "mdx/types";
+import { AnimatedCodeBlock } from "@/components/animated-copy-button";
+import { AnimatedTab, AnimatedTabs } from "@/components/animated-tabs";
 import { LiveExample } from "@/components/live-example/LiveExample";
 import { VideoDemo } from "@/components/video-demo";
 import { VideoExample } from "@/components/video-example/VideoExample";
@@ -16,8 +17,8 @@ const generator = createGenerator({
 export function getMDXComponents(components?: MDXComponents): MDXComponents {
   return {
     ...defaultMdxComponents,
-    Tabs,
-    Tab,
+    Tabs: AnimatedTabs,
+    Tab: AnimatedTab,
     Steps,
     Step,
     Callout,
@@ -25,6 +26,7 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     VideoDemo,
     VideoExample,
     LiveExample,
+    pre: AnimatedCodeBlock,
     ...components,
   };
 }
