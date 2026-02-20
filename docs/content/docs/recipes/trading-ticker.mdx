@@ -1,36 +1,86 @@
 ---
 title: Trading Ticker
-description: Real-time stock price ticker with color-coded trend
+description: Apple Stocks-inspired ticker with animated price and change values
 full: true
 ---
 
-A dark-themed financial terminal with monospaced pricing, color-coded trend indicators, and a dynamic `trend` function that directs digit spin based on price movement.
+An Apple Stocks-inspired ticker with dual animated values — both the stock price and day change roll their digits in sync, with inline SVG sparkline charts colored by trend direction.
 
 ```LiveExample
 import { useEffect, useState } from 'react';
-import { View, Text, Platform } from 'react-native';
+import { View, Text } from 'react-native';
 import { NumberFlow } from 'number-flow-react-native';
 import type { Trend } from 'number-flow-react-native';
-import { ExampleLayout } from './ExampleUI';
+
+const FONT = '-apple-system, BlinkMacSystemFont, system-ui, sans-serif';
+const GREEN = '#34C759';
+const RED = '#FF3B30';
 
 interface Stock {
   symbol: string;
   name: string;
+  basePrice: number;
   price: number;
   prevPrice: number;
+  change: number;
+  sparkline: number[];
+  isPositive: boolean;
+}
+
+function generateSparkline(base: number, isPositive: boolean): number[] {
+  const points: number[] = [];
+  let price = base;
+
+  for (let i = 0; i < 20; i++) {
+    const bias = isPositive ? 0.0008 : -0.0008;
+    const noise = (Math.random() - 0.5) * base * 0.005;
+    price += bias * base + noise;
+    points.push(price);
+  }
+
+  return points;
+}
+
+function createStock(
+  symbol: string,
+  name: string,
+  basePrice: number,
+  isPositive: boolean,
+): Stock {
+  const sparkline = generateSparkline(basePrice, isPositive);
+  const price = sparkline[sparkline.length - 1];
+
+  return {
+    symbol,
+    name,
+    basePrice,
+    price,
+    prevPrice: price,
+    change: price - basePrice,
+    sparkline,
+    isPositive,
+  };
 }
 
 const initialStocks: Stock[] = [
-  { symbol: 'AAPL', name: 'Apple Inc.', price: 178.72, prevPrice: 178.72 },
-  { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 141.80, prevPrice: 141.80 },
-  { symbol: 'TSLA', name: 'Tesla Inc.', price: 248.50, prevPrice: 248.50 },
-  { symbol: 'NVDA', name: 'NVIDIA Corp.', price: 875.28, prevPrice: 875.28 },
+  createStock('AAPL', 'Apple Inc.', 263.47, true),
+  createStock('GOOGL', 'Alphabet Inc.', 176.32, true),
+  createStock('MSFT', 'Microsoft Corp.', 420.55, true),
+  createStock('TSLA', 'Tesla Inc.', 248.50, false),
+  createStock('NVDA', 'NVIDIA Corp.', 875.28, true),
+  createStock('BA', 'The Boeing Company', 232.95, false),
+  createStock('DIS', 'The Walt Disney Company', 105.67, false),
 ];
 
-const currencyFormat = {
-  style: 'currency' as const,
-  currency: 'USD',
+const priceFormat: Intl.NumberFormatOptions = {
   minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+};
+
+const changeFormat: Intl.NumberFormatOptions = {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+  signDisplay: 'exceptZero' as const,
 };
 
 const trendFn = (prev: number, next: number): Trend => {
@@ -39,6 +89,72 @@ const trendFn = (prev: number, next: number): Trend => {
   return 0;
 };
 
+function Sparkline({
+  data,
+  width = 50,
+  height = 28,
+  color,
+}: {
+  data: number[];
+  width?: number;
+  height?: number;
+  color: string;
+}) {
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const pad = 2;
+  const innerH = height - pad * 2;
+
+  const pts = data.map((val, i) => ({
+    x: (i / (data.length - 1)) * width,
+    y: pad + innerH - ((val - min) / range) * innerH,
+  }));
+
+  const line = pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+
+  const area =
+    `M${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)} ` +
+    pts
+      .slice(1)
+      .map(p => `L${p.x.toFixed(1)},${p.y.toFixed(1)}`)
+      .join(' ') +
+    ` L${width},${height} L0,${height} Z`;
+
+  const refY = pts[0].y;
+  const gid = `g${color.slice(1)}`;
+
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+      <defs>
+        <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity={0.3} />
+          <stop offset="100%" stopColor={color} stopOpacity={0.02} />
+        </linearGradient>
+      </defs>
+      <line
+        x1={0}
+        y1={refY}
+        x2={width}
+        y2={refY}
+        stroke={color}
+        strokeOpacity={0.25}
+        strokeWidth={1}
+        strokeDasharray="2,2"
+      />
+      <path d={area} fill={`url(#${gid})`} />
+      <polyline
+        points={line}
+        fill="none"
+        stroke={color}
+        strokeWidth={1.5}
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export default function TradingTicker() {
   const [stocks, setStocks] = useState(initialStocks);
 
@@ -46,53 +162,38 @@ export default function TradingTicker() {
     const interval = setInterval(() => {
       setStocks(prev =>
         prev.map(stock => {
-          const change = (Math.random() - 0.5) * 4;
-          const newPrice = Math.max(1, stock.price + change);
-          return { ...stock, prevPrice: stock.price, price: newPrice };
+          const bias = stock.isPositive ? 0.3 : -0.3;
+          const delta =
+            (Math.random() - 0.5 + bias * 0.1) * stock.basePrice * 0.003;
+          const newPrice = Math.max(
+            stock.basePrice * 0.95,
+            stock.price + delta,
+          );
+          const newSparkline = [...stock.sparkline.slice(-19), newPrice];
+
+          return {
+            ...stock,
+            prevPrice: stock.price,
+            price: newPrice,
+            change: newPrice - stock.basePrice,
+            sparkline: newSparkline,
+          };
         }),
       );
-    }, 2000);
+    }, 2500);
+
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <ExampleLayout>
-      {/* Header */}
-      <View style={{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingHorizontal: 16,
-        paddingBottom: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#1c1c1e',
-        marginBottom: 4,
-      }}>
-        <Text style={{
-          fontSize: 11,
-          fontWeight: '600',
-          color: '#525252',
-          letterSpacing: 2,
-          textTransform: 'uppercase',
-        }}>
-          Symbol
-        </Text>
-        <Text style={{
-          fontSize: 11,
-          fontWeight: '600',
-          color: '#525252',
-          letterSpacing: 2,
-          textTransform: 'uppercase',
-        }}>
-          Last Price
-        </Text>
-      </View>
-
-      {/* Stock rows */}
+    <View style={{
+      minHeight: '100vh',
+      backgroundColor: '#000',
+      paddingTop: 48,
+    }}>
       {stocks.map((stock, i) => {
-        const isUp = stock.price >= stock.prevPrice;
-        const color = isUp ? '#22c55e' : '#ef4444';
-        const changePercent = ((stock.price - stock.prevPrice) / stock.prevPrice) * 100;
-        const sign = isUp ? '+' : '';
+        const color = stock.isPositive ? GREEN : RED;
+        const isLast = i === stocks.length - 1;
 
         return (
           <View
@@ -100,67 +201,88 @@ export default function TradingTicker() {
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingVertical: 16,
-              paddingHorizontal: 16,
-              borderBottomWidth: i < stocks.length - 1 ? 1 : 0,
-              borderBottomColor: '#1c1c1e',
+              paddingVertical: 10,
+              paddingHorizontal: 12,
+              borderBottomWidth: isLast ? 0 : 0.5,
+              borderBottomColor: '#1C1C1E',
             }}
           >
             {/* Stock info */}
-            <View style={{ gap: 2 }}>
-              <Text style={{
-                fontSize: 16,
-                fontWeight: '700',
-                color: '#fafafa',
-                fontFamily: Platform.OS === 'ios' ? 'SF Mono' : 'monospace',
-                letterSpacing: 1,
-              }}>
+            <View style={{ flex: 1, gap: 5 }}>
+              <Text
+                style={{
+                  fontSize: 13,
+                  fontWeight: '600',
+                  color: '#fff',
+                  fontFamily: FONT,
+                }}
+              >
                 {stock.symbol}
               </Text>
-              <Text style={{ fontSize: 12, color: '#525252', fontWeight: '500' }}>
+              <Text
+                numberOfLines={1}
+                style={{
+                  fontSize: 11,
+                  color: '#8E8E93',
+                  fontFamily: FONT,
+                }}
+              >
                 {stock.name}
               </Text>
             </View>
 
-            {/* Price + change */}
-            <View style={{ alignItems: 'flex-end', gap: 2 }}>
+            {/* Sparkline */}
+            <View style={{ marginRight: 8 }}>
+              <Sparkline data={stock.sparkline} color={color} />
+            </View>
+
+            {/* Price + change badge */}
+            <View style={{ alignItems: 'flex-end', gap: 4 }}>
               <NumberFlow
                 value={stock.price}
-                format={currencyFormat}
+                format={priceFormat}
                 trend={trendFn}
                 style={{
-                  fontSize: 18,
-                  fontWeight: '600',
-                  fontFamily: Platform.OS === 'ios' ? 'SF Mono' : 'monospace',
-                  color: '#fafafa',
+                  fontSize: 15,
+                  fontWeight: '500',
+                  fontFamily: FONT,
+                  color: '#fff',
+                  fontVariant: ['tabular-nums'],
                 }}
               />
-              <View style={{
-                paddingHorizontal: 8,
-                paddingVertical: 2,
-                borderRadius: 4,
-                backgroundColor: isUp ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-              }}>
-                <Text style={{
-                  fontSize: 11,
-                  fontWeight: '700',
-                  fontFamily: Platform.OS === 'ios' ? 'SF Mono' : 'monospace',
-                  color,
-                }}>
-                  {sign}{changePercent.toFixed(2)}%
-                </Text>
+              <View
+                style={{
+                  backgroundColor: color,
+                  borderRadius: 4,
+                  paddingHorizontal: 6,
+                  paddingVertical: 2,
+                  minWidth: 50,
+                  alignItems: 'flex-end',
+                }}
+              >
+                <NumberFlow
+                  value={stock.change}
+                  format={changeFormat}
+                  trend={trendFn}
+                  style={{
+                    fontSize: 11,
+                    fontWeight: '600',
+                    fontFamily: FONT,
+                    color: '#fff',
+                    fontVariant: ['tabular-nums'],
+                  }}
+                />
               </View>
             </View>
           </View>
         );
       })}
-    </ExampleLayout>
+    </View>
   );
 }
 ```
 
 
 <Callout type="info">
-Notice that `trendFn` is declared outside the component as a stable function reference. If it were an inline arrow function, React would create a new function identity every render, which would trigger unnecessary work inside `NumberFlow`. The same applies to `currencyFormat` — both are classic React performance patterns that matter when values update every 2 seconds.
+Notice that `trendFn`, `priceFormat`, and `changeFormat` are declared outside the component as stable references — creating new function/object identities every render would trigger unnecessary work inside `NumberFlow`. The `signDisplay: 'exceptZero'` format option handles the `+`/`-` prefix automatically via `Intl.NumberFormat`, so the sign itself becomes an animated character in the digit roll.
 </Callout>
