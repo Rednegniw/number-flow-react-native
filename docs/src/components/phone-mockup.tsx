@@ -7,7 +7,7 @@ interface PhoneMockupProps {
 
 export function PhoneMockup({ children }: PhoneMockupProps) {
   return (
-    <div className="relative mx-auto" style={{ maxWidth: 280 }}>
+    <div className="relative mx-auto w-75">
       {/* Frame image — establishes dimensions, sits on top */}
       <Image
         src="/iphone-mockup.png"

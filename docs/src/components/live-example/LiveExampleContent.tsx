@@ -1,5 +1,7 @@
 "use client";
 
+import "@/lib/rn-web-polyfills";
+
 import type { SandpackTheme } from "@codesandbox/sandpack-react";
 import {
   SandpackCodeEditor,
@@ -9,7 +11,8 @@ import {
 } from "@codesandbox/sandpack-react";
 import { githubLight, nightOwl } from "@codesandbox/sandpack-themes";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { NumberFlow } from "number-flow-react-native";
+import { useEffect, useRef, useState } from "react";
 import { LiveExamplePhoneMockup } from "./LiveExamplePhoneMockup";
 import {
   ENTRY_CODE,
@@ -39,10 +42,26 @@ function PreviewWithOverlay() {
   const { listen } = useSandpack();
   const [ready, setReady] = useState(false);
   const [removed, setRemoved] = useState(false);
+  const [countdown, setCountdown] = useState(20);
+  const intervalRef = useRef<ReturnType<typeof setInterval>>(null);
+
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(intervalRef.current!);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(intervalRef.current!);
+  }, []);
 
   useEffect(() => {
     const unsub = listen((msg) => {
       if (msg.type === "done") {
+        clearInterval(intervalRef.current!);
         setTimeout(() => setReady(true), 500);
       }
     });
@@ -99,19 +118,25 @@ function PreviewWithOverlay() {
               }}
             />
 
-            <span
+            <div
               style={{
                 color: "#555",
                 fontSize: 11,
                 textAlign: "center",
                 padding: "0 16px",
                 lineHeight: 1.4,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
               }}
             >
-              Waiting for demo to load.
-              <br />
-              This can take around 20 seconds.
-            </span>
+              <span>Waiting for demo to load.</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                <span>This can take around</span>
+                <NumberFlow value={countdown} trend={-1} style={{ fontSize: 11, color: "#555" }} />
+                <span>seconds.</span>
+              </div>
+            </div>
           </div>
         </>
       )}
