@@ -20,9 +20,9 @@ export default function HomePage() {
 
         {/* Title */}
         <div className="flex flex-col items-center gap-3">
-          <div className="flex items-center gap-3">
-            <Logo className="size-12 text-fd-primary" />
-            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Logo className="size-8 sm:size-12 text-fd-primary" />
+            <h1 className="text-2xl sm:text-5xl font-bold tracking-tight">
               Number Flow React Native
             </h1>
           </div>
