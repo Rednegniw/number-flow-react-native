@@ -8,7 +8,7 @@ The `trend` prop controls which direction digits spin during transitions. You ca
 
 ```LiveExample
 import { useState } from 'react';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import { NumberFlow } from 'number-flow-react-native';
 import type { Trend } from 'number-flow-react-native';
 import { ExampleLayout, Button } from './ExampleUI';
@@ -16,6 +16,8 @@ import { ExampleLayout, Button } from './ExampleUI';
 export default function TrendControl() {
   const [value, setValue] = useState(50);
   const [trend, setTrend] = useState<Trend | undefined>(undefined);
+
+  const randomize = () => setValue(Math.floor(Math.random() * 1000));
 
   return (
     <ExampleLayout>
@@ -25,22 +27,12 @@ export default function TrendControl() {
         style={{ fontSize: 48, color: '#fff' }}
       />
 
-      {/* Value controls */}
-      <View style={{ flexDirection: 'row', gap: 8 }}>
-        <Button title="-10" onPress={() => setValue(v => v - 10)} />
-        <Button title="+10" onPress={() => setValue(v => v + 10)} />
-        <Button title="Random" onPress={() => setValue(Math.floor(Math.random() * 100))} />
-      </View>
-
       {/* Trend controls */}
-      <View style={{ gap: 8 }}>
-        <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', textAlign: 'center' }}>Trend Direction</Text>
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Button title="Auto" onPress={() => setTrend(undefined)} />
-          <Button title="Up (1)" onPress={() => setTrend(1)} />
-          <Button title="Down (-1)" onPress={() => setTrend(-1)} />
-          <Button title="Shortest (0)" onPress={() => setTrend(0)} />
-        </View>
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <Button title="Auto" onPress={() => { setTrend(undefined); randomize(); }} />
+        <Button title="1" onPress={() => { setTrend(1); randomize(); }} />
+        <Button title="-1" onPress={() => { setTrend(-1); randomize(); }} />
+        <Button title="0" onPress={() => { setTrend(0); randomize(); }} />
       </View>
     </ExampleLayout>
   );

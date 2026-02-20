@@ -1,10 +1,10 @@
 ---
 title: Non-Latin Numerals
-description: 34 Unicode numeral systems including Arabic-Indic, Devanagari, and Thai
+description: 37 Unicode numeral systems including Arabic-Indic, Devanagari, and Thai
 full: true
 ---
 
-The library auto-detects the numeral system from the `locales` and `format` props and renders the appropriate Unicode digits. 34 numeral systems are supported.
+The library auto-detects the numeral system from the `locales` and `format` props and renders the appropriate Unicode digits. 37 numeral systems are supported.
 
 ```LiveExample
 import { useState } from 'react';
@@ -15,8 +15,8 @@ import { ExampleLayout, Button } from './ExampleUI';
 const numeralSystems = [
   { locale: 'en-US', label: 'Latin (0-9)' },
   { locale: 'ar-SA', label: 'Arabic-Indic' },
-  { locale: 'hi-IN', label: 'Devanagari' },
-  { locale: 'th-TH', label: 'Thai' },
+  { locale: 'hi-IN-u-nu-deva', label: 'Devanagari' },
+  { locale: 'th-TH-u-nu-thai', label: 'Thai' },
 ];
 
 export default function NonLatinNumerals() {
@@ -31,7 +31,7 @@ export default function NonLatinNumerals() {
       <NumberFlow
         value={value}
         locales={current.locale}
-        style={{ fontSize: 40, color: '#fff' }}
+        style={{ fontSize: 48, fontWeight: '400', color: '#fff' }}
       />
 
       {/* Locale selector */}
@@ -40,23 +40,63 @@ export default function NonLatinNumerals() {
           <Button
             key={ns.locale}
             title={ns.label}
-            onPress={() => setLocaleIndex(i)}
+            onPress={() => {
+              setLocaleIndex(i);
+              setValue(Math.floor(Math.random() * 10000000));
+            }}
           />
         ))}
       </View>
-
-      <Button
-        title="Randomize"
-        onPress={() => setValue(Math.floor(Math.random() * 10000000))}
-      />
     </ExampleLayout>
   );
 }
 ```
 
-### How it works
+### Notes
 
 - The numeral system is detected via `detectNumberingSystem()` from the locale and format options.
 - `getDigitStrings()` returns the Unicode digit characters for that system (e.g. `['٠','١','٢','٣','٤','٥','٦','٧','٨','٩']` for Arabic-Indic).
 - Digit wheels render the locale-appropriate characters, and the adaptive mask adjusts to each character's glyph bounds.
 - Grouping separators and decimal marks also follow the locale (e.g. `٬` as thousands separator in Arabic).
+
+### Supported systems
+
+| System | Script | Digits (0–9) |
+|---|---|---|
+| `arab` | Arabic-Indic | ٠١٢٣٤٥٦٧٨٩ |
+| `arabext` | Extended Arabic-Indic | ۰۱۲۳۴۵۶۷۸۹ |
+| `bali` | Balinese | ᭐᭑᭒᭓᭔᭕᭖᭗᭘᭙ |
+| `beng` | Bengali | ০১২৩৪৫৬৭৮৯ |
+| `cham` | Cham | ꩐꩑꩒꩓꩔꩕꩖꩗꩘꩙ |
+| `deva` | Devanagari | ०१२३४५६७८९ |
+| `fullwide` | Fullwidth | ０１２３４５６７８９ |
+| `gujr` | Gujarati | ૦૧૨૩૪૫૬૭૮૯ |
+| `guru` | Gurmukhi | ੦੧੨੩੪੫੬੭੮੯ |
+| `hanidec` | Chinese Decimal | 〇一二三四五六七八九 |
+| `java` | Javanese | ꧐꧑꧒꧓꧔꧕꧖꧗꧘꧙ |
+| `kali` | Kayah Li | ꤀꤁꤂꤃꤄꤅꤆꤇꤈꤉ |
+| `khmr` | Khmer | ០១២៣៤៥៦៧៨៩ |
+| `knda` | Kannada | ೦೧೨೩೪೫೬೭೮೯ |
+| `lana` | Tai Tham Hora | ᪀᪁᪂᪃᪄᪅᪆᪇᪈᪉ |
+| `lanatham` | Tai Tham Tham | ᪐᪑᪒᪓᪔᪕᪖᪗᪘᪙ |
+| `laoo` | Lao | ໐໑໒໓໔໕໖໗໘໙ |
+| `latn` | Latin | 0123456789 |
+| `lepc` | Lepcha | ᱀᱁᱂᱃᱄᱅᱆᱇᱈᱉ |
+| `limb` | Limbu | ᥆᥇᥈᥉᥊᥋᥌᥍᥎᥏ |
+| `mlym` | Malayalam | ൦൧൨൩൪൫൬൭൮൯ |
+| `mong` | Mongolian | ᠐᠑᠒᠓᠔᠕᠖᠗᠘᠙ |
+| `mtei` | Meetei Mayek | ꯰꯱꯲꯳꯴꯵꯶꯷꯸꯹ |
+| `mymr` | Myanmar | ၀၁၂၃၄၅၆၇၈၉ |
+| `mymrshan` | Myanmar Shan | ႐႑႒႓႔႕႖႗႘႙ |
+| `nkoo` | N'Ko | ߀߁߂߃߄߅߆߇߈߉ |
+| `olck` | Ol Chiki | ᱐᱑᱒᱓᱔᱕᱖᱗᱘᱙ |
+| `orya` | Odia | ୦୧୨୩୪୫୬୭୮୯ |
+| `saur` | Saurashtra | ꣐꣑꣒꣓꣔꣕꣖꣗꣘꣙ |
+| `sinh` | Sinhala Lith | ෦෧෨෩෪෫෬෭෮෯ |
+| `sund` | Sundanese | ᮰᮱᮲᮳᮴᮵᮶᮷᮸᮹ |
+| `talu` | New Tai Lue | ᧐᧑᧒᧓᧔᧕᧖᧗᧘᧙ |
+| `tamldec` | Tamil | ௦௧௨௩௪௫௬௭௮௯ |
+| `telu` | Telugu | ౦౧౨౩౪౫౬౭౮౯ |
+| `thai` | Thai | ๐๑๒๓๔๕๖๗๘๙ |
+| `tibt` | Tibetan | ༠༡༢༣༤༥༦༧༨༩ |
+| `vaii` | Vai | ꘠꘡꘢꘣꘤꘥꘦꘧꘨꘩ |

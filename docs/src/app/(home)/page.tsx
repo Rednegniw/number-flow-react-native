@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Logo } from "@/components/logo";
 import { PhoneMockup } from "@/components/phone-mockup";
 
 export default function HomePage() {
@@ -20,24 +19,9 @@ export default function HomePage() {
 
         {/* Title */}
         <div className="flex flex-col items-center gap-3">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Logo className="size-8 sm:size-12 text-fd-primary" />
-            <h1 className="text-2xl sm:text-5xl font-bold tracking-tight">
-              Number Flow React Native
-            </h1>
-          </div>
-          <p className="text-lg text-fd-muted-foreground max-w-md mx-auto">
-            Smooth, digit-by-digit animated number transitions for React Native. Inspired by{" "}
-            <a
-              href="https://number-flow.barvian.me/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:text-fd-foreground"
-            >
-              NumberFlow
-            </a>
-            .
-          </p>
+          <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-center max-w-lg">
+            The best number animation library for React Native
+          </h1>
         </div>
 
         {/* CTA buttons */}
@@ -56,28 +40,6 @@ export default function HomePage() {
           >
             GitHub
           </a>
-        </div>
-      </section>
-
-      {/* Feature cards */}
-      <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl w-full">
-        <div className="rounded-lg border border-fd-border p-5">
-          <h3 className="font-semibold mb-1">Two Renderers</h3>
-          <p className="text-sm text-fd-muted-foreground">
-            View-based for simplicity, Skia for performance. Same API, choose your backend.
-          </p>
-        </div>
-        <div className="rounded-lg border border-fd-border p-5">
-          <h3 className="font-semibold mb-1">120 FPS Animations</h3>
-          <p className="text-sm text-fd-muted-foreground">
-            Worklet-driven digit wheels on the UI thread. Zero bridge latency with Skia scrubbing.
-          </p>
-        </div>
-        <div className="rounded-lg border border-fd-border p-5">
-          <h3 className="font-semibold mb-1">Full i18n</h3>
-          <p className="text-sm text-fd-muted-foreground">
-            Built on Intl.NumberFormat. Currencies, percentages, 34 numeral systems, all locales.
-          </p>
         </div>
       </section>
     </main>
