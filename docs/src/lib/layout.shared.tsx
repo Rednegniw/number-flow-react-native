@@ -11,6 +11,7 @@ export function baseOptions(): BaseLayoutProps {
     nav: {
       title: 'Number Flow React Native',
     },
+    themeSwitch: { enabled: false },
     links: [
       {
         text: 'npm',
