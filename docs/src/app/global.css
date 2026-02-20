@@ -3,6 +3,10 @@
 @import "fumadocs-ui/css/preset.css";
 
 @layer base {
+  :root {
+    --brand-accent: #fffecc;
+  }
+
   button,
   [role="tab"] {
     cursor: pointer;
@@ -10,10 +14,23 @@
 }
 
 @theme {
-  --color-fd-primary: hsl(205, 100%, 70%);
+  --color-fd-primary: #fffecc;
   --color-fd-primary-foreground: hsl(0, 0%, 9%);
-  --color-fd-ring: hsl(205, 100%, 70%);
+  --color-fd-ring: #fffecc;
   --animate-tab-slide-in: tab-slide-in 0.2s ease-out;
+}
+
+/* Override neutral preset's .dark primary color */
+.dark {
+  --color-fd-primary: var(--brand-accent);
+  --color-fd-ring: var(--brand-accent);
+}
+
+/* Show TOC on full-width pages without shrinking the main content column.
+   The grid's --fd-toc-width stays 0 so the formula is unaffected;
+   we just widen the TOC element itself within its 1fr column. */
+#nd-page[data-full] ~ #nd-toc {
+  width: 268px;
 }
 
 @keyframes tab-slide-in {
@@ -38,6 +55,10 @@
 
 .prose > :not(:first-child) {
   margin-top: 1.5em;
+}
+
+#nd-docs-layout {
+  --fd-sidebar-width: 300px;
 }
 
 #nd-sidebar {

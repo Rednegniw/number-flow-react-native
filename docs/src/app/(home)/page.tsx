@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/components/logo";
 import { PhoneMockup } from "@/components/phone-mockup";
 
 export default function HomePage() {
@@ -18,10 +19,13 @@ export default function HomePage() {
         </PhoneMockup>
 
         {/* Title */}
-        <div className="flex flex-col gap-3">
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
-            Number Flow React Native
-          </h1>
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex items-center gap-3">
+            <Logo className="size-12 text-fd-primary" />
+            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
+              Number Flow React Native
+            </h1>
+          </div>
           <p className="text-lg text-fd-muted-foreground max-w-md mx-auto">
             Smooth, digit-by-digit animated number transitions for React Native. Inspired by{" "}
             <a

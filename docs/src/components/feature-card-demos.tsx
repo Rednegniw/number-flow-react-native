@@ -10,8 +10,8 @@ const CYCLE_INTERVAL = 3000;
 
 const randomValue = () => Math.floor(Math.random() * 9999) + 1;
 
-const numberStyle = { fontSize: 18, color: "#e5e7eb" };
-const timeStyle = { fontSize: 18, color: "#e5e7eb" };
+const numberStyle = { fontSize: 18, color: "var(--brand-accent)" };
+const timeStyle = { fontSize: 18, color: "var(--brand-accent)" };
 
 export function NumberFlowDemo() {
   const [value, setValue] = useState(0);
