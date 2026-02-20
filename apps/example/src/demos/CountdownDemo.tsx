@@ -76,8 +76,8 @@ export const CountdownDemoNative = () => {
             fontFamily: DEMO_FONT_FAMILY,
             fontSize: DEMO_FONT_SIZE,
             color: colors.countdown,
+            textAlign: "center",
           }}
-          textAlign="center"
           trend={-1}
         />
       </View>

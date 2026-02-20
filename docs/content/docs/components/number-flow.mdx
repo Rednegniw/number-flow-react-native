@@ -56,8 +56,7 @@ Every time `price` changes, each digit rolls independently to its new value.
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| `style` | `TextStyle` | `undefined` | Text styling. `fontSize` defaults to `16` when omitted; `fontFamily` defaults to the platform system font. Accepts any `TextStyle` property. |
-| `textAlign` | `"left" \| "right" \| "center"` | `"left"` | Text alignment within the container. |
+| `style` | `TextStyle` | `undefined` | Text styling. `fontSize` defaults to `16` when omitted; `fontFamily` defaults to the platform system font. `textAlign` defaults to `"left"`. Accepts any `TextStyle` property. |
 | `prefix` | `string` | `""` | Static string prepended before the number. Animates in/out when added or removed. |
 | `suffix` | `string` | `""` | Static string appended after the number. Animates in/out when added or removed. |
 | `digits` | `Record<number, { max: number }>` | `undefined` | Per-position digit constraints. Position `0` = ones, `1` = tens, `2` = hundreds, etc. Each entry defines `{ max: N }` (1–9) as the highest value for that digit wheel. |

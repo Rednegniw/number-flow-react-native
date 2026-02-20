@@ -341,8 +341,12 @@ export const NumeralsDemoNative = () => {
           containerStyle={{ width: CANVAS_WIDTH }}
           format={state.format}
           locales={state.system.locale}
-          style={{ fontFamily: DEMO_FONT_FAMILY, fontSize: DEMO_FONT_SIZE, color: DEMO_TEXT_COLOR }}
-          textAlign="center"
+          style={{
+            fontFamily: DEMO_FONT_FAMILY,
+            fontSize: DEMO_FONT_SIZE,
+            color: DEMO_TEXT_COLOR,
+            textAlign: "center",
+          }}
           value={state.value}
         />
       </View>

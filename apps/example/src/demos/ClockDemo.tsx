@@ -64,8 +64,12 @@ export const ClockDemoNative = () => {
           is24Hour={is24Hour}
           minutes={minutes}
           padHours={false}
-          style={{ fontFamily: DEMO_FONT_FAMILY, fontSize: DEMO_FONT_SIZE, color: DEMO_TEXT_COLOR }}
-          textAlign="center"
+          style={{
+            fontFamily: DEMO_FONT_FAMILY,
+            fontSize: DEMO_FONT_SIZE,
+            color: DEMO_TEXT_COLOR,
+            textAlign: "center",
+          }}
         />
       </View>
 

@@ -218,9 +218,13 @@ export const ScrubbingDemoNative = () => {
         <NumberFlow
           containerStyle={{ width: CANVAS_WIDTH }}
           format={{ minimumFractionDigits: 1, maximumFractionDigits: 1 }}
-          style={{ fontFamily: DEMO_FONT_FAMILY, fontSize: DEMO_FONT_SIZE, color: DEMO_TEXT_COLOR }}
+          style={{
+            fontFamily: DEMO_FONT_FAMILY,
+            fontSize: DEMO_FONT_SIZE,
+            color: DEMO_TEXT_COLOR,
+            textAlign: "center",
+          }}
           suffix=" mg"
-          textAlign="center"
           value={value}
         />
       </View>

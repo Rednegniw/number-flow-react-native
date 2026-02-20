@@ -173,8 +173,8 @@ function NativeTestRun({ onAllDone }: { onAllDone: (results: TimingResult[]) => 
                 fontFamily: DEMO_FONT_FAMILY,
                 fontSize: DEMO_FONT_SIZE,
                 color: DEMO_TEXT_COLOR,
+                textAlign: "center",
               }}
-              textAlign="center"
               value={TEST_VALUE}
             />
           </VisibilityProbe>
