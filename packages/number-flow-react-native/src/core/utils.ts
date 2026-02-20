@@ -98,8 +98,12 @@ export function parseDigitPosition(key: string): number | undefined {
     return -(parseInt(key.slice(9), 10) + 1);
   }
 
-  // Time digit keys — significance ordered: s1 < s10 < m1 < m10 < h1 < h10
+  // Time digit keys — significance ordered: c1 < c10 < s1 < s10 < m1 < m10 < h1 < h10
   switch (key) {
+    case "c1":
+      return -2;
+    case "c10":
+      return -1;
     case "s1":
       return 0;
     case "s10":
@@ -122,6 +126,8 @@ export function parseDigitPosition(key: string): number | undefined {
  * s10/m10 only go 0-5, h10 only goes 0-2.
  */
 export const TIME_DIGIT_COUNTS: Record<string, number> = {
+  c1: 10,
+  c10: 10,
   s1: 10,
   s10: 6,
   m1: 10,

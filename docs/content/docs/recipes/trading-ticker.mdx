@@ -160,12 +160,6 @@ export default function TradingTicker() {
 }
 ```
 
-### Features demonstrated
-
-- **Monospace pricing** — `'SF Mono'` / `'monospace'` keeps digits aligned in a table layout, just like real trading terminals
-- **Dynamic trend function** — `trend={trendFn}` directs spin up for price increases and down for decreases
-- **Color-coded badges** — percentage change badges use translucent accent backgrounds
-- **Stable format object** — `currencyFormat` is declared outside the component to avoid recreating `Intl.NumberFormat` on every render
 
 <Callout type="info">
 Notice that `trendFn` is declared outside the component as a stable function reference. If it were an inline arrow function, React would create a new function identity every render, which would trigger unnecessary work inside `NumberFlow`. The same applies to `currencyFormat` — both are classic React performance patterns that matter when values update every 2 seconds.

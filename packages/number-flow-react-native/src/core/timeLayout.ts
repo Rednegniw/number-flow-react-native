@@ -9,6 +9,7 @@ import type { GlyphMetrics, TextAlign } from "./types";
 const HOUR_KEYS = ["h10", "h1"] as const;
 const MINUTE_KEYS = ["m10", "m1"] as const;
 const SECOND_KEYS = ["s10", "s1"] as const;
+const CENTISECOND_KEYS = ["c10", "c1"] as const;
 
 function pushChar(
   chars: CharLayout[],
@@ -48,6 +49,26 @@ function pushDigitGroup(
 }
 
 /**
+ * Pushes seconds digits and, if present, the centisecond separator and digits.
+ * Handles both "09" (seconds only) and "09.88" (seconds with centiseconds).
+ */
+function pushSecondsAndCentiseconds(
+  chars: CharLayout[],
+  segment: string,
+  hasCentiseconds: boolean,
+  metrics: GlyphMetrics,
+): void {
+  if (hasCentiseconds && segment.includes(".")) {
+    const [secStr, centiStr] = segment.split(".");
+    pushDigitGroup(chars, secStr, SECOND_KEYS, metrics);
+    pushChar(chars, "csep", ".", metrics);
+    pushDigitGroup(chars, centiStr, CENTISECOND_KEYS, metrics);
+  } else {
+    pushDigitGroup(chars, segment, SECOND_KEYS, metrics);
+  }
+}
+
+/**
  * Computes time-aware string layout with fixed semantic keys.
  *
  * Unlike `computeStringLayout` which uses positional keys (`pos:0`, `pos:1`),
@@ -61,6 +82,7 @@ function pushDigitGroup(
  * @param textAlign - Text alignment within totalWidth
  * @param hasHours - Whether the hours segment is shown (determines how to interpret segments)
  * @param hasSeconds - Whether the seconds segment is shown
+ * @param hasCentiseconds - Whether the centiseconds segment is shown (appended as ".CC" after seconds)
  */
 export function computeTimeStringLayout(
   timeString: string,
@@ -69,6 +91,7 @@ export function computeTimeStringLayout(
   textAlign: TextAlign,
   hasHours: boolean,
   hasSeconds: boolean,
+  hasCentiseconds = false,
 ): CharLayout[] {
   const chars: CharLayout[] = [];
 
@@ -85,22 +108,22 @@ export function computeTimeStringLayout(
   const segments = timePart.split(":");
 
   if (hasHours && hasSeconds && segments.length === 3) {
-    // HH:MM:SS
+    // HH:MM:SS[.CC]
     pushDigitGroup(chars, segments[0], HOUR_KEYS, metrics);
     pushChar(chars, "sep", ":", metrics);
     pushDigitGroup(chars, segments[1], MINUTE_KEYS, metrics);
     pushChar(chars, "sep2", ":", metrics);
-    pushDigitGroup(chars, segments[2], SECOND_KEYS, metrics);
+    pushSecondsAndCentiseconds(chars, segments[2], hasCentiseconds, metrics);
   } else if (hasHours && !hasSeconds && segments.length >= 2) {
     // HH:MM
     pushDigitGroup(chars, segments[0], HOUR_KEYS, metrics);
     pushChar(chars, "sep", ":", metrics);
     pushDigitGroup(chars, segments[1], MINUTE_KEYS, metrics);
   } else if (!hasHours && hasSeconds && segments.length >= 2) {
-    // MM:SS (countdown mode)
+    // MM:SS[.CC] (countdown/stopwatch mode)
     pushDigitGroup(chars, segments[0], MINUTE_KEYS, metrics);
     pushChar(chars, "sep2", ":", metrics);
-    pushDigitGroup(chars, segments[1], SECOND_KEYS, metrics);
+    pushSecondsAndCentiseconds(chars, segments[1], hasCentiseconds, metrics);
   } else {
     // Fallback: just minutes (shouldn't normally happen)
     pushDigitGroup(chars, segments[0], MINUTE_KEYS, metrics);

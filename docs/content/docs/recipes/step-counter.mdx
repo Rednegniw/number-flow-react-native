@@ -1,153 +1,196 @@
 ---
 title: Step Counter
-description: Animated step counter with daily goal progress
+description: Galaxy Watch-inspired step counter with circular progress arc
 full: true
 ---
 
-A clean health-app style step counter with large rounded typography, an animated progress bar, and the signature odometer roll for accumulating step counts.
+A Galaxy Watch-inspired step counter with a circular progress arc, auto-incrementing step count with the signature `continuous` odometer roll, and dynamic weekday activity indicators.
 
 ```LiveExample
-import { useState } from 'react';
-import { View, Text, Pressable, Platform } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View, Text } from 'react-native';
 import { NumberFlow } from 'number-flow-react-native';
-import { ExampleLayout } from './ExampleUI';
 
-const DAILY_GOAL = 10000;
+const DAILY_GOAL = 6000;
+const DAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const FONT = 'Google Sans, sans-serif';
+
+const SIZE = 220;
+const STROKE = 10;
+const RADIUS = (SIZE - STROKE) / 2 - 6;
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+const ARC_DEGREES = 240;
+const ARC_LENGTH = (ARC_DEGREES / 360) * CIRCUMFERENCE;
+const GAP_LENGTH = CIRCUMFERENCE - ARC_LENGTH;
+const ROTATION = 150;
 
 export default function StepCounter() {
-  const [steps, setSteps] = useState(4823);
+  const [steps, setSteps] = useState(3458);
+  const currentDay = new Date().getDay();
+  const activityDays = [1, 2, 3, 4];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSteps(prev => prev + Math.floor(Math.random() * 12) + 1);
+    }, 1500);
+    return () => clearInterval(interval);
+  }, []);
 
   const progress = Math.min(steps / DAILY_GOAL, 1);
-  const goalReached = progress >= 1;
-
-  const accentColor = goalReached ? '#22c55e' : '#6366f1';
-  const accentBg = goalReached ? '#052e16' : '#1e1b4b';
-
-  const simulateWalk = () => {
-    const newSteps = Math.floor(Math.random() * 200) + 50;
-    setSteps(v => v + newSteps);
-  };
+  const dashoffset = ARC_LENGTH * (1 - progress);
+  const center = SIZE / 2;
 
   return (
-    <ExampleLayout>
-      {/* Header */}
-      <View style={{ alignItems: 'center', gap: 4 }}>
-        <Text style={{
-          fontSize: 13,
-          fontWeight: '600',
-          color: '#525252',
-          letterSpacing: 4,
-          textTransform: 'uppercase',
-        }}>
-          Today
-        </Text>
-        <NumberFlow
-          value={steps}
-          continuous
-          style={{
-            fontSize: 64,
-            fontFamily: Platform.OS === 'ios' ? 'SF Pro Rounded' : 'sans-serif',
-            fontWeight: '800',
-            color: '#fafafa',
-            letterSpacing: -1,
-          }}
-        />
-        <Text style={{
-          fontSize: 17,
-          fontWeight: '500',
-          color: '#525252',
-          marginTop: -4,
-        }}>
-          of {DAILY_GOAL.toLocaleString()} steps
-        </Text>
-      </View>
-
-      {/* Progress bar */}
-      <View style={{ width: '100%', maxWidth: 320, gap: 8 }}>
-        <View style={{
-          height: 6,
-          backgroundColor: '#1c1c1e',
-          borderRadius: 3,
-          overflow: 'hidden',
-        }}>
-          <View style={{
-            height: '100%',
-            width: `${progress * 100}%`,
-            backgroundColor: accentColor,
-            borderRadius: 3,
-          }} />
+    <View style={{
+      minHeight: '100vh',
+      backgroundColor: '#0a0a0a',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}>
+      {/* Watch face */}
+      <View style={{
+        width: SIZE,
+        height: SIZE,
+        borderRadius: SIZE / 2,
+        backgroundColor: '#000',
+        position: 'relative',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+        {/* Progress ring */}
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+          <svg viewBox={`0 0 ${SIZE} ${SIZE}`} width={SIZE} height={SIZE}>
+            <circle
+              cx={center}
+              cy={center}
+              r={RADIUS}
+              fill="none"
+              stroke="#222"
+              strokeWidth={STROKE}
+              strokeDasharray={`${ARC_LENGTH} ${GAP_LENGTH}`}
+              strokeLinecap="round"
+              transform={`rotate(${ROTATION} ${center} ${center})`}
+            />
+            <circle
+              cx={center}
+              cy={center}
+              r={RADIUS}
+              fill="none"
+              stroke="#00E676"
+              strokeWidth={STROKE}
+              strokeDasharray={`${ARC_LENGTH} ${CIRCUMFERENCE}`}
+              strokeDashoffset={dashoffset}
+              strokeLinecap="round"
+              transform={`rotate(${ROTATION} ${center} ${center})`}
+              style={{ transition: 'stroke-dashoffset 0.8s ease-out' }}
+            />
+          </svg>
         </View>
 
-        {/* Percentage badge */}
-        <View style={{ alignItems: 'center' }}>
-          <View style={{
-            paddingHorizontal: 14,
-            paddingVertical: 6,
-            borderRadius: 999,
-            backgroundColor: accentBg,
-          }}>
-            <NumberFlow
-              value={progress}
-              format={{ style: 'percent', minimumFractionDigits: 1 }}
-              style={{
-                fontSize: 15,
-                fontWeight: '700',
-                color: accentColor,
-                fontFamily: Platform.OS === 'ios' ? 'SF Pro Rounded' : 'sans-serif',
-              }}
+        {/* Content */}
+        <View style={{ alignItems: 'center', zIndex: 1, gap: 2 }}>
+          {/* Shoe icon (MDI shoe-sneaker) */}
+          <svg width={28} height={28} viewBox="0 0 24 24" style={{ marginBottom: 4 }}>
+            <path
+              d="M2 15C2 15 2 12 4 12C4.68 12 5.46 11.95 6.28 11.82C7.2 12.54 8.5 13 10 13H10.25L8.56 11.29C8.91 11.18 9.25 11.05 9.59 10.91L11.5 12.82C11.89 12.74 12.25 12.63 12.58 12.5L10.55 10.45C10.85 10.28 11.14 10.11 11.43 9.91L13.5 12C13.8 11.79 14.04 11.56 14.25 11.32L12.22 9.29C12.46 9.07 12.7 8.83 12.92 8.58L14.79 10.45C14.91 10.14 15 9.83 15 9.5C15 8.65 14.55 7.89 13.84 7.28C13.89 7.19 13.95 7.1 14 7L15.53 6.23C16.38 7.17 18.14 7.84 20.25 7.97L20.3 8H21C21 8 22 9 22 12.5C22 13.07 22 13.57 21.96 14H19C17.9 14 16.58 14.26 15.3 14.5C14.12 14.76 12.9 15 12 15H2M21 17C21 17 21.58 17 21.86 15H19C17 15 14 16 12 16H2.28C2.62 16.6 3.26 17 4 17H21Z"
+              fill="#00E676"
             />
+          </svg>
+
+          {/* Step count */}
+          <NumberFlow
+            value={steps}
+            continuous
+            style={{
+              fontSize: 36,
+              fontFamily: FONT,
+              fontWeight: '700',
+              color: '#fff',
+            }}
+          />
+
+          {/* Goal */}
+          <Text style={{
+            fontSize: 12,
+            fontFamily: FONT,
+            color: '#666',
+            marginTop: -2,
+          }}>
+            / {DAILY_GOAL.toLocaleString()} steps
+          </Text>
+
+          {/* Pagination dots */}
+          <View style={{
+            flexDirection: 'row',
+            gap: 4,
+            marginTop: 8,
+          }}>
+            {[0, 1, 2, 3].map(i => (
+              <View key={i} style={{
+                width: 5,
+                height: 5,
+                borderRadius: 2.5,
+                backgroundColor: i === 1 ? '#FF6D00' : '#333',
+              }} />
+            ))}
+          </View>
+
+        </View>
+
+        {/* Weekday row — positioned in the arc gap at bottom */}
+        <View style={{
+          position: 'absolute',
+          bottom: 12,
+          left: 0,
+          right: 0,
+          alignItems: 'center',
+        }}>
+          <View style={{
+            flexDirection: 'row',
+            gap: 2,
+            alignItems: 'center',
+          }}>
+            {DAYS.map((day, i) => {
+              const isToday = i === currentDay;
+              const hasActivity = activityDays.includes(i);
+              return (
+                <View key={i} style={{ alignItems: 'center', width: 20 }}>
+                  <View style={{
+                    width: 18,
+                    height: 18,
+                    borderRadius: 9,
+                    backgroundColor: isToday ? '#333' : 'transparent',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    <Text style={{
+                      fontSize: 9,
+                      fontFamily: FONT,
+                      fontWeight: isToday ? '700' : '600',
+                      color: isToday ? '#fff' : '#555',
+                    }}>
+                      {day}
+                    </Text>
+                  </View>
+                  <View style={{
+                    width: 3,
+                    height: 3,
+                    borderRadius: 1.5,
+                    backgroundColor: hasActivity ? '#FF6D00' : 'transparent',
+                    marginTop: 1,
+                  }} />
+                </View>
+              );
+            })}
           </View>
         </View>
       </View>
-
-      {/* Action buttons */}
-      <View style={{ flexDirection: 'row', gap: 12 }}>
-        <Pressable
-          onPress={simulateWalk}
-          style={{
-            paddingHorizontal: 28,
-            paddingVertical: 14,
-            borderRadius: 14,
-            backgroundColor: accentColor,
-          }}
-        >
-          <Text style={{
-            color: '#fff',
-            fontWeight: '700',
-            fontSize: 15,
-            letterSpacing: 0.3,
-          }}>
-            Simulate Walk
-          </Text>
-        </Pressable>
-
-        <Pressable
-          onPress={() => setSteps(0)}
-          style={{
-            paddingHorizontal: 28,
-            paddingVertical: 14,
-            borderRadius: 14,
-            borderWidth: 1,
-            borderColor: '#262626',
-          }}
-        >
-          <Text style={{ color: '#737373', fontWeight: '600', fontSize: 15 }}>
-            Reset
-          </Text>
-        </Pressable>
-      </View>
-    </ExampleLayout>
+    </View>
   );
 }
 ```
 
-### Features demonstrated
-
-- **Rounded system font** — `'SF Pro Rounded'` on iOS gives numbers a friendly, health-app feel
-- **Continuous mode** — the `continuous` prop creates an odometer roll as steps accumulate, where unchanged lower digits cascade
-- **Dynamic theming** — accent color shifts from indigo to green when the daily goal is reached
-- **Percentage badge** — a secondary `NumberFlow` with `format={{ style: 'percent' }}` shows progress in a pill
 
 <Callout type="info">
-The `continuous` prop is especially satisfying for counters that increment by irregular amounts. Going from `4823` to `4971` rolls digits at different speeds — the thousands digit barely moves while the ones digit spins rapidly, creating a mechanical counter effect.
+The circular progress ring uses the SVG `strokeDasharray`/`strokeDashoffset` technique. A 240-degree partial arc is created by setting the dash array to the arc length and gap length, then `strokeDashoffset` controls how much of the arc is filled. With a CSS transition on the offset, the ring animates smoothly in sync with `NumberFlow`'s digit roll as steps tick up.
 </Callout>

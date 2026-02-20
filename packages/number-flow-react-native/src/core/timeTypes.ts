@@ -23,6 +23,8 @@ interface TimeFlowValueProps {
   minutes: number;
   /** Seconds value (0-59). Omit to hide the seconds segment. */
   seconds?: number;
+  /** Centiseconds value (0-99). Omit to hide. Requires seconds to be set. Displayed as ".CC" after seconds. */
+  centiseconds?: number;
   /** Unix timestamp in ms. Extracts hours/minutes/seconds automatically. Takes priority over direct values. */
   timestamp?: number;
   /** Timezone offset in ms for timestamp mode. */
@@ -37,6 +39,9 @@ interface SkiaTimeFlowBaseProps extends AnimationBehaviorProps {
   is24Hour?: boolean;
   /** Pad hours with leading zero. Default: true. "09:30" vs "9:30". */
   padHours?: boolean;
+
+  /** Force equal-width digits using percentile-based interpolation between min and max digit widths. Equivalent to `fontVariant: ['tabular-nums']` on native components. */
+  tabularNums?: boolean;
 
   /** SkFont instance from useFont(). Required — renders empty until font loads. */
   font: SkFont | null;
@@ -62,6 +67,8 @@ type SkiaTimeFlowValueProps =
       minutes: number;
       /** Seconds value (0-59). Omit to hide the seconds segment. */
       seconds?: number;
+      /** Centiseconds value (0-99). Omit to hide. Requires seconds to be set. Displayed as ".CC" after seconds. */
+      centiseconds?: number;
       /** Unix timestamp in ms. Extracts hours/minutes/seconds automatically. */
       timestamp?: number;
       /** Timezone offset in ms for timestamp mode. */
@@ -72,6 +79,7 @@ type SkiaTimeFlowValueProps =
       hours?: never;
       minutes?: never;
       seconds?: never;
+      centiseconds?: never;
       timestamp?: never;
       timezoneOffset?: never;
       /** Worklet-driven pre-formatted time string (e.g. "14:30", "2:30 PM"). */

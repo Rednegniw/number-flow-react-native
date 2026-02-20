@@ -17,6 +17,7 @@ export const SkiaTimeFlow = ({
   hours,
   minutes,
   seconds,
+  centiseconds,
   timestamp,
   timezoneOffset,
   sharedValue,
@@ -37,10 +38,11 @@ export const SkiaTimeFlow = ({
   respectMotionPreference,
   continuous,
   mask,
+  tabularNums,
   onAnimationsStart,
   onAnimationsFinish,
 }: SkiaTimeFlowProps) => {
-  const metrics = useGlyphMetrics(font);
+  const metrics = useGlyphMetrics(font, undefined, undefined, tabularNums);
 
   if (__DEV__) {
     if (!font) {
@@ -66,9 +68,11 @@ export const SkiaTimeFlow = ({
   const resolvedHours = resolved.hours;
   const resolvedMinutes = resolved.minutes;
   const resolvedSeconds = resolved.seconds;
+  const resolvedCentiseconds = centiseconds;
 
   const hasHours = resolvedHours !== undefined;
   const hasSeconds = resolvedSeconds !== undefined;
+  const hasCentiseconds = resolvedCentiseconds !== undefined;
 
   if (__DEV__) {
     if (resolvedHours !== undefined && (resolvedHours < 0 || resolvedHours > 23)) {
@@ -80,10 +84,20 @@ export const SkiaTimeFlow = ({
     if (resolvedSeconds !== undefined && (resolvedSeconds < 0 || resolvedSeconds > 59)) {
       warnOnce("skia-tf-seconds", "seconds must be 0-59.");
     }
+    if (
+      resolvedCentiseconds !== undefined &&
+      (resolvedCentiseconds < 0 || resolvedCentiseconds > 99)
+    ) {
+      warnOnce("skia-tf-centiseconds", "centiseconds must be 0-99.");
+    }
+    if (resolvedCentiseconds !== undefined && resolvedSeconds === undefined) {
+      warnOnce("skia-tf-cs-no-sec", "centiseconds requires seconds to be set.");
+    }
   }
 
   const totalSeconds =
     (resolvedHours ?? 0) * 3600 + (resolvedMinutes ?? 0) * 60 + (resolvedSeconds ?? 0);
+  const trendValue = totalSeconds * 100 + (resolvedCentiseconds ?? 0);
 
   const keyedParts = useTimeFormatting(
     resolvedHours,
@@ -92,6 +106,7 @@ export const SkiaTimeFlow = ({
     resolvedSeconds,
     is24Hour,
     padHours,
+    resolvedCentiseconds,
   );
 
   const workletDigitValues = useWorkletFormatting(sharedValue, "", "");
@@ -107,6 +122,7 @@ export const SkiaTimeFlow = ({
         textAlign,
         hasHours,
         hasSeconds,
+        hasCentiseconds,
       );
     }
 
@@ -122,11 +138,12 @@ export const SkiaTimeFlow = ({
     resolvedMinutes,
     hasHours,
     hasSeconds,
+    hasCentiseconds,
   ]);
 
   const pipeline = useFlowPipeline({
     keyedParts,
-    trendValue: totalSeconds,
+    trendValue: trendValue,
     layout,
     metrics,
     animated,

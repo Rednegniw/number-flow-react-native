@@ -150,12 +150,6 @@ export default function FitnessDashboard() {
 }
 ```
 
-### Features demonstrated
-
-- **Rounded font** — `'SF Pro Rounded'` gives large numbers a soft, fitness-app feel typical of Apple Health and similar apps
-- **Continuous odometer** — the `continuous` prop creates cascading digit rolls as calories and distance accumulate
-- **Colored accent badges** — each metric has a translucent icon background matching its accent color
-- **Dark card layout** — `#18181b` cards on `#09090b` background with subtle `#27272a` borders
 
 <Callout type="info">
 Each `NumberFlow` instance manages its own animation state independently. When calories, distance, and heart rate update simultaneously (every 3 seconds in this example), all three animate concurrently without interfering with each other. The fixed slot pool means no component remounting even when digit counts change (e.g. calories going from `999` to `1000`).

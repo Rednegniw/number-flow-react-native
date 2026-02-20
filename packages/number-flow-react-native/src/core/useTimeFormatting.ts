@@ -25,11 +25,13 @@ export function formatTimeToKeyedParts(
   seconds: number | undefined,
   is24Hour: boolean,
   padHours: boolean,
+  centiseconds?: number | undefined,
 ): KeyedPart[] {
   const parts: KeyedPart[] = [];
 
   const hasHours = hours !== undefined;
   const hasSeconds = seconds !== undefined;
+  const hasCentiseconds = centiseconds !== undefined;
 
   if (hasHours) {
     const displayHours = is24Hour ? hours : to12Hour(hours);
@@ -61,6 +63,15 @@ export function formatTimeToKeyedParts(
     parts.push(digitPart("s1", s1));
   }
 
+  if (hasCentiseconds) {
+    parts.push(symbolPart("csep", "."));
+
+    const c10 = Math.floor(centiseconds / 10);
+    const c1 = centiseconds % 10;
+    parts.push(digitPart("c10", c10));
+    parts.push(digitPart("c1", c1));
+  }
+
   /**
    * Each character gets a value-dependent key so AM→PM triggers exit/enter crossfade.
    * Characters are emitted individually for correct glyph width measurement.
@@ -87,9 +98,10 @@ export function useTimeFormatting(
   seconds: number | undefined,
   is24Hour: boolean,
   padHours: boolean,
+  centiseconds?: number | undefined,
 ): KeyedPart[] {
   return useMemo(
-    () => formatTimeToKeyedParts(hours, minutes, seconds, is24Hour, padHours),
-    [hours, minutes, seconds, is24Hour, padHours],
+    () => formatTimeToKeyedParts(hours, minutes, seconds, is24Hour, padHours, centiseconds),
+    [hours, minutes, seconds, is24Hour, padHours, centiseconds],
   );
 }

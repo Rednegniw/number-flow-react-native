@@ -1,0 +1,176 @@
+---
+title: Apple Stopwatch
+description: iOS-style stopwatch with centisecond precision
+full: true
+---
+
+An Apple Stopwatch replica with centisecond-precision display and circular start/stop/reset buttons, composing three `NumberFlow` instances for the `MM:SS.CC` format.
+
+```LiveExample
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
+import { NumberFlow } from 'number-flow-react-native';
+
+const GREEN = '#30D158';
+const GREEN_DIM = 'rgba(48, 209, 88, 0.3)';
+const RED = '#FF3B30';
+const RED_DIM = 'rgba(255, 59, 48, 0.3)';
+const GRAY = '#333333';
+const GRAY_DIM = '#1C1C1E';
+const PAD_TWO = { minimumIntegerDigits: 2 };
+
+const TIME_STYLE = {
+  fontSize: 56,
+  fontWeight: '300',
+  fontVariant: ['tabular-nums'],
+  color: '#fff',
+};
+
+function useStopwatch() {
+  const [mm, setMm] = useState(0);
+  const [ss, setSs] = useState(0);
+  const [cc, setCc] = useState(0);
+  const [phase, setPhase] = useState('initial');
+
+  const startRef = useRef(0);
+  const accumRef = useRef(0);
+  const rafRef = useRef(null);
+  const prevMm = useRef(0);
+  const prevSs = useRef(0);
+  const prevCc = useRef(0);
+
+  const tick = useCallback(() => {
+    const ms = accumRef.current + (Date.now() - startRef.current);
+    const newMm = Math.floor(ms / 60000);
+    const newSs = Math.floor((ms % 60000) / 1000);
+    const newCc = Math.floor((ms % 1000) / 10);
+
+    if (newCc !== prevCc.current) { prevCc.current = newCc; setCc(newCc); }
+    if (newSs !== prevSs.current) { prevSs.current = newSs; setSs(newSs); }
+    if (newMm !== prevMm.current) { prevMm.current = newMm; setMm(newMm); }
+
+    rafRef.current = requestAnimationFrame(tick);
+  }, []);
+
+  const start = useCallback(() => {
+    startRef.current = Date.now();
+    setPhase('running');
+    rafRef.current = requestAnimationFrame(tick);
+  }, [tick]);
+
+  const stop = useCallback(() => {
+    cancelAnimationFrame(rafRef.current);
+    accumRef.current += Date.now() - startRef.current;
+    setPhase('paused');
+  }, []);
+
+  const reset = useCallback(() => {
+    cancelAnimationFrame(rafRef.current);
+    accumRef.current = 0;
+    prevMm.current = 0;
+    prevSs.current = 0;
+    prevCc.current = 0;
+    setMm(0); setSs(0); setCc(0);
+    setPhase('initial');
+  }, []);
+
+  useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
+
+  return { mm, ss, cc, phase, start, stop, reset };
+}
+
+function CircleButton({ label, color, bg, border, onPress, disabled }) {
+  return (
+    <Pressable
+      onPress={disabled ? undefined : onPress}
+      style={{
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 2,
+        borderColor: border,
+        opacity: disabled ? 0.5 : 1,
+        outline: 'none',
+      }}
+    >
+      <View style={{
+        width: 72,
+        height: 72,
+        borderRadius: 36,
+        backgroundColor: bg,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+        <Text style={{ fontSize: 17, fontWeight: '500', color }}>{label}</Text>
+      </View>
+    </Pressable>
+  );
+}
+
+export default function AppleStopwatch() {
+  const { mm, ss, cc, phase, start, stop, reset } = useStopwatch();
+
+  const leftButton = phase === 'running'
+    ? { label: 'Lap', color: '#fff', bg: GRAY, border: GRAY }
+    : phase === 'paused'
+      ? { label: 'Reset', color: '#fff', bg: GRAY, border: GRAY, onPress: reset }
+      : { label: 'Lap', color: '#555', bg: GRAY_DIM, border: GRAY, disabled: true };
+
+  const rightButton = phase === 'running'
+    ? { label: 'Stop', color: RED, bg: RED_DIM, border: RED_DIM, onPress: stop }
+    : { label: 'Start', color: GREEN, bg: GREEN_DIM, border: GREEN_DIM, onPress: start };
+
+  return (
+    <View style={{
+      minHeight: '100vh',
+      backgroundColor: '#000',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 32,
+    }}>
+      {/* Time display — three NumberFlows: MM: SS. CC */}
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <NumberFlow
+          value={mm}
+          format={PAD_TWO}
+          suffix=":"
+          trend={1}
+          style={TIME_STYLE}
+        />
+        <NumberFlow
+          value={ss}
+          format={PAD_TWO}
+          suffix="."
+          trend={1}
+          digits={{ 1: { max: 5 } }}
+          style={TIME_STYLE}
+        />
+        <NumberFlow
+          value={cc}
+          format={PAD_TWO}
+          animated={false}
+          style={TIME_STYLE}
+        />
+      </View>
+
+      {/* Pagination dots */}
+      <View style={{ flexDirection: 'row', gap: 6, marginVertical: 28 }}>
+        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#fff' }} />
+        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.3)' }} />
+      </View>
+
+      {/* Buttons */}
+      <View style={{ flexDirection: 'row', gap: 80 }}>
+        <CircleButton {...leftButton} />
+        <CircleButton {...rightButton} />
+      </View>
+    </View>
+  );
+}
+```
+
+<Callout type="info">
+This recipe composes three `NumberFlow` instances side by side — minutes with `suffix=":"`, seconds with `suffix="."`, and centiseconds with `animated={false}`. The `fontVariant: ['tabular-nums']` style prevents layout jitter from varying digit widths, and `digits={{ 1: { max: 5 } }}` on seconds constrains the tens digit to 0–5 for correct wrapping at the 59→00 boundary.
+</Callout>

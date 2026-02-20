@@ -14,10 +14,17 @@ export function buildCharSet(additionalChars?: string): string {
 export const metricsCache = new Map<string, import("../core/types").GlyphMetrics>();
 
 export function cacheKey(
-  style: { fontFamily?: string; fontSize: number },
+  style: {
+    fontFamily?: string;
+    fontSize: number;
+    fontVariant?: string[];
+    fontWeight?: string | number;
+  },
   additionalChars?: string,
 ): string {
-  const base = `${style.fontFamily}:${style.fontSize}`;
+  const variant = style.fontVariant?.join(",") ?? "";
+  const weight = style.fontWeight ?? "";
+  const base = `${style.fontFamily}:${style.fontSize}:${variant}:${weight}`;
   return additionalChars ? `${base}:${additionalChars}` : base;
 }
 

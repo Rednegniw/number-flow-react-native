@@ -1,37 +1,43 @@
 ---
 title: Countdown App
-description: Build a complete countdown timer with start, pause, and reset
+description: A cinematic Mars landing countdown with animated time display
 full: true
 ---
 
-A polished Pomodoro-style countdown with large monospaced digits, pill-shaped controls, and a visual urgency shift in the final seconds.
+A space-themed countdown with dramatic Mars imagery, Orbitron typography, and large animated digits ticking toward touchdown.
 
 ```LiveExample
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable, Platform } from 'react-native';
+import { View, Text, Image } from 'react-native';
 import { TimeFlow } from 'number-flow-react-native';
-import { ExampleLayout } from './ExampleUI';
 
-const PRESETS = [
-  { label: '1 min', seconds: 60 },
-  { label: '5 min', seconds: 300 },
-  { label: '10 min', seconds: 600 },
-  { label: '25 min', seconds: 1500 },
-];
+const MARS_IMAGE =
+  'https://images.unsplash.com/photo-1630694093867-4b947d812bf0?w=800&q=80&auto=format';
 
-export default function CountdownApp() {
-  const [totalSeconds, setTotalSeconds] = useState(300);
-  const [remaining, setRemaining] = useState(300);
-  const [running, setRunning] = useState(false);
+const BG = '#050510';
+
+const INITIAL_HOURS = 19;
+const INITIAL_MINUTES = 23;
+const INITIAL_SECONDS = 45;
+const INITIAL_TOTAL =
+  INITIAL_HOURS * 3600 + INITIAL_MINUTES * 60 + INITIAL_SECONDS;
+
+function useFontsReady() {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    document.fonts.ready.then(() => setReady(true));
+  }, []);
+
+  return ready;
+}
+
+export default function MarsCountdown() {
+  const fontsReady = useFontsReady();
+  const [remaining, setRemaining] = useState(INITIAL_TOTAL);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    if (!running || remaining <= 0) {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      if (remaining <= 0) setRunning(false);
-      return;
-    }
-
     intervalRef.current = setInterval(() => {
       setRemaining(prev => Math.max(0, prev - 1));
     }, 1000);
@@ -39,151 +45,91 @@ export default function CountdownApp() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [running, remaining]);
+  }, []);
 
-  const mins = Math.floor(remaining / 60);
-  const secs = remaining % 60;
-  const isLow = remaining > 0 && remaining <= 10;
-  const progress = remaining / totalSeconds;
-
-  const handleReset = () => {
-    setRunning(false);
-    setRemaining(totalSeconds);
-  };
-
-  const handlePreset = (seconds: number) => {
-    setRunning(false);
-    setTotalSeconds(seconds);
-    setRemaining(seconds);
-  };
-
-  const buttonLabel = running
-    ? 'Pause'
-    : remaining < totalSeconds
-      ? 'Resume'
-      : 'Start';
+  const hours = Math.floor(remaining / 3600);
+  const minutes = Math.floor((remaining % 3600) / 60);
+  const seconds = remaining % 60;
 
   return (
-    <ExampleLayout>
-      {/* Timer ring */}
+    <View style={{ minHeight: '100vh', backgroundColor: BG }}>
+      {/* Mars background — edge-to-edge, looming */}
+      <Image
+        source={{ uri: MARS_IMAGE }}
+        resizeMode="cover"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '75vh',
+        }}
+      />
+
+      {/* Gradient fade from image to background */}
+      <View
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: '50vh',
+          height: '30vh',
+          background: `linear-gradient(to bottom, transparent, ${BG})`,
+        }}
+      />
+
+      {/* Content anchored to bottom */}
       <View style={{
-        width: 300,
-        height: 300,
-        borderRadius: 150,
-        borderWidth: 4,
-        borderColor: isLow ? '#ef4444' : `rgba(168, 85, 247, ${0.2 + progress * 0.8})`,
+        minHeight: '100vh',
+        justifyContent: 'flex-end',
         alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#18181b',
-        shadowColor: isLow ? '#ef4444' : '#a855f7',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.4,
-        shadowRadius: 40,
+        paddingBottom: 100,
       }}>
-        <TimeFlow
-          minutes={mins}
-          seconds={secs}
-          style={{
-            fontSize: 72,
-            fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-            fontWeight: '200',
-            color: isLow ? '#ef4444' : '#fafafa',
-            letterSpacing: 2,
-          }}
-          trend={-1}
-          continuous={isLow}
-        />
+        {/* Header */}
         <Text style={{
-          fontSize: 13,
+          fontFamily: 'Orbitron',
+          fontSize: 11,
           fontWeight: '500',
-          color: '#71717a',
+          color: 'rgba(255, 255, 255, 0.5)',
           letterSpacing: 3,
           textTransform: 'uppercase',
-          marginTop: 8,
+          marginBottom: 12,
         }}>
-          remaining
+          Landing on Mars in
         </Text>
-      </View>
 
-      {/* Controls */}
-      <View style={{ flexDirection: 'row', gap: 12, marginTop: 48 }}>
-        <Pressable
-          onPress={() => setRunning(v => !v)}
-          style={{
-            paddingHorizontal: 40,
-            paddingVertical: 14,
-            borderRadius: 999,
-            backgroundColor: running ? '#ef4444' : '#a855f7',
-          }}
-        >
-          <Text style={{
-            color: '#fff',
-            fontWeight: '600',
-            fontSize: 16,
-            letterSpacing: 0.5,
-          }}>
-            {buttonLabel}
-          </Text>
-        </Pressable>
-
-        <Pressable
-          onPress={handleReset}
-          style={{
-            paddingHorizontal: 32,
-            paddingVertical: 14,
-            borderRadius: 999,
-            borderWidth: 1,
-            borderColor: '#3f3f46',
-          }}
-        >
-          <Text style={{ fontWeight: '600', fontSize: 16, color: '#a1a1aa' }}>
-            Reset
-          </Text>
-        </Pressable>
-      </View>
-
-      {/* Presets */}
-      <View style={{ flexDirection: 'row', gap: 8, marginTop: 32 }}>
-        {PRESETS.map(p => {
-          const isActive = p.seconds === totalSeconds;
-
-          return (
-            <Pressable
-              key={p.label}
-              onPress={() => handlePreset(p.seconds)}
+        {/* Timer box — wait for fonts so glyph measurement is accurate */}
+        <View style={{
+          borderWidth: 1,
+          borderColor: 'rgba(255, 255, 255, 0.15)',
+          paddingHorizontal: 24,
+          paddingVertical: 14,
+          overflow: 'visible',
+        }}>
+          {fontsReady && (
+            <TimeFlow
+              hours={hours}
+              minutes={minutes}
+              seconds={seconds}
+              trend={-1}
               style={{
-                paddingHorizontal: 16,
-                paddingVertical: 8,
-                borderRadius: 999,
-                backgroundColor: isActive ? '#27272a' : 'transparent',
-                borderWidth: 1,
-                borderColor: isActive ? '#a855f7' : '#27272a',
+                fontSize: 40,
+                fontFamily: 'Orbitron',
+                fontWeight: '700',
+                fontVariant: ['tabular-nums'],
+                color: '#ffffff',
+                letterSpacing: 2,
               }}
-            >
-              <Text style={{
-                fontSize: 13,
-                color: isActive ? '#e4e4e7' : '#71717a',
-                fontWeight: '500',
-              }}>
-                {p.label}
-              </Text>
-            </Pressable>
-          );
-        })}
+            />
+          )}
+        </View>
       </View>
-    </ExampleLayout>
+    </View>
   );
 }
 ```
 
-### Features demonstrated
-
-- **Monospaced digits** — `fontFamily: 'Menlo'` (iOS) / `'monospace'` (Android) gives the timer a clock-face aesthetic
-- **Urgency shift** — border glow and text color snap to red in the final 10 seconds
-- **Cascading roll** — `continuous={isLow}` triggers the odometer effect only during urgency
-- **Ring border** — opacity scales with `progress`, so the ring fades as time runs out
-- **Pill buttons** — `borderRadius: 999` creates capsule-shaped controls
 
 <Callout type="info">
-The `trend={-1}` prop ensures digits always spin downward, matching the intuition of a countdown. Without it, going from `10` to `09` would spin the tens digit *up* (shortest path from 1→0), which feels wrong for a timer.
+This demo uses a CSS `linear-gradient` for the image-to-background fade. Since `LiveExample` demos run as React Native Web in the browser, CSS properties like `background` work directly in the `style` prop. In a real React Native app, you'd use `expo-linear-gradient` or `react-native-linear-gradient` instead.
 </Callout>

@@ -208,12 +208,6 @@ function CurrencyPicker({
 }
 ```
 
-### Features demonstrated
-
-- **Locale-aware formatting** — each currency uses its native locale (`de-DE` for EUR, `ja-JP` for JPY), so decimal separators and grouping adapt automatically
-- **JPY auto-drops decimals** — `Intl.NumberFormat` knows JPY doesn't use fractional units, so the decimal and fraction digits animate out when switching to Yen
-- **Symbol animations** — switching from `$` to `€` or `¥` triggers enter/exit animations on the currency symbol
-- **Light/dark card contrast** — the "From" and "To" cards use inverted color schemes for visual separation
 
 <Callout type="info">
 When switching from USD (`$100.00`) to JPY (`¥14,950`), several things animate simultaneously: the currency symbol changes, the decimal point and fraction digits exit, and the integer digits change. All of these are driven by the character keying system — the library assigns stable keys to each character position, so React knows which characters are entering, exiting, or updating.

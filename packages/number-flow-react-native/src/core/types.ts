@@ -143,6 +143,9 @@ type SkiaNumberFlowValueProps =
     };
 
 interface SkiaNumberFlowBaseProps extends AnimationBehaviorProps {
+  /** Force equal-width digits using percentile-based interpolation between min and max digit widths. Equivalent to `fontVariant: ['tabular-nums']` on native components. */
+  tabularNums?: boolean;
+
   /** SkFont instance from useFont(). Required — renders empty until font loads. */
   font: SkFont | null;
   /** Text color (Skia color string). Defaults to "#000000". */

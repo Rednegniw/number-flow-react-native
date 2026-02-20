@@ -426,6 +426,7 @@ export const SkiaNumberFlow = ({
   respectMotionPreference,
   continuous,
   digits,
+  tabularNums,
   scrubDigitWidthPercentile = 0.75,
   onAnimationsStart,
   onAnimationsFinish,
@@ -438,7 +439,7 @@ export const SkiaNumberFlow = ({
   const numberingSystem = useMemo(() => detectNumberingSystem(locales, format), [locales, format]);
   const zeroCodePoint = getZeroCodePoint(numberingSystem);
   const digitStringsArr = useMemo(() => getDigitStrings(numberingSystem), [numberingSystem]);
-  const metrics = useGlyphMetrics(font, formatChars, digitStringsArr);
+  const metrics = useGlyphMetrics(font, formatChars, digitStringsArr, tabularNums);
 
   if (__DEV__) {
     if (!font) {

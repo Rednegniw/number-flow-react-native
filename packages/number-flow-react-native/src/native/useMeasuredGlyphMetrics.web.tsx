@@ -57,7 +57,9 @@ function measureWithCanvas(
   const charWidths: Record<string, number> = {};
   for (let i = 0; i < charSet.length; i++) {
     const ch = charSet[i] === " " ? "\u00A0" : charSet[i];
-    charWidths[charSet[i]] = ctx.measureText(ch).width;
+    const m = ctx.measureText(ch);
+    const visual = (m.actualBoundingBoxLeft ?? 0) + (m.actualBoundingBoxRight ?? m.width);
+    charWidths[charSet[i]] = Math.max(m.width, Math.ceil(visual));
   }
 
   let maxDigitWidth = 0;
