@@ -171,7 +171,7 @@ export function LiveExampleContent({ code }: LiveExampleProps) {
         </div>
 
         {/* Phone preview */}
-        <div className="shrink-0 flex items-center justify-center">
+        <div className="shrink-0 flex justify-center" style={{ height: 560 }}>
           <LiveExamplePhoneMockup>
             <PreviewWithOverlay />
           </LiveExamplePhoneMockup>
