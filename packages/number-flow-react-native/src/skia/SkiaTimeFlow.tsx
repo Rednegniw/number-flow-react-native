@@ -210,9 +210,11 @@ export const SkiaTimeFlow = ({
    */
   const maskLeft = x + contentLeft - maskWidth;
   const maskRight = x + contentRight + maskWidth;
-  const maskY = baseY + metrics.ascent;
+  const expansionTop = resolvedMask ? adaptiveMask.expansionTop : 0;
+  const expansionBottom = resolvedMask ? adaptiveMask.expansionBottom : 0;
+  const maskY = baseY + metrics.ascent - expansionTop;
   const maskTotalWidth = contentWidth + 2 * maskWidth;
-  const maskTotalHeight = metrics.lineHeight;
+  const maskTotalHeight = metrics.lineHeight + expansionTop + expansionBottom;
   const hRatio = maskTotalWidth > 0 ? maskWidth / maskTotalWidth : 0;
   const vRatioTop = maskTotalHeight > 0 ? maskTopHeight / maskTotalHeight : 0;
   const vRatioBottom = maskTotalHeight > 0 ? maskBottomHeight / maskTotalHeight : 0;

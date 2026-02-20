@@ -190,9 +190,11 @@ function SkiaNumberFlowRuntime({
   // Vertical: fade is WITHIN the text line height (digits roll through it)
   const maskLeft = x + contentLeft - maskWidth;
   const maskRight = x + contentRight + maskWidth;
-  const maskY = baseY + metrics.ascent;
+  const expansionTop = resolvedMask ? adaptiveMask.expansionTop : 0;
+  const expansionBottom = resolvedMask ? adaptiveMask.expansionBottom : 0;
+  const maskY = baseY + metrics.ascent - expansionTop;
   const maskTotalWidth = contentWidth + 2 * maskWidth;
-  const maskTotalHeight = metrics.lineHeight;
+  const maskTotalHeight = metrics.lineHeight + expansionTop + expansionBottom;
   const hRatio = maskTotalWidth > 0 ? maskWidth / maskTotalWidth : 0;
   const vRatioTop = maskTotalHeight > 0 ? maskTopHeight / maskTotalHeight : 0;
   const vRatioBottom = maskTotalHeight > 0 ? maskBottomHeight / maskTotalHeight : 0;
@@ -338,9 +340,17 @@ function SkiaNumberFlowSharedMode({
   const keyedParts = useNumberFormatting(effectiveValue, format, locales, prefix, suffix);
 
   const layout = useMemo(() => {
-    const text = `${prefix}${sharedValue.value}${suffix}`;
-    return computeStringLayout(text, metrics, width, textAlign);
-  }, [metrics, width, textAlign, prefix, suffix, sharedValue]);
+    const text = `${prefix}${effectiveValue}${suffix}`;
+    return computeStringLayout(
+      text,
+      metrics,
+      width,
+      textAlign,
+      undefined,
+      prefix.length,
+      suffix.length,
+    );
+  }, [metrics, width, textAlign, prefix, suffix, effectiveValue]);
 
   const layoutDigitCount = useMemo(() => {
     let count = 0;
