@@ -78,8 +78,12 @@ export const ScientificDemoNative = () => {
         <NumberFlow
           containerStyle={{ width: CANVAS_WIDTH }}
           format={{ notation, maximumFractionDigits: 3 }}
-          style={{ fontFamily: DEMO_FONT_FAMILY, fontSize: DEMO_FONT_SIZE, color: DEMO_TEXT_COLOR }}
-          textAlign="center"
+          style={{
+            fontFamily: DEMO_FONT_FAMILY,
+            fontSize: DEMO_FONT_SIZE,
+            color: DEMO_TEXT_COLOR,
+            textAlign: "center",
+          }}
           value={value}
         />
       </View>

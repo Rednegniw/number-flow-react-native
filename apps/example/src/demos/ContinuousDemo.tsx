@@ -102,8 +102,8 @@ export const ContinuousDemoNative = () => {
                 fontFamily: DEMO_FONT_FAMILY,
                 fontSize: DEMO_FONT_SIZE_COMPACT,
                 color: DEMO_TEXT_COLOR,
+                textAlign: "center",
               }}
-              textAlign="center"
               trend={1}
               value={number.value}
             />
@@ -118,8 +118,8 @@ export const ContinuousDemoNative = () => {
                 fontFamily: DEMO_FONT_FAMILY,
                 fontSize: DEMO_FONT_SIZE_COMPACT,
                 color: DEMO_TEXT_COLOR,
+                textAlign: "center",
               }}
-              textAlign="center"
               trend={1}
               value={number.value}
             />
@@ -149,8 +149,8 @@ export const ContinuousDemoNative = () => {
                 fontFamily: DEMO_FONT_FAMILY,
                 fontSize: DEMO_FONT_SIZE_COMPACT,
                 color: DEMO_TEXT_COLOR,
+                textAlign: "center",
               }}
-              textAlign="center"
               trend={1}
             />
           </ComparisonCard>
@@ -166,8 +166,8 @@ export const ContinuousDemoNative = () => {
                 fontFamily: DEMO_FONT_FAMILY,
                 fontSize: DEMO_FONT_SIZE_COMPACT,
                 color: DEMO_TEXT_COLOR,
+                textAlign: "center",
               }}
-              textAlign="center"
               trend={1}
             />
           </ComparisonCard>

@@ -19,7 +19,6 @@ export const NumberFlow = ({
   format,
   locales,
   style: nfStyleProp = {},
-  textAlign = "left",
   prefix = "",
   suffix = "",
   spinTiming,
@@ -35,13 +34,13 @@ export const NumberFlow = ({
   containerStyle,
   mask,
 }: NumberFlowProps) => {
-  const nfStyle = useMemo(
-    () => ({
-      ...nfStyleProp,
-      fontSize: nfStyleProp.fontSize ?? DEFAULT_FONT_SIZE,
-    }),
-    [nfStyleProp],
-  );
+  const nfStyle = useMemo(() => {
+    const { textAlign: _ta, ...rest } = nfStyleProp;
+    return { ...rest, fontSize: nfStyleProp.fontSize ?? DEFAULT_FONT_SIZE };
+  }, [nfStyleProp]);
+
+  const rawTextAlign = nfStyleProp.textAlign;
+  const textAlign = rawTextAlign === "center" || rawTextAlign === "right" ? rawTextAlign : "left";
 
   const formatChars = useMemo(
     () => getFormatCharacters(locales, format, prefix, suffix),
