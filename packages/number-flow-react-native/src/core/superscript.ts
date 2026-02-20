@@ -1,5 +1,5 @@
 import type { TextStyle } from "react-native";
-import { SUPERSCRIPT_SCALE } from "./constants";
+import { DEFAULT_FONT_SIZE, SUPERSCRIPT_SCALE } from "./constants";
 
 /**
  * Returns the scaled TextStyle for superscript rendering in native slots.
@@ -8,7 +8,7 @@ import { SUPERSCRIPT_SCALE } from "./constants";
 export function getSuperscriptTextStyle(textStyle: TextStyle, lineHeight: number): TextStyle {
   return {
     ...textStyle,
-    fontSize: (textStyle.fontSize ?? 16) * SUPERSCRIPT_SCALE,
+    fontSize: (textStyle.fontSize ?? DEFAULT_FONT_SIZE) * SUPERSCRIPT_SCALE,
     lineHeight,
   };
 }

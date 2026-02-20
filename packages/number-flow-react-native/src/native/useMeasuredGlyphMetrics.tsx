@@ -1,15 +1,16 @@
 import React, { useCallback, useMemo, useReducer, useRef } from "react";
-import { Text } from "react-native";
+import { Text, type TextStyle } from "react-native";
 import type { GlyphMetrics } from "../core/types";
 import { buildCharSet, cacheKey, estimateCharBounds, metricsCache } from "./glyphMetricsShared";
-import type { NumberFlowStyle } from "./types";
+
+type ResolvedStyle = TextStyle & { fontSize: number };
 
 type TextLayoutEvent = Parameters<
   NonNullable<React.ComponentProps<typeof Text>["onTextLayout"]>
 >[0];
 
 interface MeasureComponentProps {
-  nfStyle: NumberFlowStyle;
+  nfStyle: ResolvedStyle;
   charSet: string;
   localeDigitStrings?: string[];
   onComplete: (metrics: GlyphMetrics) => void;
@@ -97,7 +98,7 @@ const MeasureComponent = React.memo(
 MeasureComponent.displayName = "NumberFlowMeasure";
 
 export function useMeasuredGlyphMetrics(
-  style: NumberFlowStyle,
+  style: ResolvedStyle,
   additionalChars?: string,
   localeDigitStrings?: string[],
 ): {

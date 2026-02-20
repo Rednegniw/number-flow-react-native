@@ -10,8 +10,8 @@ interface TimeFlowBaseProps extends AnimationBehaviorProps {
   /** Pad hours with leading zero. Default: true. "09:30" vs "9:30". */
   padHours?: boolean;
 
-  /** Text styling. fontSize is required; fontFamily defaults to the platform system font. */
-  style: NumberFlowStyle;
+  /** Text styling. fontSize defaults to 16 when omitted; fontFamily defaults to the platform system font. */
+  style?: NumberFlowStyle;
   /** Text alignment. Defaults to "left". */
   textAlign?: TextAlign;
   /** Style applied to the outer container View */

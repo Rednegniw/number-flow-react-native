@@ -1,5 +1,7 @@
 export const MAX_SLOTS = 20;
 
+export const DEFAULT_FONT_SIZE = 16;
+
 export const DIGIT_COUNT = 10;
 
 // Fallback character set for glyph measurement when the actual format characters are unknown

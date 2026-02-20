@@ -1,8 +1,10 @@
 /// <reference lib="dom" />
 import { useMemo } from "react";
+import type { TextStyle } from "react-native";
 import type { GlyphMetrics } from "../core/types";
 import { buildCharSet, cacheKey, estimateCharBounds, metricsCache } from "./glyphMetricsShared";
-import type { NumberFlowStyle } from "./types";
+
+type ResolvedStyle = TextStyle & { fontSize: number };
 
 let offscreenCtx: CanvasRenderingContext2D | null = null;
 
@@ -36,7 +38,7 @@ function resolveWebFontFamily(family: string): string {
   return family;
 }
 
-function buildCSSFont(style: NumberFlowStyle): string {
+function buildCSSFont(style: ResolvedStyle): string {
   const weight = style.fontWeight ?? "normal";
   const fontStyle = style.fontStyle ?? "normal";
   const size = `${style.fontSize}px`;
@@ -45,7 +47,7 @@ function buildCSSFont(style: NumberFlowStyle): string {
 }
 
 function measureWithCanvas(
-  style: NumberFlowStyle,
+  style: ResolvedStyle,
   charSet: string,
   localeDigitStrings?: string[],
 ): GlyphMetrics {
@@ -81,7 +83,7 @@ function measureWithCanvas(
 }
 
 export function useMeasuredGlyphMetrics(
-  style: NumberFlowStyle,
+  style: ResolvedStyle,
   additionalChars?: string,
   localeDigitStrings?: string[],
 ): {
