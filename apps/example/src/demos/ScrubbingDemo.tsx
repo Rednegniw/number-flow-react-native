@@ -96,15 +96,8 @@ export const ScrubbingDemoSkia = () => {
   const skiaFont = useSkiaFont(DEMO_SKIA_FONT_ASSET, DEMO_FONT_SIZE);
 
   const thumbX = useSharedValue(TRACK_WIDTH / 2);
-  const isScrubbing = useSharedValue(false);
-  const [lastValue, setLastValue] = useState(Math.round((MAX_VALUE / 2) * 10) / 10);
-
-  const updateLastValue = useCallback((v: number) => {
-    setLastValue(v);
-  }, []);
 
   const formattedValue = useDerivedValue(() => {
-    if (!isScrubbing.value) return "";
     const ratio = Math.max(0, Math.min(1, thumbX.value / TRACK_WIDTH));
     const value = MIN_VALUE + ratio * (MAX_VALUE - MIN_VALUE);
     return value.toFixed(1);
@@ -113,19 +106,11 @@ export const ScrubbingDemoSkia = () => {
   const panGesture = Gesture.Pan()
     .onStart(({ x }) => {
       "worklet";
-      isScrubbing.value = true;
       thumbX.value = Math.max(0, Math.min(TRACK_WIDTH, x));
     })
     .onUpdate(({ x }) => {
       "worklet";
       thumbX.value = Math.max(0, Math.min(TRACK_WIDTH, x));
-    })
-    .onEnd(() => {
-      "worklet";
-      isScrubbing.value = false;
-      const ratio = Math.max(0, Math.min(1, thumbX.value / TRACK_WIDTH));
-      const value = Math.round((MIN_VALUE + ratio * (MAX_VALUE - MIN_VALUE)) * 10) / 10;
-      runOnJS(updateLastValue)(value);
     });
 
   const thumbStyle = useAnimatedStyle(() => ({
@@ -171,11 +156,6 @@ export const ScrubbingDemoSkia = () => {
         thumbStyle={thumbStyle}
         trackFillStyle={trackFillStyle}
       />
-
-      {/* Last committed value */}
-      <Text style={{ fontSize: 11, color: colors.textSecondary, textAlign: "center" }}>
-        Last value: {lastValue.toFixed(1)} mg
-      </Text>
     </View>
   );
 };

@@ -103,7 +103,13 @@ const SectionHeader = ({ title }: { title: string }) => {
 
 const isWeb = Platform.OS === "web";
 
-const ListHeader = ({ onShowcase }: { onShowcase: () => void }) => (
+const ListHeader = ({
+  onShowcase,
+  onRecording,
+}: {
+  onShowcase: () => void;
+  onRecording: () => void;
+}) => (
   <Animated.View entering={FadeIn.duration(300)} style={{ paddingHorizontal: 4, paddingBottom: 4 }}>
     <Text
       style={{
@@ -159,6 +165,40 @@ const ListHeader = ({ onShowcase }: { onShowcase: () => void }) => (
         </Text>
       </RipplePressable>
     )}
+
+    {/* Recording button — hidden on web (requires Skia) */}
+    {!isWeb && (
+      <RipplePressable
+        onPress={onRecording}
+        style={{
+          backgroundColor: "#0A0A0A",
+          borderRadius: 14,
+          padding: 16,
+          marginTop: 10,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 16,
+            fontFamily: FONT_SEMIBOLD,
+            color: "#FFFFFF",
+          }}
+        >
+          Recording
+        </Text>
+        <Text
+          style={{
+            fontSize: 13,
+            fontFamily: FONT_REGULAR,
+            color: "#9CA3AF",
+            marginTop: 4,
+            lineHeight: 18,
+          }}
+        >
+          Skia demos for screen capture
+        </Text>
+      </RipplePressable>
+    )}
   </Animated.View>
 );
 
@@ -188,7 +228,12 @@ export const HomeScreen = ({ navigation }: Props) => {
         gap: 10,
       }}
       keyExtractor={keyExtractor}
-      ListHeaderComponent={<ListHeader onShowcase={() => navigation.navigate("Showcase")} />}
+      ListHeaderComponent={
+        <ListHeader
+          onRecording={() => navigation.navigate("RecordingList")}
+          onShowcase={() => navigation.navigate("Showcase")}
+        />
+      }
       renderItem={renderItem}
       renderSectionHeader={renderSectionHeader}
       sections={DEMO_SECTIONS}
