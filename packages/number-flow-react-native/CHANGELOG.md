@@ -1,5 +1,11 @@
 # number-flow-react-native
 
+## 0.2.0
+
+### Minor Changes
+
+- **Breaking:** Removed the `textAlign` prop from `NumberFlow`, `TimeFlow`, `SkiaNumberFlow`, and `SkiaTimeFlow`. Set `textAlign` via the `style` prop instead (e.g. `style={{ textAlign: "center" }}`).
+
 ## 0.1.12
 
 ### Patch Changes
