@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { ReactNode } from "react";
 
 interface PhoneMockupProps {
@@ -8,9 +9,11 @@ export function PhoneMockup({ children }: PhoneMockupProps) {
   return (
     <div className="relative mx-auto" style={{ maxWidth: 280 }}>
       {/* Frame image — establishes dimensions, sits on top */}
-      <img
+      <Image
         src="/iphone-mockup.png"
         alt=""
+        width={390}
+        height={844}
         className="relative z-10 w-full h-auto pointer-events-none select-none"
         draggable={false}
       />
