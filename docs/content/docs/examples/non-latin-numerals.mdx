@@ -61,42 +61,44 @@ export default function NonLatinNumerals() {
 
 ### Supported systems
 
-| System | Script | Digits (0–9) |
-|---|---|---|
-| `arab` | Arabic-Indic | ٠١٢٣٤٥٦٧٨٩ |
-| `arabext` | Extended Arabic-Indic | ۰۱۲۳۴۵۶۷۸۹ |
-| `bali` | Balinese | ᭐᭑᭒᭓᭔᭕᭖᭗᭘᭙ |
-| `beng` | Bengali | ০১২৩৪৫৬৭৮৯ |
-| `cham` | Cham | ꩐꩑꩒꩓꩔꩕꩖꩗꩘꩙ |
-| `deva` | Devanagari | ०१२३४५६७८९ |
-| `fullwide` | Fullwidth | ０１２３４５６７８９ |
-| `gujr` | Gujarati | ૦૧૨૩૪૫૬૭૮૯ |
-| `guru` | Gurmukhi | ੦੧੨੩੪੫੬੭੮੯ |
-| `hanidec` | Chinese Decimal | 〇一二三四五六七八九 |
-| `java` | Javanese | ꧐꧑꧒꧓꧔꧕꧖꧗꧘꧙ |
-| `kali` | Kayah Li | ꤀꤁꤂꤃꤄꤅꤆꤇꤈꤉ |
-| `khmr` | Khmer | ០១២៣៤៥៦៧៨៩ |
-| `knda` | Kannada | ೦೧೨೩೪೫೬೭೮೯ |
-| `lana` | Tai Tham Hora | ᪀᪁᪂᪃᪄᪅᪆᪇᪈᪉ |
-| `lanatham` | Tai Tham Tham | ᪐᪑᪒᪓᪔᪕᪖᪗᪘᪙ |
-| `laoo` | Lao | ໐໑໒໓໔໕໖໗໘໙ |
-| `latn` | Latin | 0123456789 |
-| `lepc` | Lepcha | ᱀᱁᱂᱃᱄᱅᱆᱇᱈᱉ |
-| `limb` | Limbu | ᥆᥇᥈᥉᥊᥋᥌᥍᥎᥏ |
-| `mlym` | Malayalam | ൦൧൨൩൪൫൬൭൮൯ |
-| `mong` | Mongolian | ᠐᠑᠒᠓᠔᠕᠖᠗᠘᠙ |
-| `mtei` | Meetei Mayek | ꯰꯱꯲꯳꯴꯵꯶꯷꯸꯹ |
-| `mymr` | Myanmar | ၀၁၂၃၄၅၆၇၈၉ |
-| `mymrshan` | Myanmar Shan | ႐႑႒႓႔႕႖႗႘႙ |
-| `nkoo` | N'Ko | ߀߁߂߃߄߅߆߇߈߉ |
-| `olck` | Ol Chiki | ᱐᱑᱒᱓᱔᱕᱖᱗᱘᱙ |
-| `orya` | Odia | ୦୧୨୩୪୫୬୭୮୯ |
-| `saur` | Saurashtra | ꣐꣑꣒꣓꣔꣕꣖꣗꣘꣙ |
-| `sinh` | Sinhala Lith | ෦෧෨෩෪෫෬෭෮෯ |
-| `sund` | Sundanese | ᮰᮱᮲᮳᮴᮵᮶᮷᮸᮹ |
-| `talu` | New Tai Lue | ᧐᧑᧒᧓᧔᧕᧖᧗᧘᧙ |
-| `tamldec` | Tamil | ௦௧௨௩௪௫௬௭௮௯ |
-| `telu` | Telugu | ౦౧౨౩౪౫౬౭౮౯ |
-| `thai` | Thai | ๐๑๒๓๔๕๖๗๘๙ |
-| `tibt` | Tibetan | ༠༡༢༣༤༥༦༧༨༩ |
-| `vaii` | Vai | ꘠꘡꘢꘣꘤꘥꘦꘧꘨꘩ |
+| System | Script | Digits (0–9) | Locale |
+|---|---|---|---|
+| `arab` | Arabic-Indic | ٠١٢٣٤٥٦٧٨٩ | `ar-SA` |
+| `arabext` | Extended Arabic-Indic | ۰۱۲۳۴۵۶۷۸۹ | `fa-IR` |
+| `bali` | Balinese | ᭐᭑᭒᭓᭔᭕᭖᭗᭘᭙ | `*-u-nu-bali` |
+| `beng` | Bengali | ০১২৩৪৫৬৭৮৯ | `bn-BD` |
+| `cham` | Cham | ꩐꩑꩒꩓꩔꩕꩖꩗꩘꩙ | `*-u-nu-cham` |
+| `deva` | Devanagari | ०१२३४५६७८९ | `mr-IN` or `*-u-nu-deva` |
+| `fullwide` | Fullwidth | ０１２３４５６７８９ | `*-u-nu-fullwide` |
+| `gujr` | Gujarati | ૦૧૨૩૪૫૬૭૮૯ | `*-u-nu-gujr` |
+| `guru` | Gurmukhi | ੦੧੨੩੪੫੬੭੮੯ | `*-u-nu-guru` |
+| `hanidec` | Chinese Decimal | 〇一二三四五六七八九 | `*-u-nu-hanidec` |
+| `java` | Javanese | ꧐꧑꧒꧓꧔꧕꧖꧗꧘꧙ | `*-u-nu-java` |
+| `kali` | Kayah Li | ꤀꤁꤂꤃꤄꤅꤆꤇꤈꤉ | `*-u-nu-kali` |
+| `khmr` | Khmer | ០១២៣៤៥៦៧៨៩ | `*-u-nu-khmr` |
+| `knda` | Kannada | ೦೧೨೩೪೫೬೭೮೯ | `*-u-nu-knda` |
+| `lana` | Tai Tham Hora | ᪀᪁᪂᪃᪄᪅᪆᪇᪈᪉ | `*-u-nu-lana` |
+| `lanatham` | Tai Tham Tham | ᪐᪑᪒᪓᪔᪕᪖᪗᪘᪙ | `*-u-nu-lanatham` |
+| `laoo` | Lao | ໐໑໒໓໔໕໖໗໘໙ | `*-u-nu-laoo` |
+| `latn` | Latin | 0123456789 | `en-US` (default) |
+| `lepc` | Lepcha | ᱀᱁᱂᱃᱄᱅᱆᱇᱈᱉ | `*-u-nu-lepc` |
+| `limb` | Limbu | ᥆᥇᥈᥉᥊᥋᥌᥍᥎᥏ | `*-u-nu-limb` |
+| `mlym` | Malayalam | ൦൧൨൩൪൫൬൭൮൯ | `*-u-nu-mlym` |
+| `mong` | Mongolian | ᠐᠑᠒᠓᠔᠕᠖᠗᠘᠙ | `*-u-nu-mong` |
+| `mtei` | Meetei Mayek | ꯰꯱꯲꯳꯴꯵꯶꯷꯸꯹ | `*-u-nu-mtei` |
+| `mymr` | Myanmar | ၀၁၂၃၄၅၆၇၈၉ | `my-MM` |
+| `mymrshan` | Myanmar Shan | ႐႑႒႓႔႕႖႗႘႙ | `*-u-nu-mymrshan` |
+| `nkoo` | N'Ko | ߀߁߂߃߄߅߆߇߈߉ | `*-u-nu-nkoo` |
+| `olck` | Ol Chiki | ᱐᱑᱒᱓᱔᱕᱖᱗᱘᱙ | `sat-IN` |
+| `orya` | Odia | ୦୧୨୩୪୫୬୭୮୯ | `*-u-nu-orya` |
+| `saur` | Saurashtra | ꣐꣑꣒꣓꣔꣕꣖꣗꣘꣙ | `*-u-nu-saur` |
+| `sinh` | Sinhala Lith | ෦෧෨෩෪෫෬෭෮෯ | `*-u-nu-sinh` |
+| `sund` | Sundanese | ᮰᮱᮲᮳᮴᮵᮶᮷᮸᮹ | `*-u-nu-sund` |
+| `talu` | New Tai Lue | ᧐᧑᧒᧓᧔᧕᧖᧗᧘᧙ | `*-u-nu-talu` |
+| `tamldec` | Tamil | ௦௧௨௩௪௫௬௭௮௯ | `*-u-nu-tamldec` |
+| `telu` | Telugu | ౦౧౨౩౪౫౬౭౮౯ | `*-u-nu-telu` |
+| `thai` | Thai | ๐๑๒๓๔๕๖๗๘๙ | `*-u-nu-thai` |
+| `tibt` | Tibetan | ༠༡༢༣༤༥༦༧༨༩ | `dz-BT` |
+| `vaii` | Vai | ꘠꘡꘢꘣꘤꘥꘦꘧꘨꘩ | `*-u-nu-vaii` |
+
+`*` means any base locale. For example, `en-US-u-nu-thai` gives Thai digits with English formatting (commas as group separators), while `th-TH-u-nu-thai` gives Thai digits with Thai formatting conventions.
