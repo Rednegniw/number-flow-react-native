@@ -8,9 +8,13 @@ import type { RootStackParamList } from "./types";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-// Lazy-import ShowcaseScreen to avoid pulling in @shopify/react-native-skia on web
+// Lazy-import Skia-dependent screens to avoid pulling in @shopify/react-native-skia on web
 const LazyShowcase =
   Platform.OS === "web" ? undefined : require("../screens/ShowcaseScreen").ShowcaseScreen;
+const LazyRecordingList =
+  Platform.OS === "web" ? undefined : require("../screens/RecordingListScreen").RecordingListScreen;
+const LazyRecordingDemo =
+  Platform.OS === "web" ? undefined : require("../screens/RecordingDemoScreen").RecordingDemoScreen;
 
 export const RootNavigator = () => (
   <Stack.Navigator
@@ -27,5 +31,13 @@ export const RootNavigator = () => (
     {LazyShowcase && (
       <Stack.Screen component={LazyShowcase} name="Showcase" options={{ headerShown: false }} />
     )}
+    {LazyRecordingList && (
+      <Stack.Screen
+        component={LazyRecordingList}
+        name="RecordingList"
+        options={{ headerShown: false }}
+      />
+    )}
+    {LazyRecordingDemo && <Stack.Screen component={LazyRecordingDemo} name="RecordingDemo" />}
   </Stack.Navigator>
 );
