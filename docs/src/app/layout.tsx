@@ -5,6 +5,7 @@ import { Inter } from "next/font/google";
 
 const inter = Inter({
   subsets: ["latin"],
+  fallback: ["Noto Sans Sinhala"],
 });
 
 export default function Layout({ children }: LayoutProps<"/">) {

@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400&display=swap");
 @import "tailwindcss";
 @import "fumadocs-ui/css/neutral.css";
 @import "fumadocs-ui/css/preset.css";
@@ -55,6 +56,19 @@
 
 .prose > :not(:first-child) {
   margin-top: 1.5em;
+}
+
+/* Always-dark code blocks to match demo editor appearance */
+figure.shiki {
+  --color-fd-card: #0a0a0a;
+  --color-fd-secondary: #0a0a0a;
+  --color-fd-muted-foreground: rgba(255, 255, 255, 0.4);
+  --color-fd-accent: rgba(255, 255, 255, 0.1);
+  --color-fd-accent-foreground: rgba(255, 255, 255, 0.9);
+}
+
+.shiki:not(.not-fumadocs-codeblock *) code span {
+  color: var(--shiki-dark);
 }
 
 @media (min-width: 768px) {
