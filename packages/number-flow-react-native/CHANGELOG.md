@@ -1,5 +1,11 @@
 # number-flow-react-native
 
+## 0.1.12
+
+### Patch Changes
+
+- Stable prefix/suffix character keys in `computeStringLayout` prevent unnecessary remounts when digit count changes. Expanded vertical mask bounds in Skia renderers fix clipping of rolling digits.
+
 ## 0.1.11
 
 ### Patch Changes
