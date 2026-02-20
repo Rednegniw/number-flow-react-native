@@ -83,6 +83,6 @@ function Price({ value }: { value: number }) {
 
 - **Native components**: No action needed — accessibility is automatic
 - **Skia components**: Always set `accessibilityLabel` on the parent `Canvas` using `useFormattedValue`
-- **Prefix/suffix**: These are included in the generated accessibility label automatically
-- **TimeFlow**: The label includes the full time string (e.g. "14:30:00")
+- **Prefix/suffix** (NumberFlow only): These are included in the generated accessibility label automatically
+- **TimeFlow**: The label includes the full time string (e.g. "14:30:00"), including AM/PM for 12-hour formats
 - **Don't disable motion preferences** without a strong reason — `respectMotionPreference={false}` should be rare
