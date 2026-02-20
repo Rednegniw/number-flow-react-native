@@ -1,10 +1,8 @@
 import type { TextStyle, ViewStyle } from "react-native";
 import type { AnimationBehaviorProps, DigitsProp, TextAlign } from "../core/types";
 
-/** Text style for NumberFlow/TimeFlow. Requires fontSize; fontFamily defaults to the system font when omitted. */
-export type NumberFlowStyle = TextStyle & {
-  fontSize: number;
-};
+/** Text style for NumberFlow/TimeFlow. */
+export type NumberFlowStyle = TextStyle;
 
 interface NumberFlowValueProps {
   /** Numeric value to display */
@@ -16,8 +14,8 @@ interface NumberFlowValueProps {
 }
 
 interface NumberFlowBaseProps extends AnimationBehaviorProps {
-  /** Text styling. fontSize is required; fontFamily defaults to the platform system font. */
-  style: NumberFlowStyle;
+  /** Text styling. fontSize defaults to 16 when omitted; fontFamily defaults to the platform system font. */
+  style?: NumberFlowStyle;
   /** Text alignment. Defaults to "left". */
   textAlign?: TextAlign;
   /** Static string prepended before the number */

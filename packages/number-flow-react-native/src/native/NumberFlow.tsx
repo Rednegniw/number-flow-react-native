@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { type LayoutChangeEvent, Text, View } from "react-native";
 import Animated, { makeMutable, useAnimatedStyle, withTiming } from "react-native-reanimated";
+import { DEFAULT_FONT_SIZE } from "../core/constants";
 import { getFormatCharacters } from "../core/intlHelpers";
 import { computeKeyedLayout } from "../core/layout";
 import { detectNumberingSystem, getDigitStrings } from "../core/numerals";
@@ -17,7 +18,7 @@ export const NumberFlow = ({
   value,
   format,
   locales,
-  style: nfStyle,
+  style: nfStyleProp = {},
   textAlign = "left",
   prefix = "",
   suffix = "",
@@ -34,6 +35,14 @@ export const NumberFlow = ({
   containerStyle,
   mask,
 }: NumberFlowProps) => {
+  const nfStyle = useMemo(
+    () => ({
+      ...nfStyleProp,
+      fontSize: nfStyleProp.fontSize ?? DEFAULT_FONT_SIZE,
+    }),
+    [nfStyleProp],
+  );
+
   const formatChars = useMemo(
     () => getFormatCharacters(locales, format, prefix, suffix),
     [locales, format, prefix, suffix],
@@ -43,9 +52,6 @@ export const NumberFlow = ({
   const { metrics, MeasureElement } = useMeasuredGlyphMetrics(nfStyle, formatChars, digitStrings);
 
   if (__DEV__) {
-    if (!nfStyle.fontSize) {
-      warnOnce("nf-fontSize", "style.fontSize is required for NumberFlow to measure glyphs.");
-    }
     if (digits) {
       for (const [posStr, constraint] of Object.entries(digits)) {
         if (constraint.max < 1 || constraint.max > 9) {

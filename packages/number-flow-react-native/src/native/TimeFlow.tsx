@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { type LayoutChangeEvent, Text, View } from "react-native";
 import Animated, { makeMutable, useAnimatedStyle, withTiming } from "react-native-reanimated";
+import { DEFAULT_FONT_SIZE } from "../core/constants";
 import { computeKeyedLayout } from "../core/layout";
 import type { TimeFlowProps } from "../core/timeTypes";
 import { useFlowPipeline } from "../core/useFlowPipeline";
@@ -19,7 +20,7 @@ export const TimeFlow = ({
   timezoneOffset,
   is24Hour = true,
   padHours = true,
-  style: nfStyle,
+  style: nfStyleProp = {},
   textAlign = "left",
   spinTiming,
   opacityTiming,
@@ -33,13 +34,15 @@ export const TimeFlow = ({
   containerStyle,
   mask,
 }: TimeFlowProps) => {
-  const { metrics, MeasureElement } = useMeasuredGlyphMetrics(nfStyle);
+  const nfStyle = useMemo(
+    () => ({
+      ...nfStyleProp,
+      fontSize: nfStyleProp.fontSize ?? DEFAULT_FONT_SIZE,
+    }),
+    [nfStyleProp],
+  );
 
-  if (__DEV__) {
-    if (!nfStyle.fontSize) {
-      warnOnce("tf-fontSize", "style.fontSize is required for TimeFlow to measure glyphs.");
-    }
-  }
+  const { metrics, MeasureElement } = useMeasuredGlyphMetrics(nfStyle);
 
   const resolved = useMemo(() => {
     if (timestamp !== undefined) {
