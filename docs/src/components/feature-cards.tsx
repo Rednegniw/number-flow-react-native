@@ -86,7 +86,7 @@ export function FeatureCards() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.5, delay: index * 0.08, ease: "easeOut" }}
-          className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-white/[0.04] to-white/[0.01] p-6 transition-colors duration-300 hover:border-white/[0.12]"
+          className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#fffeba]/[0.02] to-white/[0.01] p-6 transition-colors duration-300 hover:border-white/[0.12]"
         >
           {/* Top-edge highlight shimmer */}
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
