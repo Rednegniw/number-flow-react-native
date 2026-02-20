@@ -16,6 +16,24 @@ function transformNode(node: Code) {
     return;
   }
 
+  const encodedCode = encodeURIComponent(node.value);
+
+  // Video demo: read-only code editor + phone mockup with video
+  if (params.video) {
+    const jsxNode = {
+      type: "mdxJsxFlowElement",
+      name: "VideoExample",
+      attributes: [
+        { type: "mdxJsxAttribute", name: "code", value: encodedCode },
+        { type: "mdxJsxAttribute", name: "src", value: params.video },
+      ],
+      children: [],
+    };
+
+    Object.assign(node, jsxNode as unknown as Node);
+    return;
+  }
+
   const jsxNode = {
     type: "mdxJsxFlowElement",
     name: "LiveExample",
@@ -23,7 +41,7 @@ function transformNode(node: Code) {
       {
         type: "mdxJsxAttribute",
         name: "code",
-        value: encodeURIComponent(node.value),
+        value: encodedCode,
       },
     ],
     children: [],

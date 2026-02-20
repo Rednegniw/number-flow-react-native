@@ -7,6 +7,7 @@ import defaultMdxComponents from "fumadocs-ui/mdx";
 import type { MDXComponents } from "mdx/types";
 import { LiveExample } from "@/components/live-example/LiveExample";
 import { VideoDemo } from "@/components/video-demo";
+import { VideoExample } from "@/components/video-example/VideoExample";
 
 const generator = createGenerator({
   cache: createFileSystemGeneratorCache(".next/fumadocs-typescript"),
@@ -22,6 +23,7 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     Callout,
     AutoTypeTable: (props) => <AutoTypeTable {...props} generator={generator} />,
     VideoDemo,
+    VideoExample,
     LiveExample,
     ...components,
   };
