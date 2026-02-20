@@ -22,11 +22,11 @@ export function PhoneMockup({ children }: PhoneMockupProps) {
       <div
         className="absolute z-0 overflow-hidden bg-black"
         style={{
-          top: "1.9%",
-          left: "4%",
-          right: "4%",
-          bottom: "1.9%",
-          borderRadius: "7% / 3.4%",
+          top: "1.4%",
+          left: "3.4%",
+          right: "3.4%",
+          bottom: "1.4%",
+          borderRadius: "8% / 4%",
         }}
       >
         {children}
