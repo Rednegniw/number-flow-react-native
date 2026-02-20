@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { ReactNode } from "react";
 
 interface LiveExamplePhoneMockupProps {
@@ -12,12 +13,15 @@ export function LiveExamplePhoneMockup({
   return (
     <div className="relative w-fit h-full">
       {/* Frame image — establishes dimensions, sits on top */}
-      <img
+      <Image
         src="/iphone-mockup.png"
         alt=""
+        width={390}
+        height={844}
         className="relative z-10 h-full w-auto pointer-events-none select-none"
         style={{ margin: 0 }}
         draggable={false}
+        priority
       />
 
       {/* Screen content — positioned behind the frame */}
