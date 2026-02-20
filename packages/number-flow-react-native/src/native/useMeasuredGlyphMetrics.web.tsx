@@ -69,6 +69,16 @@ function measureWithCanvas(
     if (w > maxDigitWidth) maxDigitWidth = w;
   }
 
+  // Canvas 2D has no font-variant-numeric support, so measureText() always
+  // returns proportional widths. When tabular-nums is active, CSS renders all
+  // digits at the same advance width (the widest digit). Normalize here to match.
+  const hasTabularNums = style.fontVariant?.includes("tabular-nums");
+  if (hasTabularNums) {
+    for (const dc of digitChars) {
+      charWidths[dc] = maxDigitWidth;
+    }
+  }
+
   // Use font-level bounding box metrics (widely supported: Chrome 87+, Firefox 116+, Safari 11.1+)
   const refMetrics = ctx.measureText("Hg");
   const ascent = -(refMetrics.fontBoundingBoxAscent ?? refMetrics.actualBoundingBoxAscent);
