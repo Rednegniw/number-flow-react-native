@@ -6,32 +6,32 @@ import type { ReactNode } from "react";
 
 const NumberFlowDemo = dynamic(() => import("./feature-card-demos").then((m) => m.NumberFlowDemo), {
   ssr: false,
-  loading: () => <span className="text-fd-muted-foreground text-lg">1,234</span>,
+  loading: () => <span className="text-fd-muted-foreground text-xl">1,234</span>,
 });
 
 const TimeFlowDemo = dynamic(() => import("./feature-card-demos").then((m) => m.TimeFlowDemo), {
   ssr: false,
-  loading: () => <span className="text-fd-muted-foreground text-lg">12:00</span>,
+  loading: () => <span className="text-fd-muted-foreground text-xl">12:00</span>,
 });
 
 const ScrubbingDemo = dynamic(() => import("./feature-card-demos").then((m) => m.ScrubbingDemo), {
   ssr: false,
-  loading: () => <span className="text-fd-muted-foreground text-lg">50</span>,
+  loading: () => <span className="text-fd-muted-foreground text-xl">50</span>,
 });
 
 const I18nDemo = dynamic(() => import("./feature-card-demos").then((m) => m.I18nDemo), {
   ssr: false,
-  loading: () => <span className="text-fd-muted-foreground text-lg">$1,234.56</span>,
+  loading: () => <span className="text-fd-muted-foreground text-xl">$1,234.56</span>,
 });
 
 const NumeralsDemo = dynamic(() => import("./feature-card-demos").then((m) => m.NumeralsDemo), {
   ssr: false,
-  loading: () => <span className="text-fd-muted-foreground text-lg">١٬٢٣٤</span>,
+  loading: () => <span className="text-fd-muted-foreground text-xl">١٬٢٣٤</span>,
 });
 
 const RenderersDemo = dynamic(() => import("./feature-card-demos").then((m) => m.RenderersDemo), {
   ssr: false,
-  loading: () => <span className="text-fd-muted-foreground text-lg">1,234 1,234</span>,
+  loading: () => <span className="text-fd-muted-foreground text-xl">1,234 1,234</span>,
 });
 
 type Feature = {
@@ -89,7 +89,7 @@ export function FeatureCards() {
           className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-b from-[#fffeba]/[0.02] to-white/[0.01] p-6 transition-colors duration-300 hover:border-white/[0.12]"
         >
           {/* Top-edge highlight shimmer */}
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/[0.08] to-transparent" />
 
           {/* Live demo */}
           <div className="mb-3">{feature.demo}</div>
