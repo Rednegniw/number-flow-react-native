@@ -2,9 +2,13 @@ import type { ReactNode } from "react";
 
 interface LiveExamplePhoneMockupProps {
   children: ReactNode;
+  screenClassName?: string;
 }
 
-export function LiveExamplePhoneMockup({ children }: LiveExamplePhoneMockupProps) {
+export function LiveExamplePhoneMockup({
+  children,
+  screenClassName = "bg-white",
+}: LiveExamplePhoneMockupProps) {
   return (
     <div className="relative mx-auto" style={{ height: 560, aspectRatio: "9 / 19.5" }}>
       <div className="relative flex flex-col h-full rounded-[36px] border-[3px] border-fd-border bg-fd-card shadow-xl overflow-hidden">
@@ -20,7 +24,7 @@ export function LiveExamplePhoneMockup({ children }: LiveExamplePhoneMockupProps
         </div>
 
         {/* Screen content */}
-        <div className="flex-1 overflow-hidden bg-white">{children}</div>
+        <div className={`flex-1 overflow-hidden ${screenClassName}`}>{children}</div>
 
         {/* Home indicator */}
         <div className="flex items-center justify-center shrink-0" style={{ height: 24 }}>

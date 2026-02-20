@@ -14,33 +14,59 @@ import { SkiaTimeFlow, useSkiaFont } from 'number-flow-react-native/skia';
 
 ## Basic Usage
 
-```LiveExample codeOnly=true
-import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+```LiveExample video=/videos/skia-time-flow.mp4
+import { useCallback, useState } from 'react';
+import { View, Pressable, Text } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
 import { SkiaTimeFlow, useSkiaFont } from 'number-flow-react-native/skia';
 
 function SkiaClock() {
   const font = useSkiaFont('https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYMZg.ttf', 48);
-  const [now, setNow] = useState(Date.now());
+  const [hours, setHours] = useState(14);
+  const [minutes, setMinutes] = useState(30);
+  const [is24Hour, setIs24Hour] = useState(true);
 
-  useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(interval);
+  const increment = useCallback(() => {
+    setMinutes((prev) => {
+      if (prev === 59) {
+        setHours((h) => (h + 1) % 24);
+        return 0;
+      }
+      return prev + 1;
+    });
+  }, []);
+
+  const randomize = useCallback(() => {
+    setHours(Math.floor(Math.random() * 24));
+    setMinutes(Math.floor(Math.random() * 60));
   }, []);
 
   return (
-    <View style={{ alignItems: 'center', padding: 24 }}>
+    <View style={{ alignItems: 'center', gap: 24, padding: 24 }}>
       <Canvas style={{ width: 300, height: 60 }}>
         <SkiaTimeFlow
-          timestamp={now}
+          hours={hours}
+          minutes={minutes}
+          is24Hour={is24Hour}
+          padHours={false}
           font={font}
-          color="#1a1a1a"
+          color="#fff"
           y={48}
           width={300}
           textAlign="center"
         />
       </Canvas>
+      <View style={{ flexDirection: 'row', gap: 10 }}>
+        <Pressable onPress={increment} style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' }}>
+          <Text style={{ color: '#fff', fontSize: 15 }}>+1 Min</Text>
+        </Pressable>
+        <Pressable onPress={randomize} style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' }}>
+          <Text style={{ color: '#fff', fontSize: 15 }}>Random</Text>
+        </Pressable>
+        <Pressable onPress={() => setIs24Hour((v) => !v)} style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' }}>
+          <Text style={{ color: '#fff', fontSize: 15 }}>{is24Hour ? '12h' : '24h'}</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }

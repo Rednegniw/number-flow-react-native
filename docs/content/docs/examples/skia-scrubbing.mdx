@@ -6,41 +6,56 @@ full: true
 
 The `sharedValue` prop on `SkiaNumberFlow` enables worklet-driven rendering — the number display updates entirely on the UI thread without crossing the JS bridge. This means updates at 120Hz with zero frame drops.
 
-```LiveExample codeOnly=true
-import { View, Text } from 'react-native';
+```LiveExample video=/videos/skia-scrubbing.mp4
+import { View } from 'react-native';
 import { Canvas } from '@shopify/react-native-skia';
-import { useSharedValue, useDerivedValue } from 'react-native-reanimated';
+import { useSharedValue, useAnimatedStyle, useDerivedValue } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated from 'react-native-reanimated';
 import { SkiaNumberFlow, useSkiaFont } from 'number-flow-react-native/skia';
 
+const TRACK_WIDTH = 300;
+const MIN = 0;
+const MAX = 999.9;
+
 export default function ScrubExample() {
-  const progress = useSharedValue(50);
+  const thumbX = useSharedValue(TRACK_WIDTH / 2);
   const font = useSkiaFont('https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYMZg.ttf', 48);
 
   const formatted = useDerivedValue(() => {
-    return progress.value.toFixed(1);
+    const ratio = Math.max(0, Math.min(1, thumbX.value / TRACK_WIDTH));
+    const value = MIN + ratio * (MAX - MIN);
+    return value.toFixed(1);
   });
 
-  const pan = Gesture.Pan().onUpdate((e) => {
-    progress.value = Math.max(0, Math.min(100, 50 + e.translationX / 3));
-  });
+  const pan = Gesture.Pan()
+    .onBegin(({ x }) => { thumbX.value = Math.max(0, Math.min(TRACK_WIDTH, x)); })
+    .onUpdate(({ x }) => { thumbX.value = Math.max(0, Math.min(TRACK_WIDTH, x)); });
+
+  const fillStyle = useAnimatedStyle(() => ({ width: thumbX.value }));
+  const thumbStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: thumbX.value - 18 }],
+  }));
 
   return (
-    <View style={{ padding: 32, gap: 16 }}>
-      <Canvas style={{ height: 60, width: 300 }}>
+    <View style={{ alignItems: 'center', padding: 32, gap: 16 }}>
+      <Canvas style={{ height: 60, width: TRACK_WIDTH }}>
         <SkiaNumberFlow
           sharedValue={formatted}
           font={font}
-          color="#1a1a1a"
+          suffix=" mg"
+          color="#fff"
           y={48}
-          width={300}
+          width={TRACK_WIDTH}
           textAlign="center"
         />
       </Canvas>
 
       <GestureDetector gesture={pan}>
-        <View style={{ height: 60, backgroundColor: '#f0f0f0', borderRadius: 12, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ color: '#999' }}>Drag to scrub</Text>
+        <View style={{ width: TRACK_WIDTH, height: 48, justifyContent: 'center' }}>
+          <View style={{ height: 8, width: TRACK_WIDTH, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 4 }} />
+          <Animated.View style={[{ position: 'absolute', height: 8, backgroundColor: '#fff', borderRadius: 4 }, fillStyle]} />
+          <Animated.View style={[{ position: 'absolute', width: 36, height: 36, borderRadius: 18, backgroundColor: '#fff' }, thumbStyle]} />
         </View>
       </GestureDetector>
     </View>
