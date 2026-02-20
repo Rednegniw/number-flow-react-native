@@ -12,10 +12,10 @@ coverage/
 .claude/
 .playwright-mcp/
 
-# Temp screenshots
-*.png
-*.jpeg
-*.jpg
+# Temp screenshots (root-level only, not docs assets)
+/*.png
+/*.jpeg
+/*.jpg
 
 # Docs (Fumadocs / Next.js)
 docs/.source/
