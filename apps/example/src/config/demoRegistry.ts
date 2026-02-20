@@ -82,6 +82,18 @@ export const DEMO_SECTIONS: DemoSection[] = [
         },
       },
       {
+        key: "stopwatch",
+        title: "Apple Stopwatch",
+        description:
+          "Stopwatch with centisecond precision. Demonstrates composing multiple NumberFlows for sub-second time display.",
+        get NativeComponent() {
+          return require("../demos/StopwatchDemo").StopwatchDemoNative;
+        },
+        get SkiaComponent() {
+          return require("../demos/StopwatchDemo").StopwatchDemoSkia;
+        },
+      },
+      {
         key: "scrubbing",
         title: "Scrubbing",
         description:

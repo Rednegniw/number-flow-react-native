@@ -141,13 +141,6 @@ export default function Speedometer() {
 }
 ```
 
-### Features demonstrated
-
-- **Zero-latency scrubbing** — `sharedValue` keeps all updates on the UI thread, bypassing the JS bridge entirely
-- **Worklet-driven formatting** — `useDerivedValue` formats the number string inside a worklet, so the gesture handler → format → render pipeline never touches the JS thread
-- **Spring deceleration** — `withSpring` with low damping creates a natural coast-to-stop when the finger lifts
-- **scrubDigitWidthPercentile** — set to `0.8` to prevent layout jitter during rapid digit changes (uses the 80th percentile width among all digit glyphs)
-- **Custom fonts** — `useSkiaFont` loads `Inter-Bold` for the speed number and `Inter-Medium` for the unit label at different sizes
 
 <Callout type="info">
 The `sharedValue` prop is what makes this recipe special. Without it, each speed update would cross the JS bridge, causing 8–16ms of latency per frame. With `sharedValue`, the gesture handler writes directly to a `SharedValue`, `useDerivedValue` formats it on the UI thread, and `SkiaNumberFlow` reads the result via Skia — the entire pipeline runs at the display's native refresh rate.

@@ -19,6 +19,7 @@ export function useGlyphMetrics(
   font: SkFont | null,
   additionalChars?: string,
   localeDigitStrings?: string[],
+  tabularNums?: boolean,
 ): GlyphMetrics | null {
   return useMemo(() => {
     if (!font) return null;
@@ -53,6 +54,20 @@ export function useGlyphMetrics(
       if (w > maxDigitWidth) maxDigitWidth = w;
     }
 
+    if (tabularNums) {
+      let minDigitWidth = Infinity;
+      for (const dc of digitChars) {
+        const w = charWidths[dc] ?? 0;
+        if (w < minDigitWidth) minDigitWidth = w;
+      }
+
+      const tabularWidth = minDigitWidth + (maxDigitWidth - minDigitWidth) * 0.75;
+      for (const dc of digitChars) {
+        charWidths[dc] = tabularWidth;
+      }
+      maxDigitWidth = tabularWidth;
+    }
+
     const metrics = font.getMetrics();
     // ascent is negative (above baseline), descent is positive (below baseline)
     const lineHeight = Math.ceil(metrics.descent - metrics.ascent);
@@ -75,5 +90,5 @@ export function useGlyphMetrics(
       descent: metrics.descent,
       charBounds,
     };
-  }, [font, additionalChars, localeDigitStrings]);
+  }, [font, additionalChars, localeDigitStrings, tabularNums]);
 }

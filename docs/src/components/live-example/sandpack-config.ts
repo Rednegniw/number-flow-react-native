@@ -2,7 +2,7 @@ export const SANDPACK_DEPENDENCIES: Record<string, string> = {
   "react-native-web": "~0.19.13",
   "react-native-reanimated": "~4.1.0",
   "react-native-worklets": "~0.7.0",
-  "number-flow-react-native": "^0.2.0",
+  "number-flow-react-native": "^0.2.1",
 };
 
 export const VITE_CONFIG_CODE = `import { defineConfig } from "vite";
@@ -141,7 +141,7 @@ export const INDEX_HTML_CODE = `<!DOCTYPE html>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>

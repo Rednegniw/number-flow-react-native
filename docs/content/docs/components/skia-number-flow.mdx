@@ -78,6 +78,7 @@ Provide either `value` (JS-driven) or `sharedValue` (worklet-driven), not both.
 | `suffix` | `string` | `""` | Static string appended after the number. |
 | `opacity` | `SharedValue<number>` | `undefined` | Parent opacity for animation coordination. |
 | `digits` | `Record<number, { max: number }>` | `undefined` | Per-position digit constraints. Position `0` = ones, `1` = tens, etc. |
+| `tabularNums` | `boolean` | `false` | Force equal-width digits by interpolating between min and max digit glyph widths. Equivalent to `fontVariant: ['tabular-nums']` on native components. |
 | `scrubDigitWidthPercentile` | `number` (0–1) | `0.75` | Controls digit width during worklet-driven scrubbing. `0` = narrowest, `0.5` = average, `1` = widest (no clipping). Only affects digits; symbols keep natural width. |
 
 ### Animation behavior props

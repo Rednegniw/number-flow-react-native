@@ -85,6 +85,8 @@ const MeasureComponent = React.memo(
         style={{
           fontFamily: nfStyle.fontFamily,
           fontSize: nfStyle.fontSize,
+          fontVariant: nfStyle.fontVariant,
+          fontWeight: nfStyle.fontWeight,
           position: "absolute",
           opacity: 0,
         }}

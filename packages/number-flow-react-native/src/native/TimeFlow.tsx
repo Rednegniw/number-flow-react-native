@@ -16,6 +16,7 @@ export const TimeFlow = ({
   hours,
   minutes,
   seconds,
+  centiseconds,
   timestamp,
   timezoneOffset,
   is24Hour = true,
@@ -58,6 +59,7 @@ export const TimeFlow = ({
   const resolvedHours = resolved.hours;
   const resolvedMinutes = resolved.minutes;
   const resolvedSeconds = resolved.seconds;
+  const resolvedCentiseconds = centiseconds;
 
   if (__DEV__) {
     if (resolvedHours !== undefined && (resolvedHours < 0 || resolvedHours > 23)) {
@@ -69,10 +71,20 @@ export const TimeFlow = ({
     if (resolvedSeconds !== undefined && (resolvedSeconds < 0 || resolvedSeconds > 59)) {
       warnOnce("tf-seconds", "seconds must be 0-59.");
     }
+    if (
+      resolvedCentiseconds !== undefined &&
+      (resolvedCentiseconds < 0 || resolvedCentiseconds > 99)
+    ) {
+      warnOnce("tf-centiseconds", "centiseconds must be 0-99.");
+    }
+    if (resolvedCentiseconds !== undefined && resolvedSeconds === undefined) {
+      warnOnce("tf-cs-no-sec", "centiseconds requires seconds to be set.");
+    }
   }
 
   const totalSeconds =
     (resolvedHours ?? 0) * 3600 + (resolvedMinutes ?? 0) * 60 + (resolvedSeconds ?? 0);
+  const trendValue = totalSeconds * 100 + (resolvedCentiseconds ?? 0);
 
   const keyedParts = useTimeFormatting(
     resolvedHours,
@@ -80,6 +92,7 @@ export const TimeFlow = ({
     resolvedSeconds,
     is24Hour,
     padHours,
+    resolvedCentiseconds,
   );
 
   const [containerWidth, setContainerWidth] = useState(0);
@@ -103,7 +116,7 @@ export const TimeFlow = ({
 
   const pipeline = useFlowPipeline({
     keyedParts,
-    trendValue: totalSeconds,
+    trendValue: trendValue,
     layout,
     metrics,
     animated,
