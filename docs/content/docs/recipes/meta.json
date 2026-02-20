@@ -1,12 +1,4 @@
 {
   "title": "Recipes",
-  "pages": [
-    "apple-stopwatch",
-    "countdown-app",
-    "step-counter",
-    "trading-ticker",
-    "currency-converter",
-    "fitness-dashboard",
-    "speedometer"
-  ]
+  "pages": ["apple-stopwatch", "countdown-app", "step-counter", "trading-ticker"]
 }

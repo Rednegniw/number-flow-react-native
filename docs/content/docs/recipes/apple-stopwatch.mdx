@@ -1,15 +1,15 @@
 ---
 title: Apple Stopwatch
-description: iOS-style stopwatch with centisecond precision
+description: iOS-style stopwatch with centisecond precision using TimeFlow
 full: true
 ---
 
-An Apple Stopwatch replica with centisecond-precision display and circular start/stop/reset buttons, composing three `NumberFlow` instances for the `MM:SS.CC` format.
+An Apple Stopwatch replica using `TimeFlow` with the `centiseconds` prop for a single-component `MM:SS.CC` display.
 
 ```LiveExample
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { NumberFlow } from 'number-flow-react-native';
+import { TimeFlow } from 'number-flow-react-native';
 
 const GREEN = '#30D158';
 const GREEN_DIM = 'rgba(48, 209, 88, 0.3)';
@@ -17,14 +17,6 @@ const RED = '#FF3B30';
 const RED_DIM = 'rgba(255, 59, 48, 0.3)';
 const GRAY = '#333333';
 const GRAY_DIM = '#1C1C1E';
-const PAD_TWO = { minimumIntegerDigits: 2 };
-
-const TIME_STYLE = {
-  fontSize: 56,
-  fontWeight: '300',
-  fontVariant: ['tabular-nums'],
-  color: '#fff',
-};
 
 function useStopwatch() {
   const [mm, setMm] = useState(0);
@@ -130,30 +122,20 @@ export default function AppleStopwatch() {
       justifyContent: 'center',
       padding: 32,
     }}>
-      {/* Time display — three NumberFlows: MM: SS. CC */}
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <NumberFlow
-          value={mm}
-          format={PAD_TWO}
-          suffix=":"
-          trend={1}
-          style={TIME_STYLE}
-        />
-        <NumberFlow
-          value={ss}
-          format={PAD_TWO}
-          suffix="."
-          trend={1}
-          digits={{ 1: { max: 5 } }}
-          style={TIME_STYLE}
-        />
-        <NumberFlow
-          value={cc}
-          format={PAD_TWO}
-          animated={false}
-          style={TIME_STYLE}
-        />
-      </View>
+      {/* Time display */}
+      <TimeFlow
+        minutes={mm}
+        seconds={ss}
+        centiseconds={cc}
+        trend={1}
+        style={{
+          fontSize: 56,
+          fontFamily: '-apple-system, system-ui, sans-serif',
+          fontWeight: '300',
+          fontVariant: ['tabular-nums'],
+          color: '#fff',
+        }}
+      />
 
       {/* Pagination dots */}
       <View style={{ flexDirection: 'row', gap: 6, marginVertical: 28 }}>
@@ -172,5 +154,5 @@ export default function AppleStopwatch() {
 ```
 
 <Callout type="info">
-This recipe composes three `NumberFlow` instances side by side — minutes with `suffix=":"`, seconds with `suffix="."`, and centiseconds with `animated={false}`. The `fontVariant: ['tabular-nums']` style prevents layout jitter from varying digit widths, and `digits={{ 1: { max: 5 } }}` on seconds constrains the tens digit to 0–5 for correct wrapping at the 59→00 boundary.
+The `centiseconds` prop on `TimeFlow` renders a `.CC` segment after seconds using fixed keys (`c10`, `c1`) for stable animations. Combined with `fontVariant: ['tabular-nums']`, this creates a jitter-free stopwatch display with a single component — no need to compose multiple `NumberFlow` instances.
 </Callout>
