@@ -11,9 +11,7 @@
   <a href="https://github.com/Rednegniw/number-flow-react-native/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/number-flow-react-native" alt="license" /></a>
 </p>
 
-<p align="center">
-  <video src="https://github.com/Rednegniw/number-flow-react-native/releases/download/assets/showcase-demo.mp4" autoplay loop muted playsinline></video>
-</p>
+https://github.com/Rednegniw/number-flow-react-native/releases/download/assets/showcase-demo.mp4
 
 ## Features
 

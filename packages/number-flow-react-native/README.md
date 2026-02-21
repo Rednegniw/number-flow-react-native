@@ -11,20 +11,18 @@
   <a href="https://github.com/Rednegniw/number-flow-react-native/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/number-flow-react-native" alt="license" /></a>
 </p>
 
-<p align="center">
-  <video src="https://github.com/Rednegniw/number-flow-react-native/releases/download/assets/showcase-demo.mp4" autoplay loop muted playsinline></video>
-</p>
+https://github.com/Rednegniw/number-flow-react-native/releases/download/assets/showcase-demo.mp4
 
 ## Features
 
-- **Beautiful digit-by-digit rolling** — each digit animates independently via virtual wheels with automatic direction detection
-- **Two renderers** — a default View-based renderer with zero dependencies, and a Skia renderer if you need to have Skia numbers animating
-- **Full Intl.NumberFormat** — currencies, percentages, units, compact notation, and everything that this beautiful formatter has to offer
+- **Beautiful digit-by-digit rolling** — each digit animates independently via virtual wheels with automatic direction detection.
+- **Two renderers** — a default View-based renderer with zero dependencies, and a Skia renderer if you need to have Skia numbers animating.
+- **Full Intl.NumberFormat** — currencies, percentages, units, compact notation, and everything that this beautiful formatter has to offer.
 - **TimeFlow** — dedicated animated time display with 12h/24h, timestamps, and countdown support. Even supports centiseconds.
 - **120 FPS scrubbing** — worklet-driven updates entirely on the UI thread, with Skia.
 - **37 numeral systems** — Arabic-Indic, Devanagari, Thai, CJK, and more. 
-- **Accessibility** — VoiceOver/TalkBack announcements + reduce motion support
-- **Continuous mode** — odometer-style cascading digit rolls
+- **Accessibility** — VoiceOver/TalkBack announcements + reduce motion support.
+- **Continuous mode** — odometer-style cascading digit rolls.
 
 ## Documentation
 
