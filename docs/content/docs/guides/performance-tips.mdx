@@ -90,6 +90,8 @@ In scrubbing mode, the library pre-allocates a pool of 20 `SharedValue` slots at
 Unlike format objects, `transformTiming`, `spinTiming`, and `opacityTiming` are plain objects compared by reference. If you're defining custom timings, keep them outside the component to avoid unnecessary re-renders of the internal slot components:
 
 ```tsx
+import { Easing } from 'react-native-reanimated';
+
 const timing = { duration: 600, easing: Easing.out(Easing.cubic) };
 
 function Price({ value }: { value: number }) {

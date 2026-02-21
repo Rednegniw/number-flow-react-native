@@ -32,6 +32,7 @@ export default function CountdownTimer() {
       <TimeFlow
         minutes={mins}
         seconds={secs}
+        trend={-1}
         style={{ fontSize: 64, fontWeight: '600', textAlign: 'center', color: remaining < 10 ? '#ef4444' : '#fff' }}
       />
       <View style={{ flexDirection: 'row', gap: 8 }}>

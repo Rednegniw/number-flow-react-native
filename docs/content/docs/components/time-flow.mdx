@@ -50,6 +50,7 @@ export default function LiveClock() {
 | `hours` | `number` (0–23) | `undefined` | Hours value. Omit to hide the hours segment (useful for MM:SS countdown mode). |
 | `minutes` | `number` (0–59) | **(required)** | Minutes value. |
 | `seconds` | `number` (0–59) | `undefined` | Seconds value. Omit to hide the seconds segment. |
+| `centiseconds` | `number` (0–99) | `undefined` | Centiseconds value. Omit to hide. Requires `seconds` to be set. Displayed as ".CC" after seconds. |
 | `timestamp` | `number` | `undefined` | Unix timestamp in milliseconds. Auto-extracts hours/minutes/seconds. Takes priority over direct value props. |
 | `timezoneOffset` | `number` | `undefined` | Timezone offset in milliseconds for timestamp mode. |
 

@@ -31,7 +31,7 @@ export default function HomePage() {
             </h1>
           </div>
           <p className="text-lg text-fd-muted-foreground">
-            The best number animation library for React Native
+            The best number animation library for React Native.
           </p>
         </div>
 

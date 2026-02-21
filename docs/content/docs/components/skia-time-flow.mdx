@@ -81,6 +81,7 @@ function SkiaClock() {
 | `hours` | `number` (0–23) | `undefined` | Hours value. Omit to hide the hours segment. |
 | `minutes` | `number` (0–59) | **(required)** | Minutes value. Required when using direct time values. |
 | `seconds` | `number` (0–59) | `undefined` | Seconds value. Omit to hide the seconds segment. |
+| `centiseconds` | `number` (0–99) | `undefined` | Centiseconds value. Omit to hide. Requires `seconds` to be set. Displayed as ".CC" after seconds. |
 | `timestamp` | `number` | `undefined` | Unix timestamp in milliseconds. Auto-extracts hours/minutes/seconds. |
 | `timezoneOffset` | `number` | `undefined` | Timezone offset in milliseconds for timestamp mode. |
 | `sharedValue` | `SharedValue<string>` | `undefined` | Worklet-driven pre-formatted time string (e.g. `"14:30"`, `"2:30 PM"`). Mutually exclusive with direct time values. |

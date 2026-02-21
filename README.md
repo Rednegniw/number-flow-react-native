@@ -6,25 +6,71 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/number-flow-react-native"><img src="https://img.shields.io/npm/v/number-flow-react-native" alt="npm version" /></a>
+  <a href="https://www.npmjs.com/package/number-flow-react-native"><img src="https://img.shields.io/npm/dm/number-flow-react-native" alt="npm downloads" /></a>
+  <a href="https://github.com/Rednegniw/number-flow-react-native/actions/workflows/ci.yml"><img src="https://github.com/Rednegniw/number-flow-react-native/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://github.com/Rednegniw/number-flow-react-native/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/number-flow-react-native" alt="license" /></a>
 </p>
 
----
+<p align="center">
+  <video src="https://number-flow-react-native.awingender.com/videos/hero-demo.mp4" autoplay loop muted playsinline></video>
+</p>
 
-For full documentation, visit **[number-flow-react-native.awingender.com](https://number-flow-react-native.awingender.com)**.
+## Features
 
-## Quick start
+- **Digit-by-digit rolling** — each digit animates independently via virtual wheels with automatic direction detection
+- **Two renderers** — View-based for quick setup, Skia for high-performance canvas rendering
+- **Full Intl.NumberFormat** — currencies, percentages, units, compact notation, and more
+- **TimeFlow** — dedicated animated time display with 12h/24h, timestamps, and countdown support
+- **120 FPS scrubbing** — worklet-driven updates entirely on the UI thread (Skia renderer)
+- **37 numeral systems** — Arabic-Indic, Devanagari, Thai, CJK, and more
+- **Accessibility** — VoiceOver/TalkBack announcements + reduce motion support
+- **Continuous mode** — odometer-style cascading digit rolls
+
+## Documentation
+
+For full docs, examples, and recipes, visit **[number-flow-react-native.awingender.com](https://number-flow-react-native.awingender.com)**.
+
+## Installation
 
 ```bash
+# npm
 npm install number-flow-react-native react-native-reanimated
+
+# bun
+bun add number-flow-react-native react-native-reanimated
+
+# expo
+npx expo install number-flow-react-native react-native-reanimated
 ```
+
+## Quick start
 
 ```tsx
 import { NumberFlow } from "number-flow-react-native";
 
-<NumberFlow
-  value={1234.56}
-/>;
+function PriceDisplay() {
+  const [price, setPrice] = useState(42.99);
+
+  return (
+    <NumberFlow
+      value={price}
+      format={{ style: "currency", currency: "USD" }}
+      style={{ fontSize: 32, color: "#000" }}
+    />
+  );
+}
+```
+
+## Renderers
+
+The default import uses the **View-based renderer** — no extra dependencies needed. For high-frequency updates, gesture-driven scrubbing, or rendering inside a Skia canvas, use the **Skia renderer**:
+
+```tsx
+// View-based (default)
+import { NumberFlow, TimeFlow } from "number-flow-react-native";
+
+// Skia canvas (requires @shopify/react-native-skia)
+import { SkiaNumberFlow, SkiaTimeFlow, useSkiaFont } from "number-flow-react-native/skia";
 ```
 
 ## Attribution
