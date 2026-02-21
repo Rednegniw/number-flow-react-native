@@ -11,6 +11,12 @@
   <a href="https://github.com/Rednegniw/number-flow-react-native/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/number-flow-react-native" alt="license" /></a>
 </p>
 
+> Beautiful number animations for React Native with digit-by-digit rolling transitions.
+> Supports currencies, percentages, compact notation, and all Intl.NumberFormat options.
+> Includes a View-based renderer (zero extra deps) and a Skia renderer for canvas-based animation.
+> Built-in TimeFlow for animated clocks, countdowns, and stopwatches.
+> Works with Expo and bare React Native on iOS and Android.
+
 <div align="center">
   <video src="https://github.com/user-attachments/assets/e6c07cc1-9116-4788-91b7-31987180e190" width="300"></video>
 </div>
@@ -63,7 +69,7 @@ function PriceDisplay() {
 
 ## Renderers
 
-The default import uses the **View-based renderer** — no extra dependencies needed. If you need to display numbers in Skia Canvas, use the **Skia renderer**:
+The default import uses the **View-based renderer** - no extra dependencies needed. If you need to display numbers in Skia Canvas, use the **Skia renderer**:
 
 ```tsx
 // View-based (default)
