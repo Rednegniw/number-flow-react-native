@@ -52,6 +52,7 @@ npx expo install number-flow-react-native react-native-reanimated
 ## Quick start
 
 ```tsx
+import { useState } from "react";
 import { NumberFlow } from "number-flow-react-native";
 
 function PriceDisplay() {
