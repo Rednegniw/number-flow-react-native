@@ -12,7 +12,7 @@
 </p>
 
 <div align="center">
-  <video src="https://github.com/user-attachments/assets/233f1fad-e928-4b98-a84e-9196076c8082" width="300"></video>
+  <video src="https://github.com/user-attachments/assets/e6c07cc1-9116-4788-91b7-31987180e190" width="300"></video>
 </div>
 
 ## Features
