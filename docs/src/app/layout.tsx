@@ -1,7 +1,17 @@
 import { Analytics } from "@vercel/analytics/react";
 import { RootProvider } from "fumadocs-ui/provider/next";
+import type { Metadata } from "next";
 import "./global.css";
 import { Inter } from "next/font/google";
+
+export const metadata: Metadata = {
+  title: {
+    default: "Number Flow React Native",
+    template: "%s | Number Flow React Native",
+  },
+  description:
+    "The best animated number component for React Native — digit-by-digit rolling, Intl.NumberFormat, View and Skia renderers.",
+};
 
 const inter = Inter({
   subsets: ["latin"],

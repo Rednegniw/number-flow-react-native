@@ -40,11 +40,14 @@ Check out the [Components](/docs/components) section for all four components —
 
 ## Import Paths
 
-The library exposes two main entry points:
+The library exposes three entry points:
 
 ```tsx
 // Native components (default)
 import { NumberFlow, TimeFlow } from 'number-flow-react-native';
+
+// Explicit native-only import (same as default)
+import { NumberFlow, TimeFlow } from 'number-flow-react-native/native';
 
 // Skia components (requires @shopify/react-native-skia)
 import { SkiaNumberFlow, SkiaTimeFlow, useSkiaFont } from 'number-flow-react-native/skia';

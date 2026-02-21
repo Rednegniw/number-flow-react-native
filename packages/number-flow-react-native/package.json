@@ -51,10 +51,23 @@
     "reanimated",
     "skia",
     "number-flow",
-    "digit-animation"
+    "digit-animation",
+    "expo",
+    "ios",
+    "android",
+    "counter",
+    "ticker",
+    "currency",
+    "transition",
+    "time-animation",
+    "rolling-numbers"
   ],
   "author": "Antonin Wingender",
   "license": "MIT",
+  "homepage": "https://number-flow-react-native.awingender.com",
+  "bugs": {
+    "url": "https://github.com/Rednegniw/number-flow-react-native/issues"
+  },
   "engines": {
     "node": ">=18"
   },
