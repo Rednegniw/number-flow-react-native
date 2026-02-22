@@ -4,7 +4,7 @@ description: Apple Stocks-inspired ticker with animated price and change values
 full: true
 ---
 
-An Apple Stocks-inspired ticker with dual animated values — both the stock price and day change roll their digits in sync, with inline SVG sparkline charts colored by trend direction.
+An Apple Stocks-inspired ticker with dual animated values. Both the stock price and day change roll their digits in sync, with inline SVG sparkline charts colored by trend direction.
 
 ```LiveExample
 import { useEffect, useState } from 'react';
@@ -284,5 +284,5 @@ export default function TradingTicker() {
 
 
 <Callout type="info">
-Notice that `trendFn`, `priceFormat`, and `changeFormat` are declared outside the component as stable references — creating new function/object identities every render would trigger unnecessary work inside `NumberFlow`. The `signDisplay: 'exceptZero'` format option handles the `+`/`-` prefix automatically via `Intl.NumberFormat`, so the sign itself becomes an animated character in the digit roll.
+Notice that `trendFn`, `priceFormat`, and `changeFormat` are declared outside the component as stable references, since creating new function/object identities every render would trigger unnecessary work inside `NumberFlow`. The `signDisplay: 'exceptZero'` format option handles the `+`/`-` prefix automatically via `Intl.NumberFormat`, so the sign itself becomes an animated character in the digit roll.
 </Callout>

@@ -17,14 +17,14 @@
 
 ## Features
 
-- **Beautiful digit-by-digit rolling** — each digit animates independently via virtual wheels with automatic direction detection
-- **Two renderers** — a default View-based renderer with zero dependencies, and a Skia renderer if you need to have Skia numbers animating
-- **Full Intl.NumberFormat** — currencies, percentages, units, compact notation, and everything that this beautiful formatter has to offer
-- **TimeFlow** — dedicated animated time display with 12h/24h, timestamps, and countdown support. Even supports centiseconds.
-- **120 FPS scrubbing** — worklet-driven updates entirely on the UI thread, with Skia.
-- **37 numeral systems** — Arabic-Indic, Devanagari, Thai, CJK, and more. 
-- **Accessibility** — VoiceOver/TalkBack announcements + reduce motion support
-- **Continuous mode** — odometer-style cascading digit rolls
+- **Beautiful digit-by-digit rolling**: each digit animates independently via virtual wheels with automatic direction detection
+- **Two renderers**: a default View-based renderer with zero dependencies, and a Skia renderer if you need to have Skia numbers animating
+- **Full Intl.NumberFormat**: currencies, percentages, units, compact notation, and everything that this beautiful formatter has to offer
+- **TimeFlow**: dedicated animated time display with 12h/24h, timestamps, and countdown support. Even supports centiseconds.
+- **120 FPS scrubbing**: worklet-driven updates entirely on the UI thread, with Skia.
+- **37 numeral systems**: Arabic-Indic, Devanagari, Thai, CJK, and more.
+- **Accessibility**: VoiceOver/TalkBack announcements + reduce motion support
+- **Continuous mode**: odometer-style cascading digit rolls
 
 ## Documentation
 
@@ -64,7 +64,7 @@ function PriceDisplay() {
 
 ## Renderers
 
-The default import uses the **View-based renderer** — no extra dependencies needed. If you need to display numbers in Skia Canvas, use the **Skia renderer**:
+The default import uses the **View-based renderer**, with no extra dependencies needed. If you need to display numbers in Skia Canvas, use the **Skia renderer**:
 
 ```tsx
 // View-based (default)
@@ -78,7 +78,7 @@ import { SkiaNumberFlow, SkiaTimeFlow, useSkiaFont } from "number-flow-react-nat
 
 This library is a complete React Native reimplementation of [NumberFlow](https://number-flow.barvian.me/) by [Max Barvian](https://github.com/barvian). Please check out his work and the original web version.
 
-The animation patterns, easing curves, and digit-rolling approach are adapted from the original web implementation. All code is original — no source code is shared.
+The animation patterns, easing curves, and digit-rolling approach are adapted from the original web implementation. All code is original, and no source code is shared.
 
 ## License
 

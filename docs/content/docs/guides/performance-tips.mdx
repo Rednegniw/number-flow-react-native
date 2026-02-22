@@ -4,7 +4,7 @@ description: How to get the most out of animated number transitions
 full: true
 ---
 
-You shouldn't need to think about performance in most cases — the library handles the heavy lifting internally. This page covers what's already optimized for you and a few situations where you can help.
+You shouldn't need to think about performance in most cases, since the library handles the heavy lifting internally. This page covers what's already optimized for you and a few situations where you can help.
 
 ## What's already handled
 
@@ -13,7 +13,6 @@ You shouldn't need to think about performance in most cases — the library hand
 You don't need to worry about passing inline `format` objects. The library serializes format options via `JSON.stringify` internally, so structurally identical objects won't trigger extra work even if their reference changes on every render:
 
 ```tsx
-// This is fine — the library deduplicates format objects internally
 function Price({ value }: { value: number }) {
   return (
     <NumberFlow
@@ -37,7 +36,7 @@ const currencyFormat = { style: 'currency', currency: 'USD' } as const;
 
 Native components (`NumberFlow`, `TimeFlow`) render a plain `Text` element on the first frame, then swap to the full animated slot tree on the next frame via `requestAnimationFrame`. This avoids the cost of instantiating all the animated hooks during the initial mount, so the component appears instantly without a blank flash.
 
-Skia components don't need this — canvas rendering doesn't have the same view hierarchy overhead.
+Skia components don't need this, since canvas rendering doesn't have the same view hierarchy overhead.
 
 ### Memoized child slots
 
@@ -45,7 +44,7 @@ Individual digit and symbol slots are wrapped in `React.memo`, so when the paren
 
 ### Reduce Motion
 
-When the device's "Reduce Motion" setting is on (and `respectMotionPreference` is `true`, which is the default), all animation durations collapse to zero. Transitions become instant — values snap to their final position without interpolation across multiple frames.
+When the device's "Reduce Motion" setting is on (and `respectMotionPreference` is `true`, which is the default), all animation durations collapse to zero. Transitions become instant; values snap to their final position without interpolation across multiple frames.
 
 ## When you should optimize
 
@@ -71,7 +70,7 @@ If you're rendering a lot of animated numbers at once (dashboards, tables, chart
 
 ### High-frequency value updates
 
-When the value changes at high frequency — gesture-driven scrubbing, sensor data, timers faster than ~100ms — use `SkiaNumberFlow` with the `sharedValue` prop. This keeps digit updates on the UI thread entirely, bypassing React re-renders:
+When the value changes at high frequency (gesture-driven scrubbing, sensor data, timers faster than ~100ms), use `SkiaNumberFlow` with the `sharedValue` prop. This keeps digit updates on the UI thread entirely, bypassing React re-renders:
 
 ```tsx
 const formatted = useDerivedValue(() => `${speed.value.toFixed(0)}`);

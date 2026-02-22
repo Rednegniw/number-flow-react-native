@@ -12,8 +12,8 @@ The library has built-in accessibility support for screen readers and motion pre
 
 Native components automatically set:
 
-- `accessibilityRole="text"` — tells VoiceOver/TalkBack this is a text element
-- `accessibilityLabel` — the full formatted value (e.g. "$42.99", "14:30:00")
+- `accessibilityRole="text"`: tells VoiceOver/TalkBack this is a text element
+- `accessibilityLabel`: the full formatted value (e.g. "$42.99", "14:30:00")
 
 Screen readers read the complete formatted number rather than announcing individual digit changes. No additional setup needed.
 
@@ -21,9 +21,9 @@ Screen readers read the complete formatted number rather than announcing individ
 
 Skia components render on a Canvas, which is opaque to the accessibility system. They handle accessibility in two ways:
 
-1. **Auto-announcements** — Value changes are announced via `AccessibilityInfo.announceForAccessibility()`. This works for dynamic updates, but not for initial focus.
+1. **Auto-announcements**: Value changes are announced via `AccessibilityInfo.announceForAccessibility()`. This works for dynamic updates, but not for initial focus.
 
-2. **Focus-based reading** — For VoiceOver/TalkBack to read the value when the user focuses the element, set `accessibilityLabel` on the parent `Canvas`:
+2. **Focus-based reading**: For VoiceOver/TalkBack to read the value when the user focuses the element, set `accessibilityLabel` on the parent `Canvas`:
 
 ```tsx
 import { Canvas } from '@shopify/react-native-skia';
@@ -81,8 +81,8 @@ function Price({ value }: { value: number }) {
 
 ## Best practices
 
-- **Native components**: No action needed — accessibility is automatic
+- **Native components**: No action needed, accessibility is automatic
 - **Skia components**: Always set `accessibilityLabel` on the parent `Canvas` using `useFormattedValue`
 - **Prefix/suffix** (NumberFlow only): These are included in the generated accessibility label automatically
 - **TimeFlow**: The label includes the full time string (e.g. "14:30:00"), including AM/PM for 12-hour formats
-- **Don't disable motion preferences** without a strong reason — `respectMotionPreference={false}` should be rare
+- **Don't disable motion preferences** without a strong reason, `respectMotionPreference={false}` should be rare

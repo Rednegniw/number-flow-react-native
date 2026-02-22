@@ -28,7 +28,7 @@ useSkiaFont(source: DataSourceParam, size: number, onError?: (err: Error) => voi
 
 ## Returns
 
-`SkFont` — always non-null. Returns a system font fallback until the custom font loads.
+`SkFont` is always non-null. Returns a system font fallback until the custom font loads.
 
 ## Usage
 
@@ -52,7 +52,7 @@ function PriceDisplay() {
 ```
 
 <Callout type="info">
-Once the custom font loads, `SkiaNumberFlow` automatically animates from the system font metrics to the custom font metrics — no loading state needed.
+Once the custom font loads, `SkiaNumberFlow` automatically animates from the system font metrics to the custom font metrics, with no loading state needed.
 </Callout>
 
 ## vs. useFont

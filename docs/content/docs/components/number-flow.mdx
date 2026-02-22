@@ -4,7 +4,7 @@ description: View-based animated number component with full Intl.NumberFormat su
 full: true
 ---
 
-`NumberFlow` is the View-based animated number component. It renders using React Native Animated Views with Reanimated SharedValues — no extra dependencies beyond `react-native-reanimated`. Each digit position contains a virtual wheel of digits 0–9, and transitions are achieved by translating the wheel's Y position.
+`NumberFlow` is the View-based animated number component. It renders using React Native Animated Views with Reanimated SharedValues, with no extra dependencies beyond `react-native-reanimated`. Each digit position contains a virtual wheel of digits 0–9, and transitions are achieved by translating the wheel's Y position.
 
 ## Import
 
@@ -49,7 +49,7 @@ Every time `price` changes, each digit rolls independently to its new value.
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | `value` | `number` | **(required)** | Numeric value to display. |
-| `format` | `Intl.NumberFormatOptions` | `undefined` | Options passed to `Intl.NumberFormat` — currencies, percentages, compact notation, scientific, units, etc. |
+| `format` | `Intl.NumberFormatOptions` | `undefined` | Options passed to `Intl.NumberFormat`: currencies, percentages, compact notation, scientific, units, etc. |
 | `locales` | `Intl.LocalesArgument` | `undefined` | Locale(s) for `Intl.NumberFormat`. Controls grouping separators, decimal marks, currency symbol placement, and numeral system. |
 
 ### Style props

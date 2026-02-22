@@ -4,7 +4,7 @@ description: Zero-latency UI thread updates with SharedValue-driven scrubbing
 full: true
 ---
 
-The `sharedValue` prop on `SkiaNumberFlow` enables worklet-driven rendering — the number display updates entirely on the UI thread without crossing the JS bridge. This means updates at 120Hz with zero frame drops.
+The `sharedValue` prop on `SkiaNumberFlow` enables worklet-driven rendering - the number display updates entirely on the UI thread without crossing the JS bridge. This means updates at 120Hz with zero frame drops.
 
 ```LiveExample video=/videos/skia-scrubbing.mp4
 import { View } from 'react-native';
@@ -65,7 +65,7 @@ export default function ScrubExample() {
 
 ### How scrubbing works
 
-1. You provide a `SharedValue<string>` — a pre-formatted string like `"50.0"` or `"$1,234.56"`.
+1. You provide a `SharedValue<string>`, a pre-formatted string like `"50.0"` or `"$1,234.56"`.
 2. On the UI thread, the worklet reads the string, extracts digits, and drives Skia rendering directly.
 3. `useScrubbingBridge` periodically syncs the digit count back to the JS thread so React can update the layout (number of slots).
 4. `useScrubbingLayout` computes per-slot positions from the worklet string.
