@@ -1,5 +1,18 @@
 # number-flow-react-native
 
+## 0.2.4
+
+### Patch Changes
+
+- [`f7a6e80`](https://github.com/Rednegniw/number-flow-react-native/commit/f7a6e80995d2749cc17a077f84d058dcd9b87f27) Thanks [@Rednegniw](https://github.com/Rednegniw)! - fix(skia): improve shared/scrubbing mode accuracy and mask clipping
+
+  - Preserve raw string through scrubbing bridge to avoid parseFloat losing formatting (e.g. trailing decimals)
+  - Use keyed layout (RTL integer keying) in shared mode instead of positional keys
+  - Animate mask bounds during scrubbing to prevent horizontal clipping
+  - Skip first-render animation in useAnimatedX to prevent mount slide-in
+  - Extract rawPartsToKeyedParts and parseFormattedNumber for shared mode string-based keying
+  - Remove unused computeStringLayout
+
 ## 0.2.0
 
 ### Minor Changes
