@@ -4,10 +4,8 @@ import type { TimingConfig } from "./types";
 
 /**
  * We use makeMutable (via useState) instead of useSharedValue because
- * useSharedValue's cleanup calls cancelAnimation, which kills in-flight
- * animations when the component re-renders in StrictMode.
+ * useSharedValue's cleanup calls cancelAnimation.
  */
-
 export function useAnimatedX(
   targetX: number,
   exiting: boolean,
@@ -15,10 +13,18 @@ export function useAnimatedX(
 ): SharedValue<number> {
   const [animatedX] = useState(() => makeMutable(targetX));
   const prevXRef = useRef(targetX);
+  const hasAnimatedRef = useRef(false);
 
   useLayoutEffect(() => {
     if (!exiting && prevXRef.current !== targetX) {
       prevXRef.current = targetX;
+
+      if (!hasAnimatedRef.current) {
+        hasAnimatedRef.current = true;
+        animatedX.value = targetX;
+        return;
+      }
+
       animatedX.value = withTiming(targetX, {
         duration: transformTiming.duration,
         easing: transformTiming.easing,

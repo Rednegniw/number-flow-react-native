@@ -1,98 +1,10 @@
-import { useCallback, useMemo, useState } from "react";
-import {
-  makeMutable,
-  runOnJS,
-  type SharedValue,
-  useAnimatedReaction,
-  useDerivedValue,
-} from "react-native-reanimated";
+import { useMemo } from "react";
+import { type SharedValue, useDerivedValue } from "react-native-reanimated";
 import { assignXPositions, type CharLayout } from "../core/layout";
 import { countDigits } from "../core/numerals";
 import type { GlyphMetrics, TextAlign } from "../core/types";
 import { useDebouncedWidths } from "../core/useDebouncedWidths";
 import { useWorkletFormatting } from "../core/useWorkletFormatting";
-
-// ---------------------------------------------------------------------------
-// useScrubbingBridge
-// ---------------------------------------------------------------------------
-
-interface UseScrubbingBridgeParams {
-  sharedValue: SharedValue<string> | undefined;
-  value: number | undefined;
-  prefix: string;
-  suffix: string;
-  zeroCodePoint: number;
-}
-
-interface UseScrubbingBridgeResult {
-  effectiveValue: number | undefined;
-}
-
-/**
- * Digit-count bridging for worklet-driven scrubbing.
- *
- * When the worklet-driven sharedValue crosses a digit boundary (e.g.
- * 99.9 → 100.0), the React-side layout must re-render with the correct
- * number of digit slots. This hook watches the worklet's digit count and
- * schedules a JS-side state update when it changes.
- *
- * Must be called **before** `useNumberFormatting` so the returned
- * `effectiveValue` can feed into the formatter.
- */
-export function useScrubbingBridge({
-  sharedValue,
-  value,
-  prefix,
-  suffix,
-  zeroCodePoint,
-}: UseScrubbingBridgeParams): UseScrubbingBridgeResult {
-  const [scrubbingValue, setScrubbingValue] = useState<number | undefined>(undefined);
-
-  const handleScrubbingValueUpdate = useCallback((numericValue: number) => {
-    if (numericValue < 0) {
-      setScrubbingValue(undefined);
-    } else {
-      setScrubbingValue(numericValue);
-    }
-  }, []);
-
-  const effectiveValue = scrubbingValue !== undefined ? scrubbingValue : value;
-
-  const [prevWorkletDigitCount] = useState(() => makeMutable(-1));
-
-  useAnimatedReaction(
-    () => sharedValue?.value ?? "",
-    (current, previous) => {
-      if (current === previous) return;
-
-      if (!current) {
-        if (prevWorkletDigitCount.value !== -1) {
-          prevWorkletDigitCount.value = -1;
-          runOnJS(handleScrubbingValueUpdate)(-1);
-        }
-        return;
-      }
-
-      const fullText = prefix + current + suffix;
-      const digitCount = countDigits(fullText, zeroCodePoint);
-
-      if (digitCount !== prevWorkletDigitCount.value) {
-        prevWorkletDigitCount.value = digitCount;
-        const numericValue = parseFloat(current);
-        if (!Number.isNaN(numericValue)) {
-          runOnJS(handleScrubbingValueUpdate)(numericValue);
-        }
-      }
-    },
-    [prefix, suffix, handleScrubbingValueUpdate],
-  );
-
-  return { effectiveValue };
-}
-
-// ---------------------------------------------------------------------------
-// useScrubbingLayout
-// ---------------------------------------------------------------------------
 
 interface UseScrubbingLayoutParams {
   sharedValue: SharedValue<string> | undefined;
@@ -185,10 +97,9 @@ export function useScrubbingLayout({
     if (!sharedValue.value) return [];
 
     /**
-     * Verify digit count alignment — during the 1-frame gap between
-     * a worklet digit-count change and the React re-render, the layout
-     * slot count doesn't match the worklet's digits. Fall back to prop
-     * layout positions to avoid index misalignment artifacts.
+     * During the 1-frame gap between a worklet digit-count change and
+     * the React re-render, the layout slot count doesn't match the
+     * worklet's digits. Fall back to empty to avoid misalignment.
      */
     const fullText = prefix + sharedValue.value + suffix;
     const workletDigitCount = countDigits(fullText, zeroCodePoint);

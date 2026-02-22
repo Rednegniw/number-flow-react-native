@@ -71,10 +71,9 @@ function pushSecondsAndCentiseconds(
 /**
  * Computes time-aware string layout with fixed semantic keys.
  *
- * Unlike `computeStringLayout` which uses positional keys (`pos:0`, `pos:1`),
- * this function assigns the same fixed keys (h10, h1, sep, m10, m1, etc.)
- * that `useTimeFormatting` produces. This ensures worklet-driven updates
- * produce stable keys that match prop-driven updates.
+ * Assigns fixed semantic keys (h10, h1, sep, m10, m1, etc.) rather than
+ * positional keys. This ensures worklet-driven updates produce stable
+ * keys that match prop-driven updates from `useTimeFormatting`.
  *
  * @param timeString - Formatted time string like "14:30", "9:30", "2:30 PM", "05:30"
  * @param metrics - Glyph measurement data

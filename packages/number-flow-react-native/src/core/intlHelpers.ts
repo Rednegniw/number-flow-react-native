@@ -242,6 +242,18 @@ function parseNumberString(
 }
 
 /**
+ * Parses a pre-formatted number string (e.g. from a SharedValue) into typed
+ * Intl.NumberFormatPart[]. Auto-detects the decimal separator from the locale.
+ */
+export function parseFormattedNumber(
+  text: string,
+  locales?: Intl.LocalesArgument,
+  zeroCodePoint = 48,
+): Intl.NumberFormatPart[] {
+  return parseNumberString(text, detectDecimalSeparator(locales), zeroCodePoint);
+}
+
+/**
  * Hermes has Intl.NumberFormat but may lack formatToParts(). This fallback
  * uses format() and parses the resulting string into typed parts.
  */
@@ -333,9 +345,11 @@ export function safeFormatToParts(
     parts = fallbackFormatToParts(formatter, value, locales);
   }
 
-  // iOS Hermes uses NSNumberFormatter which doesn't support engineering notation.
-  // It silently falls back to decimal formatting, producing no exponent parts.
-  // Detect this and manually compute the engineering representation.
+  /**
+   * iOS Hermes uses NSNumberFormatter which doesn't support engineering notation.
+   * It silently falls back to decimal formatting, producing no exponent parts.
+   * Detect this and manually compute the engineering representation.
+   */
   const hasExponent = parts.some((p) => (p.type as string) === "exponentSeparator");
 
   if (!hasExponent && Number.isFinite(value)) {

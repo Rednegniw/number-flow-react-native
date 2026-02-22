@@ -1,4 +1,4 @@
-import { computeKeyedLayout, computeStringLayout } from "../src/core/layout";
+import { computeKeyedLayout } from "../src/core/layout";
 import { computeTimeStringLayout } from "../src/core/timeLayout";
 import type { GlyphMetrics, KeyedPart } from "../src/core/types";
 
@@ -108,60 +108,6 @@ describe("computeKeyedLayout", () => {
 
     expect(layout[0].width).toBe(12);
     expect(layout[1].width).toBeCloseTo(12 * 0.6);
-  });
-});
-
-// ─── computeStringLayout ───
-
-describe("computeStringLayout", () => {
-  test("generates positional keys", () => {
-    const layout = computeStringLayout("42", metrics, 100, "left");
-
-    expect(layout[0].key).toBe("pos:0");
-    expect(layout[1].key).toBe("pos:1");
-  });
-
-  test("detects digit characters", () => {
-    const layout = computeStringLayout("$5", metrics, 100, "left");
-
-    expect(layout[0].isDigit).toBe(false);
-    expect(layout[1].isDigit).toBe(true);
-    expect(layout[1].digitValue).toBe(5);
-  });
-
-  test("stable keys with prefix and suffix", () => {
-    const layout = computeStringLayout("$100.0 mg", metrics, 200, "left", 48, 1, 3);
-    const keys = layout.map((c) => c.key);
-
-    expect(keys).toEqual([
-      "prefix:0",
-      "num:0",
-      "num:1",
-      "num:2",
-      "num:3",
-      "num:4",
-      "suffix:0",
-      "suffix:1",
-      "suffix:2",
-    ]);
-  });
-
-  test("suffix keys stay stable across digit-count changes", () => {
-    const layout5 = computeStringLayout("100.0 mg", metrics, 200, "left", 48, 0, 3);
-    const layout4 = computeStringLayout("99.9 mg", metrics, 200, "left", 48, 0, 3);
-
-    const suffixKeys5 = layout5.filter((c) => c.key.startsWith("suffix:")).map((c) => c.key);
-    const suffixKeys4 = layout4.filter((c) => c.key.startsWith("suffix:")).map((c) => c.key);
-
-    expect(suffixKeys5).toEqual(["suffix:0", "suffix:1", "suffix:2"]);
-    expect(suffixKeys4).toEqual(["suffix:0", "suffix:1", "suffix:2"]);
-  });
-
-  test("falls back to positional keys when no prefix/suffix", () => {
-    const layout = computeStringLayout("42", metrics, 100, "left", 48, 0, 0);
-    const keys = layout.map((c) => c.key);
-
-    expect(keys).toEqual(["pos:0", "pos:1"]);
   });
 });
 

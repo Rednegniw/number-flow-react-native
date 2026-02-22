@@ -4,24 +4,19 @@ import { detectOutputZeroCodePoint, localeDigitValue } from "./numerals";
 import type { KeyedPart } from "./types";
 
 /**
- * Transforms `Intl.NumberFormat.formatToParts()` output into a flat array of
- * stably-keyed single-character parts. Integer digits are keyed right-to-left
- * (ones = `integer:0`, tens = `integer:1`, etc.) so that the ones place always
- * maps to the same React key regardless of digit count. Fraction digits are
- * keyed left-to-right from the decimal point (`fraction:0` = tenths, etc.).
+ * Applies stable keying to pre-parsed `Intl.NumberFormatPart[]`. Integer digits
+ * are keyed right-to-left (ones = `integer:0`, tens = `integer:1`, etc.) so the
+ * ones place always maps to the same React key regardless of digit count.
+ * Fraction digits are keyed left-to-right from the decimal point.
  *
  * This keying ensures correct animation behavior when digits are added/removed
  * (e.g., 9→10: ones place spins 9→0, tens place enters as new digit).
  */
-export function formatToKeyedParts(
-  value: number,
-  formatter: Intl.NumberFormat,
-  locales: Intl.LocalesArgument | undefined,
+export function rawPartsToKeyedParts(
+  rawParts: Intl.NumberFormatPart[],
   prefix = "",
   suffix = "",
 ): KeyedPart[] {
-  const rawParts = safeFormatToParts(formatter, value, locales);
-
   /**
    * Detect the actual zero codepoint from the formatted output rather than
    * trusting resolvedOptions().numberingSystem. Hermes may report "arab" but
@@ -43,9 +38,11 @@ export function formatToKeyedParts(
   }
 
   for (const part of rawParts) {
-    // Merge signs into unified types.
-    // The fallback parser emits extended types (exponentMinusSign, etc.)
-    // that aren't in Intl.NumberFormatPart["type"], so we widen to string.
+    /**
+     * Merge signs into unified types.
+     * The fallback parser emits extended types (exponentMinusSign, etc.)
+     * that aren't in Intl.NumberFormatPart["type"], so we widen to string.
+     */
     const partType = part.type as string;
     const type =
       partType === "minusSign" || partType === "plusSign"
@@ -62,8 +59,10 @@ export function formatToKeyedParts(
       continue;
     }
 
-    // Flatten all parts into individual characters so each char has a
-    // corresponding entry in the glyph measurement map (charWidths).
+    /**
+     * Flatten all parts into individual characters so each char has a
+     * corresponding entry in the glyph measurement map (charWidths).
+     */
     for (const char of part.value) {
       flatChars.push({ sourceType: type, char });
     }
@@ -136,6 +135,22 @@ export function formatToKeyedParts(
   }
 
   return result;
+}
+
+/**
+ * Transforms `Intl.NumberFormat.formatToParts()` output into a flat array of
+ * stably-keyed single-character parts. Wraps `rawPartsToKeyedParts` with
+ * `safeFormatToParts` to handle Hermes quirks and missing formatToParts().
+ */
+export function formatToKeyedParts(
+  value: number,
+  formatter: Intl.NumberFormat,
+  locales: Intl.LocalesArgument | undefined,
+  prefix = "",
+  suffix = "",
+): KeyedPart[] {
+  const rawParts = safeFormatToParts(formatter, value, locales);
+  return rawPartsToKeyedParts(rawParts, prefix, suffix);
 }
 
 /**

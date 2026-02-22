@@ -1,19 +1,20 @@
 import { Group, LinearGradient, Paint, Rect as SkiaRect, vec } from "@shopify/react-native-skia";
 import { useMemo } from "react";
-import type { SharedValue } from "react-native-reanimated";
+import { type SharedValue, useDerivedValue } from "react-native-reanimated";
 import { MASK_WIDTH_RATIO } from "../core/constants";
-import { getFormatCharacters } from "../core/intlHelpers";
-import { type CharLayout, computeKeyedLayout, computeStringLayout } from "../core/layout";
+import { getFormatCharacters, parseFormattedNumber } from "../core/intlHelpers";
+import { type CharLayout, computeKeyedLayout } from "../core/layout";
 import { detectNumberingSystem, getDigitStrings, getZeroCodePoint } from "../core/numerals";
 import type { GlyphMetrics, KeyedPart, SkiaNumberFlowProps } from "../core/types";
 import { useAccessibilityAnnouncement } from "../core/useAccessibilityAnnouncement";
 import { useFlowPipeline } from "../core/useFlowPipeline";
-import { useNumberFormatting } from "../core/useNumberFormatting";
+import { rawPartsToKeyedParts, useNumberFormatting } from "../core/useNumberFormatting";
 import { getDigitCount } from "../core/utils";
 import { warnOnce } from "../core/warnings";
 import { renderSlots } from "./renderSlots";
 import { useGlyphMetrics } from "./useGlyphMetrics";
-import { useScrubbingBridge, useScrubbingLayout } from "./useScrubbing";
+import { useScrubbingBridge } from "./useScrubbingBridge";
+import { useScrubbingLayout } from "./useScrubbingLayout";
 
 interface ModeBaseProps {
   format: Intl.NumberFormatOptions | undefined;
@@ -134,21 +135,68 @@ function SkiaNumberFlowRuntime({
 
   useAccessibilityAnnouncement(accessibilityLabel);
 
+  const resolvedMask = mask ?? true;
+  const maskWidth = resolvedMask ? MASK_WIDTH_RATIO * metrics.lineHeight : 0;
+
+  const staticContentLeft =
+    layout.length > 0 ? layout.reduce((min, entry) => Math.min(min, entry.x), Infinity) : 0;
+  const staticContentRight =
+    layout.length > 0 ? layout.reduce((max, entry) => Math.max(max, entry.x + entry.width), 0) : 0;
+
+  /**
+   * Animated mask bounds that track workletLayout during scrubbing.
+   * When workletLayout has different bounds (proportional digit widths),
+   * the mask expands to avoid clipping entering/exiting content.
+   * In value mode (no workletLayout), falls through to static bounds.
+   */
+  const maskBounds = useDerivedValue(() => {
+    let left = staticContentLeft;
+    let right = staticContentRight;
+
+    const wl = workletLayout?.value;
+    if (wl && wl.length > 0) {
+      for (let i = 0; i < wl.length; i++) {
+        if (wl[i].x < left) left = wl[i].x;
+        const r = wl[i].x + wl[i].width;
+        if (r > right) right = r;
+      }
+    }
+
+    const cw = right - left;
+    const tw = cw + 2 * maskWidth;
+    return {
+      maskLeft: x + left - maskWidth,
+      maskRight: x + right + maskWidth,
+      totalWidth: tw,
+      hRatio: tw > 0 ? maskWidth / tw : 0,
+    };
+  });
+
+  const maskTopHeight = resolvedMask ? adaptiveMask.top : 0;
+  const maskBottomHeight = resolvedMask ? adaptiveMask.bottom : 0;
+  const expansionTop = resolvedMask ? adaptiveMask.expansionTop : 0;
+  const expansionBottom = resolvedMask ? adaptiveMask.expansionBottom : 0;
+  const baseY = y;
+  const maskY = baseY + metrics.ascent - expansionTop;
+  const maskTotalHeight = metrics.lineHeight + expansionTop + expansionBottom;
+
+  const hMaskRect = useDerivedValue(() => {
+    const b = maskBounds.value;
+    return { x: b.maskLeft, y: maskY, width: b.totalWidth, height: maskTotalHeight };
+  });
+  const hGradientStart = useDerivedValue(() => vec(maskBounds.value.maskLeft, 0));
+  const hGradientEnd = useDerivedValue(() => vec(maskBounds.value.maskRight, 0));
+  const hGradientPositions = useDerivedValue(() => {
+    const hr = maskBounds.value.hRatio;
+    return [0, hr, 1 - hr, 1];
+  });
+
   if (layout.length === 0 && exitingEntries.size === 0) {
     return <Group />;
   }
 
-  const baseY = y;
-  const resolvedMask = mask ?? true;
-
-  const maskTopHeight = resolvedMask ? adaptiveMask.top : 0;
-  const maskBottomHeight = resolvedMask ? adaptiveMask.bottom : 0;
-  const maskWidth = resolvedMask ? MASK_WIDTH_RATIO * metrics.lineHeight : 0;
-
-  // Content bounds in the content group's local coordinate space
-  const contentLeft = layout.reduce((min, entry) => Math.min(min, entry.x), Infinity);
-  const contentRight = layout.reduce((max, entry) => Math.max(max, entry.x + entry.width), 0);
-  const contentWidth = layout.length > 0 ? contentRight - contentLeft : 0;
+  const vRatioTop = maskTotalHeight > 0 ? maskTopHeight / maskTotalHeight : 0;
+  const vRatioBottom = maskTotalHeight > 0 ? maskBottomHeight / maskTotalHeight : 0;
 
   const content = (
     <Group transform={[{ translateX: x }]}>
@@ -181,43 +229,31 @@ function SkiaNumberFlowRuntime({
    * Container-level 2D gradient mask matching web NumberFlow's vignette.
    * Two DstIn-blended rects compose independent horizontal and vertical fades:
    * final_alpha = content_alpha * horizontal_alpha * vertical_alpha.
-   * This produces smooth corners naturally (alpha multiplication).
    *
-   * Architecture: content draws into a saveLayer, then each gradient rect
-   * composites with DstIn (result = existing_content * gradient_alpha).
+   * Horizontal fade extends OUTSIDE text edges (for enter/exit animations).
+   * Vertical fade is WITHIN the text line height (digits roll through it).
+   * The horizontal rect/gradient use animated derived values to track
+   * workletLayout bounds during scrubbing.
    */
-  // Horizontal: fade extends OUTSIDE text edges (for enter/exit animations)
-  // Vertical: fade is WITHIN the text line height (digits roll through it)
-  const maskLeft = x + contentLeft - maskWidth;
-  const maskRight = x + contentRight + maskWidth;
-  const expansionTop = resolvedMask ? adaptiveMask.expansionTop : 0;
-  const expansionBottom = resolvedMask ? adaptiveMask.expansionBottom : 0;
-  const maskY = baseY + metrics.ascent - expansionTop;
-  const maskTotalWidth = contentWidth + 2 * maskWidth;
-  const maskTotalHeight = metrics.lineHeight + expansionTop + expansionBottom;
-  const hRatio = maskTotalWidth > 0 ? maskWidth / maskTotalWidth : 0;
-  const vRatioTop = maskTotalHeight > 0 ? maskTopHeight / maskTotalHeight : 0;
-  const vRatioBottom = maskTotalHeight > 0 ? maskBottomHeight / maskTotalHeight : 0;
-
   const maskedContent = resolvedMask ? (
     <Group layer={<Paint />}>
       {content}
 
-      {/* Horizontal fade */}
+      {/* Horizontal fade — animated to track worklet layout */}
       <Group layer={<Paint blendMode="dstIn" />}>
-        <SkiaRect height={maskTotalHeight} width={maskTotalWidth} x={maskLeft} y={maskY}>
+        <SkiaRect rect={hMaskRect}>
           <LinearGradient
             colors={["transparent", "black", "black", "transparent"]}
-            end={vec(maskRight, 0)}
-            positions={[0, hRatio, 1 - hRatio, 1]}
-            start={vec(maskLeft, 0)}
+            end={hGradientEnd}
+            positions={hGradientPositions}
+            start={hGradientStart}
           />
         </SkiaRect>
       </Group>
 
       {/* Vertical fade */}
       <Group layer={<Paint blendMode="dstIn" />}>
-        <SkiaRect height={maskTotalHeight} width={maskTotalWidth} x={maskLeft} y={maskY}>
+        <SkiaRect rect={hMaskRect}>
           <LinearGradient
             colors={["transparent", "black", "black", "transparent"]}
             end={vec(0, maskY + maskTotalHeight)}
@@ -301,7 +337,6 @@ function SkiaNumberFlowValueMode({
 
 function SkiaNumberFlowSharedMode({
   sharedValue,
-  format,
   locales,
   font,
   color,
@@ -328,29 +363,24 @@ function SkiaNumberFlowSharedMode({
   digitStringsArr,
   zeroCodePoint,
 }: SharedModeProps) {
-  // Scrubbing bridge: digit-count bridging between worklet and JS thread
-  const { effectiveValue } = useScrubbingBridge({
+  const { effectiveString } = useScrubbingBridge({
     sharedValue,
-    value: undefined,
     prefix,
     suffix,
     zeroCodePoint,
   });
 
-  const keyedParts = useNumberFormatting(effectiveValue, format, locales, prefix, suffix);
+  // Parse the raw string directly to preserve formatting that parseFloat would lose
+  const keyedParts = useMemo(() => {
+    if (effectiveString === undefined) return [];
+    const parts = parseFormattedNumber(effectiveString, locales, zeroCodePoint);
+    return rawPartsToKeyedParts(parts, prefix, suffix);
+  }, [effectiveString, locales, zeroCodePoint, prefix, suffix]);
 
   const layout = useMemo(() => {
-    const text = `${prefix}${effectiveValue}${suffix}`;
-    return computeStringLayout(
-      text,
-      metrics,
-      width,
-      textAlign,
-      undefined,
-      prefix.length,
-      suffix.length,
-    );
-  }, [metrics, width, textAlign, prefix, suffix, effectiveValue]);
+    if (keyedParts.length === 0) return [];
+    return computeKeyedLayout(keyedParts, metrics, width, textAlign, digitStringsArr);
+  }, [keyedParts, metrics, width, textAlign, digitStringsArr]);
 
   const layoutDigitCount = useMemo(() => {
     let count = 0;
