@@ -1,5 +1,13 @@
 # number-flow-react-native
 
+## 0.2.5
+
+### Patch Changes
+
+- [`e45ee02`](https://github.com/Rednegniw/number-flow-react-native/commit/e45ee02922c4ce115dfdc7ee19ee1bec37c0e703) Thanks [@Rednegniw](https://github.com/Rednegniw)! - Fix hairline gap in gradient mask on non-white backgrounds (#1)
+
+  Replace discrete View strips with continuous native gradients using `experimental_backgroundImage` on RN 0.76+. Falls back to 48-step discrete strips with overlap for older versions.
+
 ## 0.2.4
 
 ### Patch Changes
