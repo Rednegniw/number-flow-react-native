@@ -28,11 +28,12 @@ jobs:
         run: npm install -g npm@latest
 
       - run: bun install --frozen-lockfile
+      - run: bun run build
 
       - name: Create Release PR or Publish
         uses: changesets/action@v1
         with:
-          publish: bun run lib prepare && bun changeset publish
+          publish: bun changeset publish
           version: bun changeset version
           title: "chore: version packages"
           commit: "chore: version packages"
