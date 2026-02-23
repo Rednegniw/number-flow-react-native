@@ -161,6 +161,18 @@ export const DEMO_SECTIONS: DemoSection[] = [
           return require("../demos/EdgeCaseDemo").EdgeCaseDemoSkia;
         },
       },
+      {
+        key: "mask-gap",
+        title: "Gradient Mask",
+        description:
+          "Test gradient mask rendering on various background colors. Useful for spotting sub-pixel seams or banding artifacts.",
+        get NativeComponent() {
+          return require("../demos/MaskGapDemo").MaskGapDemoNative;
+        },
+        get SkiaComponent() {
+          return require("../demos/MaskGapDemo").MaskGapDemoSkia;
+        },
+      },
     ],
   },
 ];
