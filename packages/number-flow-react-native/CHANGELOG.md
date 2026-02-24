@@ -4,14 +4,15 @@
 
 ### Minor Changes
 
-- [`7761515`](https://github.com/Rednegniw/number-flow-react-native/commit/776151504d14e3638d56aa3990bc82854e36c7b3) Thanks [@Rednegniw](https://github.com/Rednegniw)! - feat: add RTL and bidi visual reordering support
+- [`7761515`](https://github.com/Rednegniw/number-flow-react-native/commit/776151504d14e3638d56aa3990bc82854e36c7b3) Thanks [@Rednegniw](https://github.com/Rednegniw)! - Add right-to-left (RTL) support with automatic bidi visual reordering
 
-  - New `direction` prop ("ltr" | "rtl" | "auto") on all four components
-  - Semantic `textAlign` values ("start", "end") that resolve based on direction
-  - Unicode Bidi Algorithm (UAX#9) implementation for visual reordering of formatted numbers in RTL locales (Arabic, Hebrew)
-  - Bidi control character filtering throughout the formatting pipeline
-  - New `resolveDirection` and `resolveTextAlign` utilities in `direction.ts`
-  - New `bidi.ts` module with `computeVisualOrder`, `detectContentDirection`, and `reorderKeyedParts`
+  NumberFlow now works correctly in RTL apps. When `I18nManager.isRTL` is `true` (or `direction="rtl"` is set explicitly), numbers right-align automatically and currency symbols, minus signs, and other formatting elements reorder to match native text rendering. Arabic and Hebrew locales get full visual reordering; Persian and Urdu formats preserve their logical order as intended.
+
+  - New `direction` prop (`"ltr"` | `"rtl"` | `"auto"`) on all four components
+  - Semantic `textAlign` values (`"start"`, `"end"`) that resolve based on direction
+  - Simplified Unicode Bidi Algorithm (UAX#9) for visual reordering of formatted numbers
+
+  See the [RTL documentation](https://number-flow-react-native.awingender.com/docs/examples/right-to-left) for details and examples.
 
 ## 0.2.5
 
