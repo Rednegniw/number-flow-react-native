@@ -1,19 +1,20 @@
 "use client";
 
+import "@/lib/rn-web-polyfills";
+
 import { Star } from "lucide-react";
-import dynamic from "next/dynamic";
+import { NumberFlow } from "number-flow-react-native";
 import { useEffect, useState } from "react";
 import { gitConfig } from "@/lib/layout.shared";
 
 const POLL_INTERVAL = 60_000;
 const GITHUB_URL = `https://github.com/${gitConfig.user}/${gitConfig.repo}`;
 
-const AnimatedCount = dynamic(() => import("./github-stars-count"), {
-  ssr: false,
-});
-
 export function GitHubStarsButton() {
-  const [stars, setStars] = useState<number | null>(null);
+  const [stars, setStars] = useState(0);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -23,7 +24,7 @@ export function GitHubStarsButton() {
         const res = await fetch("/api/github-stars", { signal: controller.signal });
         if (!res.ok) return;
         const data = await res.json();
-        if (typeof data.stars === "number") setStars(data.stars);
+        if (data.stars > 0) setStars(data.stars);
       } catch {
         // Silently ignore aborts and network errors
       }
@@ -38,7 +39,7 @@ export function GitHubStarsButton() {
     };
   }, []);
 
-  const label = stars !== null ? `Star on GitHub (${stars} stars)` : "Star on GitHub";
+  const label = stars > 0 ? `Star on GitHub (${stars} stars)` : "Star on GitHub";
 
   return (
     <a
@@ -46,15 +47,22 @@ export function GitHubStarsButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label={label}
-      className="group ms-auto inline-flex items-center gap-1.5 rounded-md border mt-1 border-white/[0.08] bg-white/[0.03] px-2 py-1.5 text-xs text-fd-muted-foreground transition-colors hover:border-[var(--brand-accent)]/30 hover:bg-[var(--brand-accent)]/[0.04] hover:text-fd-foreground"
+      className="group ms-auto inline-flex items-center gap-1.5 rounded-md border mt-1 border-white/8 bg-white/3 px-2 py-1.5 text-xs text-fd-muted-foreground transition-colors hover:border-(--brand-accent)/30 hover:bg-(--brand-accent)/4 hover:text-fd-foreground"
     >
-      <Star className="size-3.5 fill-[var(--brand-accent)] text-[var(--brand-accent)] transition-transform group-hover:scale-110" />
+      <Star className="size-3.5 fill-(--brand-accent) text-(--brand-accent) transition-transform group-hover:scale-110" />
 
-      {stars !== null && (
-        <span className="tabular-nums">
-          <AnimatedCount stars={stars} />
-        </span>
-      )}
+      <span className="tabular-nums">
+        {mounted ? (
+          <NumberFlow
+            value={stars}
+            style={{ fontSize: 12, color: "inherit" }}
+            format={{ useGrouping: true }}
+            trend={1}
+          />
+        ) : (
+          <span style={{ fontSize: 12 }}>0</span>
+        )}
+      </span>
     </a>
   );
 }
