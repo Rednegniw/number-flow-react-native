@@ -1,5 +1,18 @@
 # number-flow-react-native
 
+## 0.3.0
+
+### Minor Changes
+
+- [`7761515`](https://github.com/Rednegniw/number-flow-react-native/commit/776151504d14e3638d56aa3990bc82854e36c7b3) Thanks [@Rednegniw](https://github.com/Rednegniw)! - feat: add RTL and bidi visual reordering support
+
+  - New `direction` prop ("ltr" | "rtl" | "auto") on all four components
+  - Semantic `textAlign` values ("start", "end") that resolve based on direction
+  - Unicode Bidi Algorithm (UAX#9) implementation for visual reordering of formatted numbers in RTL locales (Arabic, Hebrew)
+  - Bidi control character filtering throughout the formatting pipeline
+  - New `resolveDirection` and `resolveTextAlign` utilities in `direction.ts`
+  - New `bidi.ts` module with `computeVisualOrder`, `detectContentDirection`, and `reorderKeyedParts`
+
 ## 0.2.5
 
 ### Patch Changes
