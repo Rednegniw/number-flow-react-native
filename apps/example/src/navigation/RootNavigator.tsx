@@ -11,6 +11,8 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 // Lazy-import Skia-dependent screens to avoid pulling in @shopify/react-native-skia on web
 const LazyShowcase =
   Platform.OS === "web" ? undefined : require("../screens/ShowcaseScreen").ShowcaseScreen;
+const LazyRTLShowcase =
+  Platform.OS === "web" ? undefined : require("../screens/RTLShowcaseScreen").RTLShowcaseScreen;
 const LazyRecordingList =
   Platform.OS === "web" ? undefined : require("../screens/RecordingListScreen").RecordingListScreen;
 const LazyRecordingDemo =
@@ -30,6 +32,13 @@ export const RootNavigator = () => (
     <Stack.Screen component={DemoScreen} name="Demo" />
     {LazyShowcase && (
       <Stack.Screen component={LazyShowcase} name="Showcase" options={{ headerShown: false }} />
+    )}
+    {LazyRTLShowcase && (
+      <Stack.Screen
+        component={LazyRTLShowcase}
+        name="RTLShowcase"
+        options={{ headerShown: false }}
+      />
     )}
     {LazyRecordingList && (
       <Stack.Screen

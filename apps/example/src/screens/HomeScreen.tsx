@@ -105,9 +105,11 @@ const isWeb = Platform.OS === "web";
 
 const ListHeader = ({
   onShowcase,
+  onRTLShowcase,
   onRecording,
 }: {
   onShowcase: () => void;
+  onRTLShowcase: () => void;
   onRecording: () => void;
 }) => (
   <Animated.View entering={FadeIn.duration(300)} style={{ paddingHorizontal: 4, paddingBottom: 4 }}>
@@ -162,6 +164,40 @@ const ListHeader = ({
           }}
         >
           Cinematic auto-playing demo reel
+        </Text>
+      </RipplePressable>
+    )}
+
+    {/* RTL Showcase button — hidden on web (requires Skia) */}
+    {!isWeb && (
+      <RipplePressable
+        onPress={onRTLShowcase}
+        style={{
+          backgroundColor: "#0A0A0A",
+          borderRadius: 14,
+          padding: 16,
+          marginTop: 10,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 16,
+            fontFamily: FONT_SEMIBOLD,
+            color: "#FFFFFF",
+          }}
+        >
+          RTL Showcase
+        </Text>
+        <Text
+          style={{
+            fontSize: 13,
+            fontFamily: FONT_REGULAR,
+            color: "#9CA3AF",
+            marginTop: 4,
+            lineHeight: 18,
+          }}
+        >
+          Bidi visual reordering for Arabic, Hebrew, and more
         </Text>
       </RipplePressable>
     )}
@@ -230,6 +266,7 @@ export const HomeScreen = ({ navigation }: Props) => {
       keyExtractor={keyExtractor}
       ListHeaderComponent={
         <ListHeader
+          onRTLShowcase={() => navigation.navigate("RTLShowcase")}
           onRecording={() => navigation.navigate("RecordingList")}
           onShowcase={() => navigation.navigate("Showcase")}
         />
