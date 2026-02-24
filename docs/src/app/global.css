@@ -81,6 +81,14 @@ figure.shiki {
   @apply md:border-0!;
 }
 
+/* Sidebar footer: place icon links and star button on the same row */
+#nd-sidebar > div:last-child {
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 #nd-page {
   max-width: 1050px;
 }

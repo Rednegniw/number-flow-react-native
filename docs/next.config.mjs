@@ -29,6 +29,14 @@ const config = {
         source: "/docs/:path*.mdx",
         destination: "/llms.mdx/docs/:path*",
       },
+      {
+        source: "/ph/static/:path*",
+        destination: "https://us-assets.i.posthog.com/static/:path*",
+      },
+      {
+        source: "/ph/:path*",
+        destination: "https://us.i.posthog.com/:path*",
+      },
     ];
   },
 };

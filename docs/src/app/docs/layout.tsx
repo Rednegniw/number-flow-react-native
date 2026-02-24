@@ -5,6 +5,7 @@ import {
   AnimatedSidebarSeparator,
   SidebarHoverProvider,
 } from "@/components/docs-sidebar";
+import { GitHubStarsButton } from "@/components/github-stars-button";
 import { baseOptions } from "@/lib/layout.shared";
 import { source } from "@/lib/source";
 
@@ -15,6 +16,7 @@ export default function Layout({ children }: LayoutProps<"/docs">) {
         tree={source.getPageTree()}
         {...baseOptions()}
         sidebar={{
+          footer: <GitHubStarsButton />,
           components: {
             Item: AnimatedSidebarItem,
             Separator: AnimatedSidebarSeparator,
