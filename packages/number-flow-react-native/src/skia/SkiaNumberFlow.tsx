@@ -2,10 +2,16 @@ import { Group, LinearGradient, Paint, Rect as SkiaRect, vec } from "@shopify/re
 import { useMemo } from "react";
 import { type SharedValue, useDerivedValue } from "react-native-reanimated";
 import { MASK_WIDTH_RATIO } from "../core/constants";
+import { resolveDirection, resolveTextAlign } from "../core/direction";
 import { getFormatCharacters, parseFormattedNumber } from "../core/intlHelpers";
 import { type CharLayout, computeKeyedLayout } from "../core/layout";
 import { detectNumberingSystem, getDigitStrings, getZeroCodePoint } from "../core/numerals";
-import type { GlyphMetrics, KeyedPart, SkiaNumberFlowProps } from "../core/types";
+import type {
+  GlyphMetrics,
+  KeyedPart,
+  ResolvedTextAlign,
+  SkiaNumberFlowProps,
+} from "../core/types";
 import { useAccessibilityAnnouncement } from "../core/useAccessibilityAnnouncement";
 import { useFlowPipeline } from "../core/useFlowPipeline";
 import { rawPartsToKeyedParts, useNumberFormatting } from "../core/useNumberFormatting";
@@ -24,7 +30,7 @@ interface ModeBaseProps {
   x: number;
   y: number;
   width: number;
-  textAlign: "left" | "right" | "center";
+  textAlign: ResolvedTextAlign;
   prefix: string;
   suffix: string;
   opacity: SkiaNumberFlowProps["opacity"];
@@ -43,6 +49,7 @@ interface ModeBaseProps {
   metrics: GlyphMetrics;
   digitStringsArr: string[];
   zeroCodePoint: number;
+  resolvedDir: "ltr" | "rtl";
 }
 
 interface ValueModeProps extends ModeBaseProps {
@@ -300,13 +307,24 @@ function SkiaNumberFlowValueMode({
   mask,
   metrics,
   digitStringsArr,
+  resolvedDir,
 }: ValueModeProps) {
-  const keyedParts = useNumberFormatting(value, format, locales, prefix, suffix);
+  const { parts: keyedParts, rawChars } = useNumberFormatting(
+    value,
+    format,
+    locales,
+    prefix,
+    suffix,
+  );
 
   const layout = useMemo(() => {
     if (keyedParts.length === 0) return [];
-    return computeKeyedLayout(keyedParts, metrics, width, textAlign, digitStringsArr);
-  }, [keyedParts, metrics, width, textAlign, digitStringsArr]);
+    return computeKeyedLayout(keyedParts, metrics, width, textAlign, {
+      localeDigitStrings: digitStringsArr,
+      rawCharsWithBidi: rawChars,
+      direction: resolvedDir,
+    });
+  }, [keyedParts, metrics, width, textAlign, digitStringsArr, rawChars, resolvedDir]);
 
   return (
     <SkiaNumberFlowRuntime
@@ -362,6 +380,7 @@ function SkiaNumberFlowSharedMode({
   metrics,
   digitStringsArr,
   zeroCodePoint,
+  resolvedDir,
 }: SharedModeProps) {
   const { effectiveString } = useScrubbingBridge({
     sharedValue,
@@ -371,16 +390,22 @@ function SkiaNumberFlowSharedMode({
   });
 
   // Parse the raw string directly to preserve formatting that parseFloat would lose
-  const keyedParts = useMemo(() => {
-    if (effectiveString === undefined) return [];
+  const { keyedParts, rawChars } = useMemo(() => {
+    if (effectiveString === undefined)
+      return { keyedParts: [] as KeyedPart[], rawChars: [] as string[] };
     const parts = parseFormattedNumber(effectiveString, locales, zeroCodePoint);
-    return rawPartsToKeyedParts(parts, prefix, suffix);
+    const rawString = prefix + effectiveString + suffix;
+    return { keyedParts: rawPartsToKeyedParts(parts, prefix, suffix), rawChars: [...rawString] };
   }, [effectiveString, locales, zeroCodePoint, prefix, suffix]);
 
   const layout = useMemo(() => {
     if (keyedParts.length === 0) return [];
-    return computeKeyedLayout(keyedParts, metrics, width, textAlign, digitStringsArr);
-  }, [keyedParts, metrics, width, textAlign, digitStringsArr]);
+    return computeKeyedLayout(keyedParts, metrics, width, textAlign, {
+      localeDigitStrings: digitStringsArr,
+      rawCharsWithBidi: rawChars,
+      direction: resolvedDir,
+    });
+  }, [keyedParts, metrics, width, textAlign, digitStringsArr, rawChars, resolvedDir]);
 
   const layoutDigitCount = useMemo(() => {
     let count = 0;
@@ -444,7 +469,8 @@ export const SkiaNumberFlow = ({
   x = 0,
   y = 0,
   width = 0,
-  textAlign = "left",
+  textAlign: rawTextAlign,
+  direction,
   prefix = "",
   suffix = "",
   opacity,
@@ -462,6 +488,9 @@ export const SkiaNumberFlow = ({
   onAnimationsFinish,
   mask,
 }: SkiaNumberFlowProps) => {
+  const resolvedDir = resolveDirection(direction);
+  const textAlign = resolveTextAlign(resolvedDir, rawTextAlign);
+
   const formatChars = useMemo(
     () => getFormatCharacters(locales, format, prefix, suffix),
     [locales, format, prefix, suffix],
@@ -532,6 +561,7 @@ export const SkiaNumberFlow = ({
     metrics,
     digitStringsArr,
     zeroCodePoint,
+    resolvedDir,
   };
 
   // Shared-value mode mounts scrubbing hooks; value mode avoids them entirely.

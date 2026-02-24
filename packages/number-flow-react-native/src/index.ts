@@ -4,6 +4,7 @@ export type {
   AnimationConfig,
   DigitConstraint,
   DigitsProp,
+  Direction,
   TextAlign,
   TimingConfig,
   Trend,

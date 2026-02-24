@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { type LayoutChangeEvent, Text, View } from "react-native";
 import Animated, { makeMutable, useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { DEFAULT_FONT_SIZE } from "../core/constants";
+import { resolveDirection, resolveTextAlign } from "../core/direction";
 import { getFormatCharacters } from "../core/intlHelpers";
 import { computeKeyedLayout } from "../core/layout";
 import { detectNumberingSystem, getDigitStrings } from "../core/numerals";
@@ -32,6 +33,7 @@ export const NumberFlow = ({
   onAnimationsStart,
   onAnimationsFinish,
   containerStyle,
+  direction,
   mask,
 }: NumberFlowProps) => {
   const nfStyle = useMemo(() => {
@@ -39,8 +41,8 @@ export const NumberFlow = ({
     return { ...rest, fontSize: nfStyleProp.fontSize ?? DEFAULT_FONT_SIZE };
   }, [nfStyleProp]);
 
-  const rawTextAlign = nfStyleProp.textAlign;
-  const textAlign = rawTextAlign === "center" || rawTextAlign === "right" ? rawTextAlign : "left";
+  const resolvedDir = resolveDirection(direction);
+  const textAlign = resolveTextAlign(resolvedDir, nfStyleProp.textAlign);
 
   const formatChars = useMemo(
     () => getFormatCharacters(locales, format, prefix, suffix),
@@ -63,7 +65,13 @@ export const NumberFlow = ({
     }
   }
 
-  const keyedParts = useNumberFormatting(value, format, locales, prefix, suffix);
+  const { parts: keyedParts, rawChars } = useNumberFormatting(
+    value,
+    format,
+    locales,
+    prefix,
+    suffix,
+  );
 
   const [containerWidth, setContainerWidth] = useState(0);
   const handleContainerLayout = useCallback((e: LayoutChangeEvent) => {
@@ -79,8 +87,12 @@ export const NumberFlow = ({
     if (containerWidth === 0 && textAlign !== "left") return [];
 
     if (keyedParts.length === 0) return [];
-    return computeKeyedLayout(keyedParts, metrics, containerWidth, textAlign, digitStrings);
-  }, [metrics, keyedParts, containerWidth, textAlign, digitStrings]);
+    return computeKeyedLayout(keyedParts, metrics, containerWidth, textAlign, {
+      localeDigitStrings: digitStrings,
+      rawCharsWithBidi: rawChars,
+      direction: resolvedDir,
+    });
+  }, [metrics, keyedParts, containerWidth, textAlign, digitStrings, rawChars, resolvedDir]);
 
   // On web, all children are position:'absolute' so the container has 0 intrinsic
   // width. With alignItems:'center' on a parent, the container collapses. Setting

@@ -2,7 +2,7 @@ import type { SkFont } from "@shopify/react-native-skia";
 import type { ViewStyle } from "react-native";
 import type { SharedValue } from "react-native-reanimated";
 import type { NumberFlowStyle } from "../native/types";
-import type { AnimationBehaviorProps, TextAlign } from "./types";
+import type { AnimationBehaviorProps, Direction, TextAlign } from "./types";
 
 interface TimeFlowBaseProps extends AnimationBehaviorProps {
   /** Use 24-hour format. Default: true. Only applies when hours are shown. */
@@ -10,8 +10,10 @@ interface TimeFlowBaseProps extends AnimationBehaviorProps {
   /** Pad hours with leading zero. Default: true. "09:30" vs "9:30". */
   padHours?: boolean;
 
-  /** Text styling. fontSize defaults to 16 when omitted; fontFamily defaults to the platform system font. textAlign defaults to "left". */
+  /** Text styling. fontSize defaults to 16 when omitted; fontFamily defaults to the platform system font. textAlign defaults to "start" (left in LTR, right in RTL). */
   style?: NumberFlowStyle;
+  /** Overrides automatic RTL detection from I18nManager.isRTL. Omit to follow the system setting. Controls text alignment only; bidi visual reordering of characters applies to NumberFlow/SkiaNumberFlow, not TimeFlow. */
+  direction?: Direction;
   /** Style applied to the outer container View */
   containerStyle?: ViewStyle;
 }
@@ -53,8 +55,10 @@ interface SkiaTimeFlowBaseProps extends AnimationBehaviorProps {
   y?: number;
   /** Available width for alignment calculations. Defaults to 0. */
   width?: number;
-  /** Text alignment within the available width. Defaults to "left". */
+  /** Text alignment within the available width. Defaults to "start" (left in LTR, right in RTL). Accepts "start"/"end" for direction-aware alignment. */
   textAlign?: TextAlign;
+  /** Overrides automatic RTL detection from I18nManager.isRTL. Omit to follow the system setting. Controls text alignment only; bidi visual reordering of characters applies to NumberFlow/SkiaNumberFlow, not SkiaTimeFlow. */
+  direction?: Direction;
   /** Parent opacity (SharedValue for animation coordination) */
   opacity?: SharedValue<number>;
 }

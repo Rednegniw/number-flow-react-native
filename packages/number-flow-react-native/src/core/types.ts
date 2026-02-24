@@ -105,7 +105,18 @@ export interface GlyphMetrics {
   charBounds: Record<string, { top: number; bottom: number }>;
 }
 
-export type TextAlign = "left" | "right" | "center";
+export type TextAlign = "left" | "right" | "center" | "start" | "end";
+
+// Concrete text alignment after resolving "start"/"end" based on direction
+export type ResolvedTextAlign = "left" | "right" | "center";
+
+/**
+ * Layout direction for RTL support.
+ * - "ltr": force left-to-right
+ * - "rtl": force right-to-left
+ * - "auto": read from I18nManager.isRTL (same as omitting the prop)
+ */
+export type Direction = "ltr" | "rtl" | "auto";
 
 /**
  * Per-position digit constraint. `max` defines the highest value the
@@ -156,8 +167,10 @@ interface SkiaNumberFlowBaseProps extends AnimationBehaviorProps {
   y?: number;
   /** Available width for alignment calculations. Defaults to 0. */
   width?: number;
-  /** Text alignment within the available width. Defaults to "left". */
+  /** Text alignment within the available width. Defaults to "start" (left in LTR, right in RTL). Accepts "start"/"end" for direction-aware alignment. */
   textAlign?: TextAlign;
+  /** Overrides automatic RTL detection from I18nManager.isRTL. Omit to follow the system setting. In sharedValue/scrubbing mode, controls alignment only (bidi visual reordering requires value mode, since the SharedValue string lacks the bidi marks that Intl.NumberFormat embeds). */
+  direction?: Direction;
   /** Static string prepended before the number */
   prefix?: string;
   /** Static string appended after the number */

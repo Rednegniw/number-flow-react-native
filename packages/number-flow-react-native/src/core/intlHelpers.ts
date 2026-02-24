@@ -1,3 +1,4 @@
+import { isBidiControlChar } from "./bidi";
 import { MEASURABLE_CHARS } from "./constants";
 import {
   detectNumberingSystem,
@@ -55,6 +56,8 @@ export function getFormatCharacters(
   for (const probe of probes) {
     for (const ch of formatter.format(probe)) {
       const code = ch.charCodeAt(0);
+      if (isBidiControlChar(code)) continue;
+
       // Skip digits in both Latin and the locale's numbering system
       const isLatinDigit = code >= 48 && code <= 57;
       const isLocale = isLocaleDigit(code, zeroCP);
@@ -157,6 +160,7 @@ function parseMantissa(
 
   for (let i = 0; i < mantissa.length; i++) {
     const ch = mantissa[i];
+    if (isBidiControlChar(ch.charCodeAt(0))) continue;
 
     if (i === decimalPos) {
       flush();

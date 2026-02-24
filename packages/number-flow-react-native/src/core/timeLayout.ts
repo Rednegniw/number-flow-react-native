@@ -1,6 +1,6 @@
 import { assignXPositions, type CharLayout } from "./layout";
 import { isDigitChar, localeDigitValue } from "./numerals";
-import type { GlyphMetrics, TextAlign } from "./types";
+import type { GlyphMetrics, ResolvedTextAlign } from "./types";
 
 /**
  * Keys for each digit position within a time segment.
@@ -87,7 +87,7 @@ export function computeTimeStringLayout(
   timeString: string,
   metrics: GlyphMetrics,
   totalWidth: number,
-  textAlign: TextAlign,
+  textAlign: ResolvedTextAlign,
   hasHours: boolean,
   hasSeconds: boolean,
   hasCentiseconds = false,

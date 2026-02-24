@@ -1,5 +1,6 @@
+import { reorderKeyedParts } from "./bidi";
 import { SUPERSCRIPT_SCALE } from "./constants";
-import type { GlyphMetrics, KeyedPart, TextAlign } from "./types";
+import type { GlyphMetrics, KeyedPart, ResolvedTextAlign } from "./types";
 
 /**
  * Assigns x positions to each entry based on text alignment.
@@ -9,7 +10,7 @@ import type { GlyphMetrics, KeyedPart, TextAlign } from "./types";
 export function assignXPositions(
   chars: { x: number; width: number }[],
   totalWidth: number,
-  textAlign: TextAlign,
+  textAlign: ResolvedTextAlign,
   precomputedContentWidth?: number,
 ): void {
   "worklet";
@@ -39,16 +40,28 @@ export interface CharLayout {
   superscript?: boolean;
 }
 
+export interface KeyedLayoutOptions {
+  localeDigitStrings?: string[];
+  rawCharsWithBidi?: string[];
+  direction?: "ltr" | "rtl";
+}
+
 export function computeKeyedLayout(
   parts: KeyedPart[],
   metrics: GlyphMetrics,
   totalWidth: number,
-  textAlign: TextAlign,
-  localeDigitStrings?: string[],
+  textAlign: ResolvedTextAlign,
+  options?: KeyedLayoutOptions,
 ): CharLayout[] {
+  const { localeDigitStrings, rawCharsWithBidi, direction } = options ?? {};
+
+  // Apply bidi visual reordering for RTL content in RTL mode
+  const orderedParts =
+    rawCharsWithBidi && direction ? reorderKeyedParts(parts, rawCharsWithBidi, direction) : parts;
+
   const chars: CharLayout[] = [];
 
-  for (const part of parts) {
+  for (const part of orderedParts) {
     const isSuperscript =
       part.key.startsWith("exponentInteger:") || part.key.startsWith("exponentSign:");
 

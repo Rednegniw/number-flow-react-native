@@ -133,6 +133,18 @@ export const DEMO_SECTIONS: DemoSection[] = [
           return require("../demos/NumeralsDemo").NumeralsDemoSkia;
         },
       },
+      {
+        key: "rtl",
+        title: "RTL Layout",
+        description:
+          "Right-to-left layout support with Arabic, Persian, and Hebrew currencies. Toggle between LTR and RTL direction.",
+        get NativeComponent() {
+          return require("../demos/RTLDemo").RTLDemoNative;
+        },
+        get SkiaComponent() {
+          return require("../demos/RTLDemo").RTLDemoSkia;
+        },
+      },
     ],
   },
   {

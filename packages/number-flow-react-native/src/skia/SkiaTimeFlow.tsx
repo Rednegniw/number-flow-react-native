@@ -1,6 +1,7 @@
 import { Group, LinearGradient, Paint, Rect as SkiaRect, vec } from "@shopify/react-native-skia";
 import { useMemo } from "react";
 import { MASK_WIDTH_RATIO } from "../core/constants";
+import { resolveDirection, resolveTextAlign } from "../core/direction";
 import { computeKeyedLayout } from "../core/layout";
 import { computeTimeStringLayout } from "../core/timeLayout";
 import type { SkiaTimeFlowProps } from "../core/timeTypes";
@@ -28,7 +29,8 @@ export const SkiaTimeFlow = ({
   x = 0,
   y = 0,
   width = 0,
-  textAlign = "left",
+  textAlign: rawTextAlign,
+  direction,
   opacity,
   spinTiming,
   opacityTiming,
@@ -42,6 +44,9 @@ export const SkiaTimeFlow = ({
   onAnimationsStart,
   onAnimationsFinish,
 }: SkiaTimeFlowProps) => {
+  const resolvedDir = resolveDirection(direction);
+  const textAlign = resolveTextAlign(resolvedDir, rawTextAlign);
+
   const metrics = useGlyphMetrics(font, undefined, undefined, tabularNums);
 
   if (__DEV__) {

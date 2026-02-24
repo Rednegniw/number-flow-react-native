@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { isBidiControlChar } from "./bidi";
 import { getOrCreateFormatter, safeFormatToParts } from "./intlHelpers";
 import { detectOutputZeroCodePoint, localeDigitValue } from "./numerals";
 import type { KeyedPart } from "./types";
@@ -34,6 +35,8 @@ export function rawPartsToKeyedParts(
   const flatChars: FlatChar[] = [];
 
   for (const char of prefix) {
+    if (isBidiControlChar(char.charCodeAt(0))) continue;
+
     flatChars.push({ sourceType: "prefix", char });
   }
 
@@ -64,11 +67,15 @@ export function rawPartsToKeyedParts(
      * corresponding entry in the glyph measurement map (charWidths).
      */
     for (const char of part.value) {
+      if (isBidiControlChar(char.charCodeAt(0))) continue;
+
       flatChars.push({ sourceType: type, char });
     }
   }
 
   for (const char of suffix) {
+    if (isBidiControlChar(char.charCodeAt(0))) continue;
+
     flatChars.push({ sourceType: "suffix", char });
   }
 
@@ -137,10 +144,15 @@ export function rawPartsToKeyedParts(
   return result;
 }
 
+export interface KeyedPartsResult {
+  parts: KeyedPart[];
+  rawChars: string[];
+}
+
 /**
  * Transforms `Intl.NumberFormat.formatToParts()` output into a flat array of
- * stably-keyed single-character parts. Wraps `rawPartsToKeyedParts` with
- * `safeFormatToParts` to handle Hermes quirks and missing formatToParts().
+ * stably-keyed single-character parts. Also returns the raw character array
+ * (including bidi control chars) needed for visual reordering.
  */
 export function formatToKeyedParts(
   value: number,
@@ -148,14 +160,25 @@ export function formatToKeyedParts(
   locales: Intl.LocalesArgument | undefined,
   prefix = "",
   suffix = "",
-): KeyedPart[] {
+): KeyedPartsResult {
   const rawParts = safeFormatToParts(formatter, value, locales);
-  return rawPartsToKeyedParts(rawParts, prefix, suffix);
+
+  /**
+   * Build raw char array from format() output (not reassembled parts).
+   * On Hermes, safeFormatToParts may use a fallback parser that strips
+   * bidi control characters from the parts. The format() string always
+   * preserves them, which we need for correct visual reordering.
+   */
+  const rawString = prefix + formatter.format(value) + suffix;
+  const rawChars = [...rawString];
+
+  return { parts: rawPartsToKeyedParts(rawParts, prefix, suffix), rawChars };
 }
 
 /**
  * Hook that formats a numeric value into stably-keyed character parts.
  * Uses Intl.NumberFormat.formatToParts() with RTL integer keying.
+ * Returns both keyed parts and raw chars (for bidi visual reordering).
  */
 export function useNumberFormatting(
   value: number | undefined,
@@ -163,13 +186,13 @@ export function useNumberFormatting(
   locales: Intl.LocalesArgument | undefined,
   prefix: string,
   suffix: string,
-): KeyedPart[] {
+): KeyedPartsResult {
   // Serialize format/locales to a stable string — avoids re-runs when callers pass inline objects
   const formatKey = useMemo(() => JSON.stringify([locales, format]), [locales, format]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: formatKey serializes locales+format into a stable string to avoid re-runs on inline objects
   return useMemo(() => {
-    if (value === undefined) return [];
+    if (value === undefined) return { parts: [], rawChars: [] };
     const formatter = getOrCreateFormatter(locales, format);
     return formatToKeyedParts(value, formatter, locales, prefix, suffix);
   }, [value, prefix, suffix, formatKey]);

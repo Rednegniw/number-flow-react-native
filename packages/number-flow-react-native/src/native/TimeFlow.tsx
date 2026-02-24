@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { type LayoutChangeEvent, Text, View } from "react-native";
 import Animated, { makeMutable, useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { DEFAULT_FONT_SIZE } from "../core/constants";
+import { resolveDirection, resolveTextAlign } from "../core/direction";
 import { computeKeyedLayout } from "../core/layout";
 import type { TimeFlowProps } from "../core/timeTypes";
 import { useFlowPipeline } from "../core/useFlowPipeline";
@@ -32,6 +33,7 @@ export const TimeFlow = ({
   onAnimationsStart,
   onAnimationsFinish,
   containerStyle,
+  direction,
   mask,
 }: TimeFlowProps) => {
   const nfStyle = useMemo(() => {
@@ -39,8 +41,8 @@ export const TimeFlow = ({
     return { ...rest, fontSize: nfStyleProp.fontSize ?? DEFAULT_FONT_SIZE };
   }, [nfStyleProp]);
 
-  const rawTextAlign = nfStyleProp.textAlign;
-  const textAlign = rawTextAlign === "center" || rawTextAlign === "right" ? rawTextAlign : "left";
+  const resolvedDir = resolveDirection(direction);
+  const textAlign = resolveTextAlign(resolvedDir, nfStyleProp.textAlign);
 
   const { metrics, MeasureElement } = useMeasuredGlyphMetrics(nfStyle);
 

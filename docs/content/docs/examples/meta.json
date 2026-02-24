@@ -13,6 +13,7 @@
     "continuous-mode",
     "constrained-digits",
     "non-latin-numerals",
+    "right-to-left",
     "trend-control"
   ]
 }

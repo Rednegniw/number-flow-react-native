@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { type SharedValue, useDerivedValue } from "react-native-reanimated";
 import { assignXPositions, type CharLayout } from "../core/layout";
 import { countDigits } from "../core/numerals";
-import type { GlyphMetrics, TextAlign } from "../core/types";
+import type { GlyphMetrics, ResolvedTextAlign } from "../core/types";
 import { useDebouncedWidths } from "../core/useDebouncedWidths";
 import { useWorkletFormatting } from "../core/useWorkletFormatting";
 
@@ -17,7 +17,7 @@ interface UseScrubbingLayoutParams {
   layout: CharLayout[];
   layoutDigitCount: number;
   width: number;
-  textAlign: TextAlign;
+  textAlign: ResolvedTextAlign;
 }
 
 interface UseScrubbingLayoutResult {

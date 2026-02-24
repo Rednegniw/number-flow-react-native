@@ -1,0 +1,121 @@
+---
+title: Right-to-Left (RTL)
+description: Bidi-correct number rendering for Arabic, Hebrew, and other RTL locales
+full: true
+---
+
+In RTL apps, `NumberFlow` automatically right-aligns numbers and applies Unicode bidi visual reordering so currency symbols, minus signs, and other formatting elements appear on the correct side. This works out of the box when `I18nManager.isRTL` is `true`, or you can set `direction="rtl"` explicitly.
+
+```LiveExample
+import { useState } from 'react';
+import { View, Text } from 'react-native';
+import { NumberFlow } from 'number-flow-react-native';
+import { ExampleLayout, Button } from './ExampleUI';
+
+const locales = [
+  { locale: 'ar-EG', currency: 'EGP', label: 'Arabic' },
+  { locale: 'he-IL', currency: 'ILS', label: 'Hebrew' },
+  { locale: 'en-US', currency: 'USD', label: 'English' },
+];
+
+export default function RightToLeft() {
+  const [localeIndex, setLocaleIndex] = useState(0);
+  const [value, setValue] = useState(1234.56);
+
+  const current = locales[localeIndex];
+
+  return (
+    <ExampleLayout>
+      <View style={{ gap: 24, alignSelf: 'stretch' }}>
+        {/* Without RTL support */}
+        <View style={{ gap: 4 }}>
+          <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)' }}>Without RTL</Text>
+          <NumberFlow
+            value={value}
+            format={{ style: 'currency', currency: current.currency }}
+            locales={current.locale}
+            direction="ltr"
+            style={{ fontSize: 28, color: 'rgba(255,255,255,0.4)' }}
+            containerStyle={{ width: '100%' }}
+          />
+        </View>
+
+        {/* With RTL support */}
+        <View style={{ gap: 4 }}>
+          <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)' }}>With RTL</Text>
+          <NumberFlow
+            value={value}
+            format={{ style: 'currency', currency: current.currency }}
+            locales={current.locale}
+            direction="rtl"
+            style={{ fontSize: 28, color: '#fff' }}
+            containerStyle={{ width: '100%' }}
+          />
+        </View>
+      </View>
+
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginTop: 24 }}>
+        {locales.map((loc, i) => (
+          <Button
+            key={loc.locale}
+            title={loc.label}
+            onPress={() => {
+              setLocaleIndex(i);
+              setValue(Math.floor(Math.random() * 9999) + 100);
+            }}
+          />
+        ))}
+      </View>
+    </ExampleLayout>
+  );
+}
+```
+
+### How it works
+
+In a standard RTL React Native app, `I18nManager.isRTL` is `true` and NumberFlow adapts automatically:
+
+- **Default alignment** changes to right (the "start" edge in RTL)
+- **Bidi visual reordering** repositions currency symbols and signs to match browser text rendering. Arabic `١٬٢٣٤٫٥٦ ج.م.` becomes `ج.م. ١٬٢٣٤٫٥٦` (currency on the left, the visual "start" in RTL)
+- **Digits stay left-to-right** within the number block, matching how numbers are read universally
+
+The reordering is driven by the bidi control marks that `Intl.NumberFormat` embeds in its output. Arabic and Hebrew formats start with RLM (Right-to-Left Mark), triggering reordering. Persian formats start with LRM (Left-to-Right Mark), keeping their logical order.
+
+For per-component control (e.g. an LTR number inside an RTL app), pass `direction` explicitly:
+
+```tsx
+<NumberFlow value={1234} direction="rtl" />
+<NumberFlow value={1234} direction="ltr" />
+```
+
+The `textAlign` style also supports `"start"` and `"end"` which resolve based on direction:
+
+```tsx
+// "start" = left in LTR, right in RTL
+<NumberFlow value={1234} style={{ textAlign: "start" }} />
+```
+
+### Affected locales
+
+Bidi reordering activates for locales whose `Intl.NumberFormat` output contains RTL directional marks. This includes all locales using Arabic or Hebrew script:
+
+| Locale                    | Script              | Currency position  | Negative format          |
+| ------------------------- | ------------------- | ------------------ | ------------------------ |
+| `ar-EG` (Arabic, Egypt)   | Arabic-Indic digits | `ج.م.` moves left  | minus on right of digits |
+| `ar-SA` (Arabic, Saudi)   | Arabic-Indic digits | `ر.س.` moves left  | minus on right of digits |
+| `he-IL` (Hebrew, Israel)  | Latin digits        | `₪` moves left     | minus stays with digits  |
+| `ar-MA` (Arabic, Morocco) | Latin digits        | varies by currency | minus on right of digits |
+
+Some RTL-script locales use LRM marks in their format output, which prevents reordering. Their logical order already matches the visual order:
+
+| Locale                   | Script                | Behavior                   |
+| ------------------------ | --------------------- | -------------------------- |
+| `fa-IR` (Persian, Iran)  | Extended Arabic-Indic | No reorder (LRM in format) |
+| `ur-PK` (Urdu, Pakistan) | Latin digits          | No reorder (LRM in format) |
+
+<Callout type="info">
+  The bidi reordering is a simplified implementation of the Unicode
+  Bidirectional Algorithm (UAX #9), scoped to the character types present in
+  formatted numbers. It produces the same visual order as a browser's native
+  text rendering for all standard `Intl.NumberFormat` output.
+</Callout>
