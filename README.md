@@ -80,6 +80,10 @@ This library is a complete React Native reimplementation of [NumberFlow](https:/
 
 The animation patterns, easing curves, and digit-rolling approach are adapted from the original web implementation. All code is original, and no source code is shared.
 
+## Sponsoring
+
+If this library helps you, particularly if you are a big company, consider [sponsoring me](https://github.com/sponsors/Rednegniw). Helps a ton, thank you!
+
 ## License
 
 MIT

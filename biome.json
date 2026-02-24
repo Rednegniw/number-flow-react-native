@@ -27,6 +27,9 @@
         "noUnusedVariables": "warn",
         "noUnusedFunctionParameters": "warn"
       },
+      "security": {
+        "noDangerouslySetInnerHtml": "off"
+      },
       "suspicious": {
         "noArrayIndexKey": "off",
         "noAssignInExpressions": "off"

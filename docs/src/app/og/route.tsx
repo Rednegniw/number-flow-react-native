@@ -7,7 +7,7 @@ export async function GET() {
   return new ImageResponse(
     <DefaultImage
       title="Number Flow React Native"
-      description="Beautiful number animations for React Native — digit-by-digit rolling, Intl.NumberFormat, View and Skia renderers."
+      description="Beautiful number animations for React Native. Digit-by-digit rolling, Intl.NumberFormat, View and Skia renderers."
       site="Number Flow React Native"
     />,
     {

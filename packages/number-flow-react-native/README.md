@@ -18,7 +18,7 @@
 > Works with Expo and bare React Native on iOS and Android.
 
 <div align="center">
-  <video src="https://github.com/user-attachments/assets/e6c07cc1-9116-4788-91b7-31987180e190" width="300"></video>
+  <img src="https://raw.githubusercontent.com/Rednegniw/number-flow-react-native/main/packages/number-flow-react-native/demo.gif" width="300" alt="Number Flow React Native demo showing animated digit-by-digit rolling transitions" />
 </div>
 
 ## Features
@@ -85,6 +85,10 @@ import { SkiaNumberFlow, SkiaTimeFlow, useSkiaFont } from "number-flow-react-nat
 This library is a complete React Native reimplementation of [NumberFlow](https://number-flow.barvian.me/) by [Max Barvian](https://github.com/barvian). Please check out his work and the original web version.
 
 The animation patterns, easing curves, and digit-rolling approach are adapted from the original web implementation. All code is original, and no source code is shared.
+
+## Sponsoring
+
+If this library helps you, particularly if you are a big company, consider [sponsoring me](https://github.com/sponsors/Rednegniw). Helps a ton, thank you!
 
 ## License
 

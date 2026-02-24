@@ -1,7 +1,7 @@
 {
   "name": "number-flow-react-native",
   "version": "0.3.0",
-  "description": "Beautiful number animations for React Native — digit-by-digit rolling counter, currency ticker, time display, and odometer with View-based and Skia renderers. Full Intl.NumberFormat support.",
+  "description": "Beautiful number animations for React Native: digit-by-digit rolling counter, currency ticker, time display, and odometer with View-based and Skia renderers. Full Intl.NumberFormat support.",
   "source": "./src/index.ts",
   "main": "./lib/module/index.js",
   "module": "./lib/module/index.js",
@@ -28,6 +28,11 @@
       "browser": "./src/native/index.ts",
       "types": "./lib/typescript/native/index.d.ts",
       "default": "./lib/module/native/index.js"
+    },
+    "./internal/*": {
+      "source": "./src/*",
+      "react-native": "./src/*",
+      "default": "./src/*"
     },
     "./package.json": "./package.json"
   },
@@ -75,6 +80,10 @@
   ],
   "author": "Antonin Wingender",
   "license": "MIT",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/Rednegniw"
+  },
   "homepage": "https://number-flow-react-native.awingender.com",
   "bugs": {
     "url": "https://github.com/Rednegniw/number-flow-react-native/issues"

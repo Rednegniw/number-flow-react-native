@@ -2,9 +2,35 @@ import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { PhoneMockup } from "@/components/phone-mockup";
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareSourceCode",
+  name: "number-flow-react-native",
+  description:
+    "Beautiful number animations for React Native with digit-by-digit rolling transitions. Supports currencies, percentages, compact notation, and all Intl.NumberFormat options.",
+  codeRepository: "https://github.com/Rednegniw/number-flow-react-native",
+  programmingLanguage: ["TypeScript"],
+  runtimePlatform: ["iOS", "Android"],
+  license: "https://opensource.org/licenses/MIT",
+  author: {
+    "@type": "Person",
+    name: "Antonin Wingender",
+    url: "https://github.com/Rednegniw",
+  },
+  url: "https://number-flow-react-native.awingender.com",
+  isAccessibleForFree: true,
+};
+
 export default function HomePage() {
   return (
     <main className="relative flex flex-col items-center justify-center flex-1 px-4 py-16 gap-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
+
       {/* Subtle accent gradient glow — full page, aimed at top-right */}
       <div
         className="pointer-events-none fixed inset-0 z-0"
@@ -17,7 +43,14 @@ export default function HomePage() {
       {/* Hero */}
       <section className="flex flex-col items-center gap-12 max-w-2xl text-center">
         <PhoneMockup>
-          <video autoPlay loop muted playsInline className="w-full h-full object-cover">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+            aria-label="Demo showing animated number transitions rolling between values"
+          >
             <source src="/videos/hero-demo.mp4" type="video/mp4" />
           </video>
         </PhoneMockup>

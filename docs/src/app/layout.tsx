@@ -11,15 +11,20 @@ export const metadata: Metadata = {
     template: "%s | Number Flow React Native",
   },
   description:
-    "The best animated number component for React Native — digit-by-digit rolling, Intl.NumberFormat, View and Skia renderers.",
+    "The best animated number component for React Native: digit-by-digit rolling, Intl.NumberFormat, View and Skia renderers.",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     type: "website",
     siteName: "Number Flow React Native",
     locale: "en_US",
+    url: "/",
     images: "/og",
   },
   twitter: {
     card: "summary_large_image",
+    creator: "@WingederA",
   },
 };
 
