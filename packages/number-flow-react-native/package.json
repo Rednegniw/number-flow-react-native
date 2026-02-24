@@ -1,6 +1,6 @@
 {
   "name": "number-flow-react-native",
-  "version": "0.2.5",
+  "version": "0.3.0",
   "description": "Beautiful number animations for React Native — digit-by-digit rolling counter, currency ticker, time display, and odometer with View-based and Skia renderers. Full Intl.NumberFormat support.",
   "source": "./src/index.ts",
   "main": "./lib/module/index.js",
