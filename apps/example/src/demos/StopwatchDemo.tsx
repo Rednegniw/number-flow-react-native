@@ -1,7 +1,7 @@
 import { Canvas } from "@shopify/react-native-skia";
 import { TimeFlow } from "number-flow-react-native/native";
 import { SkiaTimeFlow, useSkiaFont } from "number-flow-react-native/skia";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Text, View } from "react-native";
 import { Easing } from "react-native-reanimated";
 import { RipplePressable } from "../components/RipplePressable";
