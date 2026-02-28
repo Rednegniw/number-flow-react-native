@@ -1,5 +1,11 @@
 # number-flow-react-native
 
+## 0.3.1
+
+### Patch Changes
+
+- [`754f26e`](https://github.com/Rednegniw/number-flow-react-native/commit/754f26e48187c79297fdd1d4482a51f606b7da94) Thanks [@Rednegniw](https://github.com/Rednegniw)! - Fix stale worklet dependency in useDigitAnimation, add missing useAnimatedReaction deps in SymbolSlot, handle accessibility promise rejection, and improve code clarity
+
 ## 0.3.0
 
 ### Minor Changes
