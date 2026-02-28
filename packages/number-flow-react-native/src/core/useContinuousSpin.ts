@@ -39,13 +39,13 @@ export function computeContinuousGenerations(
     }
   }
 
-  // No digit changed — nothing to spin
+  // No digit changed, nothing to spin
   if (maxChangedPos === -Infinity) return prevGenerations;
 
   /**
    * Increment the generation counter for each unchanged digit whose
    * significance is lower than the most-significant changed digit.
-   * Only digits that existed in the previous render qualify — entering
+   * Only digits that existed in the previous render qualify; entering
    * digits have no previous value and can't be "unchanged".
    */
   const nextGenerations = new Map(prevGenerations);
@@ -96,7 +96,7 @@ export function useContinuousSpin(
   const prevParts = prevPartsRef.current;
   prevPartsRef.current = keyedParts;
 
-  // First render — nothing to compare against
+  // First render, nothing to compare against
   if (prevParts.length === 0) return generationsRef.current;
 
   // Shortest-path trend defeats the purpose of continuous spin

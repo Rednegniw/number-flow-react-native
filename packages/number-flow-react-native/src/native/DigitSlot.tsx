@@ -114,7 +114,7 @@ export const DigitSlot = React.memo(
     const resolvedDigitStrings =
       digitStrings ?? Array.from({ length: resolvedDigitCount }, (_, i) => String(i));
 
-    // Superscript scaling — exponent digits/signs render smaller at the top of the line.
+    // Superscript scaling: exponent digits/signs render smaller at the top of the line.
     // Mask heights are zeroed for superscript: the container-level gradient doesn't cover
     // the superscript position, so any buffer would show unmasked neighboring digits.
     const scale = superscript ? SUPERSCRIPT_SCALE : 1;

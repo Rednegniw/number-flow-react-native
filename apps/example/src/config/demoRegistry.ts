@@ -125,7 +125,7 @@ export const DEMO_SECTIONS: DemoSection[] = [
         key: "numerals",
         title: "Numeral Systems",
         description:
-          "Animated transitions across 9 numeral systems — Arabic-Indic, Bengali, Devanagari, Thai, and more.",
+          "Animated transitions across 9 numeral systems: Arabic-Indic, Bengali, Devanagari, Thai, and more.",
         get NativeComponent() {
           return require("../demos/NumeralsDemo").NumeralsDemoNative;
         },

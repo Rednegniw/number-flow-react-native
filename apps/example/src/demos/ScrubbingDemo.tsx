@@ -125,7 +125,7 @@ export const ScrubbingDemoSkia = () => {
     <View style={{ gap: 8 }}>
       {/* Description */}
       <Text style={{ fontSize: 11, color: colors.textSecondary }}>
-        Drag the slider — digits update on the UI thread via sharedValue
+        Drag the slider: digits update on the UI thread via sharedValue
       </Text>
 
       {/* Number display */}
@@ -201,7 +201,7 @@ export const ScrubbingDemoNative = () => {
     <View style={{ gap: 8 }}>
       {/* Description */}
       <Text style={{ fontSize: 11, color: colors.textSecondary }}>
-        Drag the slider — updates via runOnJS (compare with Skia for smoother scrubbing)
+        Drag the slider: updates via runOnJS (compare with Skia for smoother scrubbing)
       </Text>
 
       {/* Number display */}

@@ -320,7 +320,7 @@ export const NumeralsDemoNative = () => {
     <View style={{ gap: 8 }}>
       {/* State info */}
       <Text style={{ fontSize: 11, color: colors.textSecondary }}>
-        {`locales="${state.system.locale}" — ${state.system.digits}`}
+        {`locales="${state.system.locale}" - ${state.system.digits}`}
       </Text>
 
       {/* Numeral system chips */}
@@ -378,7 +378,7 @@ export const NumeralsDemoSkia = () => {
     <View style={{ gap: 8 }}>
       {/* State info */}
       <Text style={{ fontSize: 11, color: colors.textSecondary }}>
-        {`locales="${state.system.locale}" — ${state.system.digits}`}
+        {`locales="${state.system.locale}" - ${state.system.digits}`}
       </Text>
 
       {/* Numeral system chips */}

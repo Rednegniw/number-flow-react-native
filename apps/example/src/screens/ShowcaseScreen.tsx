@@ -516,7 +516,7 @@ export const ShowcaseScreen = () => {
       }
     }
 
-    // Scene 5 is a blank pause for recording — skip fade, just wait
+    // Scene 5 is a blank pause for recording: skip fade, just wait
     const isPause = sceneIndex === 5;
     const duration = isPause ? PAUSE_DURATION : SCENE_DURATION;
 

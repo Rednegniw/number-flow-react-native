@@ -20,7 +20,7 @@ export function useFormattedValue(
   prefix?: string,
   suffix?: string,
 ): string | undefined {
-  // Serialize format/locales to a stable string — avoids re-runs when callers pass inline objects
+  // Serialize format/locales to a stable string to avoid re-runs on inline objects
   const formatKey = useMemo(() => JSON.stringify([locales, format]), [locales, format]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: formatKey serializes locales+format into a stable string to avoid re-runs on inline objects

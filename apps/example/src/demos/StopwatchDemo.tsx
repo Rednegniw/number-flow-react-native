@@ -33,7 +33,7 @@ type StopwatchPhase = "initial" | "running" | "paused";
 
 /**
  * Stopwatch timer with separate state per display segment.
- * Only the changed segment triggers a re-render — minutes and seconds
+ * Only the changed segment triggers a re-render; minutes and seconds
  * stay idle while centiseconds tick, eliminating cascade re-renders.
  */
 function useStopwatchState() {

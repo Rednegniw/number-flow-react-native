@@ -90,7 +90,7 @@ export const ContinuousDemoNative = () => {
       {/* NumberFlow comparison */}
       <View style={{ gap: 8 }}>
         <Text style={{ fontSize: 11, color: colors.textSecondary }}>
-          NumberFlow — left is default, right has continuous=true
+          NumberFlow: left is default, right has continuous=true
         </Text>
 
         <View style={{ flexDirection: "row", gap: 12 }}>
@@ -135,7 +135,7 @@ export const ContinuousDemoNative = () => {
       {/* TimeFlow comparison */}
       <View style={{ gap: 8 }}>
         <Text style={{ fontSize: 11, color: colors.textSecondary }}>
-          TimeFlow — left is default, right has continuous=true — try +1 Hour
+          TimeFlow: left is default, right has continuous=true. Try +1 Hour
         </Text>
 
         <View style={{ flexDirection: "row", gap: 12 }}>
@@ -195,7 +195,7 @@ export const ContinuousDemoSkia = () => {
       {/* NumberFlow comparison */}
       <View style={{ gap: 8 }}>
         <Text style={{ fontSize: 11, color: colors.textSecondary }}>
-          NumberFlow — left is default, right has continuous=true
+          NumberFlow: left is default, right has continuous=true
         </Text>
 
         <View style={{ flexDirection: "row", gap: 12 }}>
@@ -240,7 +240,7 @@ export const ContinuousDemoSkia = () => {
       {/* TimeFlow comparison */}
       <View style={{ gap: 8 }}>
         <Text style={{ fontSize: 11, color: colors.textSecondary }}>
-          TimeFlow — left is default, right has continuous=true — try +1 Hour
+          TimeFlow: left is default, right has continuous=true. Try +1 Hour
         </Text>
 
         <View style={{ flexDirection: "row", gap: 12 }}>

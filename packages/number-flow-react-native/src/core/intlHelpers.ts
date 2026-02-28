@@ -30,7 +30,7 @@ export function getOrCreateFormatter(
 /**
  * Probes the formatter with a sample number that exercises group separators,
  * decimal separator, and currency/percent symbols. Returns only characters NOT
- * already in MEASURABLE_CHARS — this keeps the result stable across different
+ * already in MEASURABLE_CHARS. This keeps the result stable across different
  * prefix/suffix combinations and prevents native measurement cache invalidation.
  */
 const formatCharsCache = new Map<string, string>();
@@ -78,7 +78,7 @@ export function getFormatCharacters(
   for (const ch of suffix) chars.add(ch);
 
   /**
-   * Only return chars NOT already in MEASURABLE_CHARS — this keeps the result
+   * Only return chars NOT already in MEASURABLE_CHARS. This keeps the result
    * stable across prefix/suffix changes and avoids native measurement cache misses.
    */
   const result = Array.from(chars)
@@ -128,7 +128,7 @@ function parseMantissa(
   zeroCodePoint = 48,
 ): void {
   /**
-   * Search from right — in some locales the decimal sep char is also
+   * Search from right: in some locales the decimal sep char is also
    * used as a group separator, so leftmost match could be wrong.
    */
   let decimalPos = -1;
@@ -204,7 +204,7 @@ function parseNumberString(
   decimalSep: string,
   zeroCodePoint = 48,
 ): Intl.NumberFormatPart[] {
-  // Detect exponent separator (E or e) — split into mantissa + exponent
+  // Detect exponent separator (E or e), then split into mantissa + exponent
   let exponentPos = -1;
   for (let i = 0; i < formatted.length; i++) {
     if (formatted[i] === "E" || formatted[i] === "e") {

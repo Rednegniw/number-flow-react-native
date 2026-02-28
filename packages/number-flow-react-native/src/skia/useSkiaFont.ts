@@ -9,7 +9,7 @@ import { useMemo } from "react";
  * immediately instead of showing a blank canvas or static placeholder.
  *
  * Once the custom font finishes loading, the returned value swaps to the
- * custom font — triggering a smooth animated transition in SkiaNumberFlow /
+ * custom font, triggering a smooth animated transition in SkiaNumberFlow /
  * SkiaTimeFlow (the value re-renders with new glyph metrics).
  */
 export function useSkiaFont(

@@ -83,7 +83,7 @@ export const NumberFlow = ({
 
     // Skip layout when container hasn't measured yet and alignment needs width.
     // Without this guard, center/right alignment computes with width=0,
-    // then re-computes after onLayout — causing a visible slide-in animation.
+    // then re-computes after onLayout, causing a visible slide-in animation.
     if (containerWidth === 0 && textAlign !== "left") return [];
 
     if (keyedParts.length === 0) return [];

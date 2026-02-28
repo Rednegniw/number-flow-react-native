@@ -72,7 +72,7 @@ export function AnimatedCopyButton() {
 
 /**
  * Client-side wrapper around Fumadocs CodeBlock that bakes in the AnimatedCopyButton.
- * This exists because the Actions render prop is a function — it can't be passed
+ * This exists because the Actions render prop is a function; it can't be passed
  * across the server→client boundary in Next.js App Router.
  */
 export function AnimatedCodeBlock(props: ComponentProps<"pre">) {

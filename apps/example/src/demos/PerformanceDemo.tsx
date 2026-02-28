@@ -40,7 +40,7 @@ interface TimingResult {
 /**
  * Wrapper that detects when its child renders visible content via onLayout.
  * For NumberFlow, the first layout has height ~0 (async measurement phase),
- * and the second layout has the real height — so we only fire when height
+ * and the second layout has the real height, so we only fire when height
  * exceeds minHeight.
  */
 function VisibilityProbe({
@@ -312,10 +312,10 @@ function SkiaTestRun({
 }: {
   onDone: (result: { fontLoadMs: number; cached: boolean }) => void;
 }) {
-  // useFont path — returns null until font loads (internal matchFont fallback shows static text)
+  // useFont path: returns null until font loads (internal matchFont fallback shows static text)
   const rawFont = useFont(INTER_FONT_ASSET, DEMO_FONT_SIZE);
 
-  // useSkiaFont path — always non-null (system font → custom font swap)
+  // useSkiaFont path: always non-null (system font → custom font swap)
   const smartFont = useSkiaFont(DEMO_SKIA_FONT_ASSET, DEMO_FONT_SIZE);
 
   const startTime = useRef(performance.now()).current;
@@ -337,7 +337,7 @@ function SkiaTestRun({
 
   return (
     <View style={{ gap: 16 }}>
-      {/* useFont — internal fallback (two-phase: static text → animated slots) */}
+      {/* useFont: internal fallback (two-phase: static text → animated slots) */}
       <View style={{ gap: 4 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
           <Text style={{ fontSize: 11, color: colors.textSecondary, fontWeight: "600" }}>
@@ -383,7 +383,7 @@ function SkiaTestRun({
         </Text>
       </View>
 
-      {/* useSkiaFont — always animated (single-phase: animated from frame 1) */}
+      {/* useSkiaFont: always animated (single-phase: animated from frame 1) */}
       <View style={{ gap: 4 }}>
         <Text style={{ fontSize: 11, color: colors.accent, fontWeight: "600" }}>
           useSkiaFont (animated fallback)

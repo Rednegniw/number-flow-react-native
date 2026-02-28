@@ -86,6 +86,7 @@ export const SymbolSlot = React.memo(
           });
         }
       },
+      [workletLayout, slotIndex],
     );
 
     const groupTransform = useDerivedValue(() => {

@@ -65,7 +65,7 @@ export function AnimatedSidebarItem({ item }: { item: PageTree.Item }) {
         )}
       </AnimatePresence>
 
-      {/* Hover indicator pill (hidden when active — active pill takes priority) */}
+      {/* Hover indicator pill (hidden when active; active pill takes priority) */}
       <AnimatePresence initial={false} mode="wait">
         {hovered && !active && (
           <motion.span

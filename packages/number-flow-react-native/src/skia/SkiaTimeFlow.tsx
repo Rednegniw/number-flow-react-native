@@ -53,7 +53,7 @@ export const SkiaTimeFlow = ({
     if (!font) {
       warnOnce(
         "skia-tf-font",
-        "font is null — pass a loaded SkFont from useFont(). Component renders empty until font loads.",
+        "font is null. Pass a loaded SkFont from useFont(). Component renders empty until font loads.",
       );
     }
   }
@@ -106,7 +106,7 @@ export const SkiaTimeFlow = ({
 
   const keyedParts = useTimeFormatting(
     resolvedHours,
-    // Fallback for sharedValue mode where minutes is undefined (unused — layout comes from string path)
+    // Fallback for sharedValue mode where minutes is undefined (unused; layout comes from string path)
     resolvedMinutes ?? 0,
     resolvedSeconds,
     is24Hour,

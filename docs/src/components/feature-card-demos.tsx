@@ -67,7 +67,7 @@ export function TimeFlowDemo() {
 }
 
 // ---------------------------------------------------------------------------
-// ScrubbingDemo — auto-oscillating slider driving a NumberFlow
+// ScrubbingDemo: auto-oscillating slider driving a NumberFlow
 // ---------------------------------------------------------------------------
 
 export function ScrubbingDemo() {
@@ -129,7 +129,7 @@ export function ScrubbingDemo() {
 }
 
 // ---------------------------------------------------------------------------
-// I18nDemo — cycles through Intl.NumberFormat configurations
+// I18nDemo: cycles through Intl.NumberFormat configurations
 // ---------------------------------------------------------------------------
 
 const i18nPresets: { value: number; format: Intl.NumberFormatOptions; locales?: string }[] = [
@@ -169,7 +169,7 @@ export function I18nDemo() {
 }
 
 // ---------------------------------------------------------------------------
-// RenderersDemo — twin NumberFlows showing Native + Skia backends
+// RenderersDemo: twin NumberFlows showing Native + Skia backends
 // ---------------------------------------------------------------------------
 
 const labelStyle = { fontSize: 10, color: "#6b7280", lineHeight: 1 } as const;
@@ -211,7 +211,7 @@ export function RenderersDemo() {
 }
 
 // ---------------------------------------------------------------------------
-// NumeralsDemo — cycles through non-Latin numeral systems
+// NumeralsDemo: cycles through non-Latin numeral systems
 // ---------------------------------------------------------------------------
 
 const numeralSystems = [

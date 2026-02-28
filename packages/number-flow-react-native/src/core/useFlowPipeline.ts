@@ -16,7 +16,7 @@ interface FlowPipelineInput {
   //   TimeFlow: `totalSeconds` (h*3600 + m*60 + s)
   trendValue: number | undefined;
 
-  // Pre-computed layout — each component handles its own layout computation
+  // Pre-computed layout; each component handles its own layout computation
   // because Skia has special sharedValue layout paths
   layout: CharLayout[];
 

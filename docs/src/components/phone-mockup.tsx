@@ -8,7 +8,7 @@ interface PhoneMockupProps {
 export function PhoneMockup({ children }: PhoneMockupProps) {
   return (
     <div className="relative mx-auto w-75">
-      {/* Frame image — establishes dimensions, sits on top */}
+      {/* Frame image: establishes dimensions, sits on top */}
       <Image
         src="/iphone-mockup.png"
         alt=""
@@ -18,7 +18,7 @@ export function PhoneMockup({ children }: PhoneMockupProps) {
         draggable={false}
       />
 
-      {/* Screen content — positioned behind the frame */}
+      {/* Screen content, positioned behind the frame */}
       <div
         className="absolute z-0 overflow-hidden bg-black"
         style={{

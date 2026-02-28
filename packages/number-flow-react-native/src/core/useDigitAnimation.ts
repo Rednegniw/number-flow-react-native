@@ -122,7 +122,7 @@ export function useDigitAnimation({
    * value didn't change but a higher-significance digit did. Perform a
    * full-wheel rotation so the digit appears to "carry" through.
    *
-   * Example: 100 → 200 with trend=1 — the ones digit (0→0) spins through
+   * Example: 100 → 200 with trend=1: the ones digit (0→0) spins through
    * all 10 values upward while the hundreds digit rolls 1→2 normally.
    */
   const prevSpinGenRef = useRef(continuousSpinGeneration ?? 0);
@@ -130,11 +130,11 @@ export function useDigitAnimation({
   useLayoutEffect(() => {
     const currentGen = continuousSpinGeneration ?? 0;
 
-    // Generation unchanged — no continuous spin needed
+    // Generation unchanged, no continuous spin needed
     if (currentGen === prevSpinGenRef.current) return;
     prevSpinGenRef.current = currentGen;
 
-    // Don't spin digits that are entering or exiting — they animate via opacity
+    // Don't spin digits that are entering or exiting; they animate via opacity
     if (exiting || entering) return;
 
     // Full wheel rotation: e.g. 10 * 1 = spin up 10, or 6 * -1 = spin down 6 (for s10)
@@ -174,7 +174,7 @@ export function useDigitAnimation({
 
       /**
        * Accumulate remaining animation delta (composite: 'accumulate').
-       * Safe to read animDelta.value here — we're on the UI thread.
+       * Safe to read animDelta.value here (we're on the UI thread).
        */
       animDelta.value = animDelta.value + delta;
 
@@ -185,7 +185,7 @@ export function useDigitAnimation({
 
       runOnJS(syncFromWorklet)(current);
     },
-    [workletDigitValue, spinTiming, trend],
+    [workletDigitValue, spinTiming, trend, resolvedDigitCount],
   );
 
   return { initialDigit, animDelta, currentDigitSV, slotOpacity };

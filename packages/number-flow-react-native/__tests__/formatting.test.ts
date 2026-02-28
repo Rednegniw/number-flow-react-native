@@ -205,7 +205,7 @@ describe("formatToKeyedParts", () => {
 
 // ─── Scientific / Engineering notation ───
 
-describe("formatToKeyedParts — scientific notation", () => {
+describe("formatToKeyedParts: scientific notation", () => {
   const sciFmt = new Intl.NumberFormat("en-US", { notation: "scientific" });
 
   test("replaces E with ×10 display", () => {
@@ -259,7 +259,7 @@ describe("formatToKeyedParts — scientific notation", () => {
   });
 });
 
-describe("safeFormatToParts — scientific notation", () => {
+describe("safeFormatToParts: scientific notation", () => {
   test("detects exponent separator and integer", () => {
     const fmt = new Intl.NumberFormat("en-US", { notation: "scientific" });
     const parts = safeFormatToParts(fmt, 1500, "en-US");
@@ -280,7 +280,7 @@ describe("safeFormatToParts — scientific notation", () => {
 
 // ─── Non-Latin numeral systems ───
 
-describe("formatToKeyedParts — non-Latin numerals", () => {
+describe("formatToKeyedParts: non-Latin numerals", () => {
   test("Arabic-Indic: digits have correct digitValues 0-9", () => {
     const fmt = new Intl.NumberFormat("ar-EG", { minimumFractionDigits: 2 });
     const { parts } = formatToKeyedParts(42.5, fmt, "ar-EG");
@@ -316,7 +316,7 @@ describe("formatToKeyedParts — non-Latin numerals", () => {
   });
 });
 
-describe("getFormatCharacters — scientific notation", () => {
+describe("getFormatCharacters: scientific notation", () => {
   test("includes × for scientific notation", () => {
     const chars = getFormatCharacters("en-US", { notation: "scientific" });
     expect(chars).toContain("\u00D7");

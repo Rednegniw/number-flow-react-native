@@ -13,7 +13,7 @@ interface GradientMaskProps {
  * Web gradient mask using CSS `mask-image` with `linear-gradient`.
  *
  * Instead of the native MaskedView approach (discrete View strips), this uses
- * a single CSS gradient — the same technique the original web NumberFlow uses.
+ * a single CSS gradient, the same technique the original web NumberFlow uses.
  * This gives pixel-perfect smooth gradient masking with zero DOM overhead.
  */
 export const GradientMask = ({

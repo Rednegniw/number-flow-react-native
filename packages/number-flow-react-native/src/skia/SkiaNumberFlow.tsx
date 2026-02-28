@@ -246,7 +246,7 @@ function SkiaNumberFlowRuntime({
     <Group layer={<Paint />}>
       {content}
 
-      {/* Horizontal fade — animated to track worklet layout */}
+      {/* Horizontal fade (animated to track worklet layout) */}
       <Group layer={<Paint blendMode="dstIn" />}>
         <SkiaRect rect={hMaskRect}>
           <LinearGradient
@@ -504,7 +504,7 @@ export const SkiaNumberFlow = ({
     if (!font) {
       warnOnce(
         "skia-font",
-        "font is null — pass a loaded SkFont from useFont(). Component renders empty until font loads.",
+        "font is null. Pass a loaded SkFont from useFont(). Component renders empty until font loads.",
       );
     }
     if (value !== undefined && sharedValue !== undefined) {

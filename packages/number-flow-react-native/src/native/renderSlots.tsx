@@ -26,7 +26,7 @@ interface RenderSlotsParams {
 /**
  * Renders the active and exiting digit/symbol slot tree.
  *
- * Shared between NumberFlow and TimeFlow — the only behavioral differences
+ * Shared between NumberFlow and TimeFlow. The only behavioral differences
  * are abstracted via `digitCountResolver` (which digit-count lookup to use)
  * and the optional `digitStrings` (locale-specific digit characters).
  */

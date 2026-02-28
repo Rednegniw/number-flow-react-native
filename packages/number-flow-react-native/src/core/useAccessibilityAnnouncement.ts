@@ -20,8 +20,10 @@ export function useAccessibilityAnnouncement(label: string | undefined): void {
 
     if (!label) return;
 
-    AccessibilityInfo.isScreenReaderEnabled().then((enabled) => {
-      if (enabled) AccessibilityInfo.announceForAccessibility(label);
-    });
+    AccessibilityInfo.isScreenReaderEnabled()
+      .then((enabled) => {
+        if (enabled) AccessibilityInfo.announceForAccessibility(label);
+      })
+      .catch(() => {});
   }, [label]);
 }

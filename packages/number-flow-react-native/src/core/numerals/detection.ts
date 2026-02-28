@@ -43,7 +43,7 @@ export function detectOutputZeroCodePoint(formattedStr: string): number {
   for (let i = 0; i < formattedStr.length; i++) {
     const code = formattedStr.charCodeAt(i);
 
-    // Skip Latin digits — we want to detect non-Latin systems
+    // Skip Latin digits; we want to detect non-Latin systems
     if (code >= LATIN_ZERO && code <= LATIN_ZERO + 9) continue;
 
     // Check hanidec (non-contiguous codepoints)
@@ -84,7 +84,7 @@ export function detectNumberingSystem(
     return platformSystem;
   }
 
-  // Platform says "latn" or undefined — check if the locale expects something else
+  // Platform says "latn" or undefined: check if the locale expects something else
   const expected = getExpectedNumberingSystem(locales);
   if (!expected) {
     numberingSystemCache.set(key, "latn");
@@ -105,7 +105,7 @@ export function detectNumberingSystem(
     }
   }
 
-  // Platform truly outputs Latin digits — use the CLDR expected system
+  // Platform truly outputs Latin digits; use the CLDR expected system
   // so digitStrings render the correct locale characters on the wheel
   numberingSystemCache.set(key, expected);
   return expected;

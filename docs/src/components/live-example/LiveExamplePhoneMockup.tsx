@@ -12,7 +12,7 @@ export function LiveExamplePhoneMockup({
 }: LiveExamplePhoneMockupProps) {
   return (
     <div className="relative w-fit h-full">
-      {/* Frame image — establishes dimensions, sits on top */}
+      {/* Frame image: establishes dimensions, sits on top */}
       <Image
         src="/iphone-mockup.png"
         alt=""
@@ -24,7 +24,7 @@ export function LiveExamplePhoneMockup({
         priority
       />
 
-      {/* Screen content — positioned behind the frame */}
+      {/* Screen content, positioned behind the frame */}
       <div
         className={`absolute z-0 overflow-hidden ${screenClassName}`}
         style={{

@@ -33,7 +33,7 @@ export function useLayoutDiff(layout: CharLayout[]): LayoutDiffResult {
     forceUpdate();
   }, []);
 
-  // Stable layout identity — fast string concat instead of map+join
+  // Stable layout identity: fast string concat instead of map+join
   let layoutId = "";
   for (const s of layout) {
     layoutId += `${s.key}:${s.digitValue}|`;

@@ -63,7 +63,7 @@ export function AnimatedTabs({ items, children, defaultIndex = 0 }: AnimatedTabs
             >
               {item}
 
-              {/* Sliding underline — motion animates position between triggers via shared layoutId */}
+              {/* Sliding underline: motion animates position between triggers via shared layoutId */}
               {isActive && (
                 <motion.span
                   layoutId={`tab-underline-${instanceId}`}
@@ -76,7 +76,7 @@ export function AnimatedTabs({ items, children, defaultIndex = 0 }: AnimatedTabs
         })}
       </TabsPrimitive.List>
 
-      {/* Content panels — force-mounted so CSS animation replays on each activation */}
+      {/* Content panels, force-mounted so CSS animation replays on each activation */}
       {Children.map(children, (child) => {
         const element = child as ReactElement<ComponentProps<typeof AnimatedTab>>;
         if (!element?.props) return null;
@@ -108,7 +108,7 @@ interface AnimatedTabProps {
 }
 
 /**
- * Data-only component — never renders on its own.
+ * Data-only component, never renders on its own.
  * AnimatedTabs reads its props (value, children) to build Radix TabsContent panels.
  */
 export function AnimatedTab(_props: AnimatedTabProps) {

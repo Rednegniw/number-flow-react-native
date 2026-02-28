@@ -32,15 +32,15 @@ export function computeAdaptiveMaskHeights(
   exitingEntries: Map<string, CharLayout>,
   metrics: GlyphMetrics,
 ): MaskHeights {
-  let maxAscent = 0;
-  let maxDescent = 0;
+  let tightestTop = 0;
+  let tightestBottom = 0;
 
   const processChar = (char: string) => {
     const bounds = metrics.charBounds[char];
     if (!bounds) return;
 
-    if (bounds.top < maxAscent) maxAscent = bounds.top;
-    if (bounds.bottom > maxDescent) maxDescent = bounds.bottom;
+    if (bounds.top < tightestTop) tightestTop = bounds.top;
+    if (bounds.bottom > tightestBottom) tightestBottom = bounds.bottom;
   };
 
   for (const entry of layout) {
@@ -56,8 +56,8 @@ export function computeAdaptiveMaskHeights(
   const targetGradient = TARGET_GRADIENT_RATIO * metrics.lineHeight;
 
   // Dead zone: space within lineHeight not occupied by glyph content.
-  const deadZoneTop = Math.max(0, -metrics.ascent - -maxAscent - PADDING_PX);
-  const deadZoneBottom = Math.max(0, metrics.descent - maxDescent - PADDING_PX);
+  const deadZoneTop = Math.max(0, -metrics.ascent - -tightestTop - PADDING_PX);
+  const deadZoneBottom = Math.max(0, metrics.descent - tightestBottom - PADDING_PX);
 
   // If the dead zone is smaller than the target, expand the container.
   const expansionTop = Math.max(0, targetGradient - deadZoneTop);

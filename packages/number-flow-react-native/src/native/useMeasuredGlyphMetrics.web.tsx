@@ -114,6 +114,6 @@ export function useMeasuredGlyphMetrics(
     return measured;
   }, [key, style, charSet, localeDigitStrings]);
 
-  // No MeasureElement needed on web — Canvas measurement is synchronous
+  // No MeasureElement needed on web: Canvas measurement is synchronous
   return { metrics, MeasureElement: null };
 }

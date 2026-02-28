@@ -2,7 +2,7 @@ import { Easing } from "react-native-reanimated";
 import type { TimingConfig } from "./types";
 
 /**
- * NumberFlow's CSS linear() easing function — exact reproduction.
+ * NumberFlow's CSS linear() easing function, exact reproduction.
  * A smooth deceleration curve defined by 90 evenly-spaced control points.
  */
 const NUMBER_FLOW_EASING_POINTS = [
@@ -16,7 +16,7 @@ const NUMBER_FLOW_EASING_POINTS = [
 ] as const;
 
 /**
- * NumberFlow's default transform easing — smooth deceleration curve.
+ * NumberFlow's default transform easing: smooth deceleration curve.
  * Piecewise linear interpolation over the control points above,
  * recreating CSS linear() easing from the Web Animations API.
  */

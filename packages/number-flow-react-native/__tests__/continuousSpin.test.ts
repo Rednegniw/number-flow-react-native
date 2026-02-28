@@ -50,13 +50,13 @@ describe("computeContinuousGenerations", () => {
 
     const result = computeContinuousGenerations(prev, current, new Map());
 
-    // integer:2 (hundreds) changed 1→2 — no spin
+    // integer:2 (hundreds) changed 1→2, no spin
     expect(result.has("integer:2")).toBe(false);
 
-    // integer:1 (tens) unchanged 0→0, pos 1 < maxChanged 2 — spins
+    // integer:1 (tens) unchanged 0→0, pos 1 < maxChanged 2: spins
     expect(result.get("integer:1")).toBe(1);
 
-    // integer:0 (ones) unchanged 0→0, pos 0 < maxChanged 2 — spins
+    // integer:0 (ones) unchanged 0→0, pos 0 < maxChanged 2: spins
     expect(result.get("integer:0")).toBe(1);
   });
 
@@ -100,7 +100,7 @@ describe("computeContinuousGenerations", () => {
 
     const result = computeContinuousGenerations(prev, current, new Map());
 
-    // integer:1 is new (didn't exist in prev) — should not be marked for spin
+    // integer:1 is new (didn't exist in prev), should not be marked for spin
     expect(result.has("integer:1")).toBe(false);
   });
 
@@ -111,9 +111,9 @@ describe("computeContinuousGenerations", () => {
 
     const result = computeContinuousGenerations(prev, current, new Map());
 
-    // integer:0 (ones) unchanged, pos 0 < maxChanged 2 — spins
+    // integer:0 (ones) unchanged, pos 0 < maxChanged 2: spins
     expect(result.get("integer:0")).toBe(1);
-    // integer:1 changed — doesn't spin (it rolls normally)
+    // integer:1 changed, doesn't spin (it rolls normally)
     expect(result.has("integer:1")).toBe(false);
   });
 
@@ -130,7 +130,7 @@ describe("computeContinuousGenerations", () => {
     expect(result.get("s10")).toBe(1);
     expect(result.get("s1")).toBe(1);
 
-    // h10 is unchanged but pos 5 >= maxChanged 4 — doesn't spin
+    // h10 is unchanged but pos 5 >= maxChanged 4, doesn't spin
     expect(result.has("h10")).toBe(false);
   });
 

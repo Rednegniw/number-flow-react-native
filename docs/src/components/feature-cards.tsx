@@ -55,8 +55,7 @@ const features: Feature[] = [
   {
     demo: <I18nDemo />,
     title: "Full i18n Support",
-    description:
-      "Built on Intl.NumberFormat — currencies, percentages, units, 37+ numeral systems.",
+    description: "Built on Intl.NumberFormat: currencies, percentages, units, 37+ numeral systems.",
   },
   {
     demo: <TimeFlowDemo />,
@@ -72,7 +71,7 @@ const features: Feature[] = [
   {
     demo: <NumeralsDemo />,
     title: "Non-Latin Numerals",
-    description: "37 Unicode numeral systems — Arabic-Indic, Devanagari, Thai, CJK, and more.",
+    description: "37 Unicode numeral systems: Arabic-Indic, Devanagari, Thai, CJK, and more.",
   },
 ];
 

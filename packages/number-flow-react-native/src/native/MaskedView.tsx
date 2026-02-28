@@ -18,7 +18,7 @@ let Resolved: React.ComponentType<MaskedViewProps> | null = null;
 try {
   Resolved = require("@rednegniw/masked-view").default;
 } catch {
-  // Not installed — masking falls back to per-digit opacity
+  // Not installed: masking falls back to per-digit opacity
 }
 
 export default Resolved;

@@ -36,14 +36,14 @@ function makeEntry(char: string, overrides?: Partial<CharLayout>): CharLayout {
 // ─── computeAdaptiveMaskHeights ───
 
 describe("computeAdaptiveMaskHeights", () => {
-  test("digits only — large bottom dead zone (no descenders)", () => {
+  test("digits only: large bottom dead zone (no descenders)", () => {
     const layout = [makeEntry("1"), makeEntry("5")];
     const result = computeAdaptiveMaskHeights(layout, new Map(), baseMetrics);
 
     /**
      * Digits have charBounds top=-14, bottom=0.
-     * Dead zone top = -ascent - (-maxAscent) - PADDING = 18 - 14 - 2 = 2
-     * Dead zone bottom = descent - maxDescent - PADDING = 6 - 0 - 2 = 4
+     * Dead zone top = -ascent - (-tightestTop) - PADDING = 18 - 14 - 2 = 2
+     * Dead zone bottom = descent - tightestBottom - PADDING = 6 - 0 - 2 = 4
      */
     expect(result.top).toBeGreaterThan(0);
     expect(result.bottom).toBeGreaterThan(0);
@@ -52,7 +52,7 @@ describe("computeAdaptiveMaskHeights", () => {
     expect(result.expansionBottom).toBeLessThanOrEqual(result.expansionTop);
   });
 
-  test("characters with descenders — smaller bottom dead zone", () => {
+  test("characters with descenders: smaller bottom dead zone", () => {
     const digitsOnly = [makeEntry("1")];
     const withDescenders = [makeEntry("y"), makeEntry("g")];
 
@@ -60,17 +60,17 @@ describe("computeAdaptiveMaskHeights", () => {
     const descResult = computeAdaptiveMaskHeights(withDescenders, new Map(), baseMetrics);
 
     /**
-     * Descenders push maxDescent up to 5 (vs 0 for digits), shrinking bottom dead zone.
+     * Descenders push tightestBottom up to 5 (vs 0 for digits), shrinking bottom dead zone.
      * Dead zone bottom for descenders: 6 - 5 - 2 = 0 (clamped) vs digits: 6 - 0 - 2 = 4
      */
     expect(descResult.expansionBottom).toBeGreaterThan(digitsResult.expansionBottom);
   });
 
-  test("empty layout — top dead zone large enough, bottom may need small expansion", () => {
+  test("empty layout: top dead zone large enough, bottom may need small expansion", () => {
     const result = computeAdaptiveMaskHeights([], new Map(), baseMetrics);
 
     /**
-     * No chars processed, maxAscent=0, maxDescent=0.
+     * No chars processed, tightestTop=0, tightestBottom=0.
      * Dead zone top = -ascent - 0 - PADDING = 18 - 2 = 16 (exceeds target 4.8)
      * Dead zone bottom = descent - 0 - PADDING = 6 - 2 = 4 (below target 4.8)
      */
@@ -110,7 +110,7 @@ describe("computeAdaptiveMaskHeights", () => {
     const withExiting = computeAdaptiveMaskHeights(layout, exitingEntries, baseMetrics);
     const withoutExiting = computeAdaptiveMaskHeights(layout, new Map(), baseMetrics);
 
-    // "y" has descender (bottom=5), so exiting entries should increase maxDescent
+    // "y" has descender (bottom=5), so exiting entries should increase tightestBottom
     expect(withExiting.expansionBottom).toBeGreaterThanOrEqual(withoutExiting.expansionBottom);
   });
 
@@ -140,7 +140,7 @@ describe("computeAdaptiveMaskHeights", () => {
     expect(result.bottom).toBeCloseTo(targetGradient, 5);
   });
 
-  test("mixed layout + exiting — both sources contribute to maximum bounds", () => {
+  test("mixed layout + exiting: both sources contribute to maximum bounds", () => {
     const layout = [makeEntry("0")];
     const exitingEntries = new Map<string, CharLayout>([
       ["exit:g", makeEntry("g", { key: "exit:g" })],

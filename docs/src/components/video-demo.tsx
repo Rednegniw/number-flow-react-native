@@ -12,7 +12,7 @@ export function VideoDemo({ src, poster, title, height = 300 }: VideoDemoProps) 
         className="rounded-lg border border-fd-border bg-fd-muted/50 flex items-center justify-center"
         style={{ height }}
       >
-        <p className="text-sm text-fd-muted-foreground">{title} — video demo coming soon</p>
+        <p className="text-sm text-fd-muted-foreground">{title} - video demo coming soon</p>
       </div>
     );
   }

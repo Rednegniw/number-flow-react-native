@@ -14,7 +14,7 @@ const WIDTH_ANIM_MS = 200;
  * Creates a pool of SharedValue<number> that hold digit widths for worklet layout.
  *
  * **Tabular mode during scrubbing**: While sharedValue is active (scrubbing),
- * all digits use a fixed width (scrubDigitWidth) — this eliminates jitter entirely
+ * all digits use a fixed width (scrubDigitWidth). This eliminates jitter entirely
  * because all digits occupy the same width regardless of which digit (0-9) is displayed.
  * Only digits are affected; symbols (like `.`) keep their natural width.
  *
@@ -45,7 +45,7 @@ export function useDebouncedWidths(
       if (!digitWidths) return;
 
       if (!current) {
-        // Scrubbing ended — animate to proportional widths
+        // Scrubbing ended, animate to proportional widths
         if (wasActive.value) {
           wasActive.value = false;
           for (let i = 0; i < MAX_SLOTS; i++) {

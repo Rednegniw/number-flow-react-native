@@ -65,12 +65,12 @@ export function resolveTrend(
 ): Trend {
   const hasChange = prevValue !== undefined && nextValue !== undefined && prevValue !== nextValue;
 
-  // Static trend value — pass through
+  // Static trend value: pass through
   if (typeof trendProp === "number") {
     return trendProp;
   }
 
-  // Function trend — call with prev/next when there's an actual change
+  // Function trend: call with prev/next when there's an actual change
   if (typeof trendProp === "function") {
     return hasChange ? trendProp(prevValue, nextValue) : 0;
   }
@@ -87,7 +87,7 @@ export function resolveTrend(
 export function parseDigitPosition(key: string): number | undefined {
   "worklet";
 
-  // Exponent digits are a separate domain — they don't cascade in continuous spin
+  // Exponent digits are a separate domain; they don't cascade in continuous spin
   if (key.startsWith("exponentInteger:")) return undefined;
 
   if (key.startsWith("integer:")) {
@@ -98,7 +98,7 @@ export function parseDigitPosition(key: string): number | undefined {
     return -(parseInt(key.slice(9), 10) + 1);
   }
 
-  // Time digit keys — significance ordered: c1 < c10 < s1 < s10 < m1 < m10 < h1 < h10
+  // Time digit keys, significance ordered: c1 < c10 < s1 < s10 < m1 < m10 < h1 < h10
   switch (key) {
     case "c1":
       return -2;

@@ -152,7 +152,7 @@ export const DigitSlot = React.memo(
       return offsets;
     }, [metrics, resolvedDigitCount, resolvedDigitStrings]);
 
-    // Superscript digits use a tight clip (no mask buffer) — the container-level
+    // Superscript digits use a tight clip (no mask buffer): the container-level
     // gradient doesn't cover the superscript position, so buffer would leak neighbors.
     const effectiveMaskTop = superscript ? 0 : maskTop;
     const effectiveMaskBottom = superscript ? 0 : maskBottom;
@@ -173,7 +173,7 @@ export const DigitSlot = React.memo(
     /**
      * Each digit gets its own Group transform driven by the position
      * reaction. Only 10 elements needed (vs 30 with the copy approach).
-     * useMemo creates stable JSX — shared values drive the animation.
+     * useMemo creates stable JSX; shared values drive the animation.
      */
     const digitElements = useMemo(
       () =>

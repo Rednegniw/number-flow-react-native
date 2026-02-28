@@ -79,7 +79,7 @@ export function rawPartsToKeyedParts(
     flatChars.push({ sourceType: "suffix", char });
   }
 
-  // Step 2: Key characters — integers+groups RTL, everything else LTR
+  // Step 2: Key characters (integers+groups RTL, everything else LTR)
   const result: KeyedPart[] = new Array(flatChars.length);
   const counts: Record<string, number> = {};
 
@@ -94,7 +94,7 @@ export function rawPartsToKeyedParts(
   }
 
   /**
-   * Key integer digits and group separators RTL — rightmost integer digit
+   * Key integer digits and group separators RTL: rightmost integer digit
    * gets "integer:0" (ones place), next gets "integer:1" (tens), etc.
    */
   for (let i = integerGroupIndices.length - 1; i >= 0; i--) {
@@ -187,7 +187,7 @@ export function useNumberFormatting(
   prefix: string,
   suffix: string,
 ): KeyedPartsResult {
-  // Serialize format/locales to a stable string — avoids re-runs when callers pass inline objects
+  // Serialize format/locales to a stable string to avoid re-runs on inline objects
   const formatKey = useMemo(() => JSON.stringify([locales, format]), [locales, format]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: formatKey serializes locales+format into a stable string to avoid re-runs on inline objects

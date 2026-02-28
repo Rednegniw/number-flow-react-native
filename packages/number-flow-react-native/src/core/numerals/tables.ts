@@ -21,7 +21,7 @@ export const HANIDEC_DIGITS = ["〇", "一", "二", "三", "四", "五", "六", 
 /**
  * Map of CLDR numbering system name → Unicode codepoint of digit zero.
  * Only includes BMP systems (codepoint <= 0xFFFF).
- * hanidec uses 0x3007 as a sentinel — the remaining digits are non-contiguous.
+ * hanidec uses 0x3007 as a sentinel; the remaining digits are non-contiguous.
  */
 export const ZERO_CODEPOINTS: Record<string, number> = {
   latn: 0x0030,

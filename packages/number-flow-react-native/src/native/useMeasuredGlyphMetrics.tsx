@@ -21,7 +21,7 @@ const MeasureComponent = React.memo(
     const completedRef = useRef(false);
 
     /**
-     * Replace regular space with NBSP for measurement safety — some Android
+     * Replace regular space with NBSP for measurement safety; some Android
      * text layout engines collapse trailing whitespace on a line.
      */
     const measureString = useMemo(
@@ -113,7 +113,7 @@ export function useMeasuredGlyphMetrics(
   const [, forceUpdate] = useReducer((n: number) => n + 1, 0);
 
   /**
-   * Track the best available metrics for this font config — prevents
+   * Track the best available metrics for this font config. Prevents
    * returning null (and unmounting all slots) when additionalChars
    * changes and triggers an async re-measurement.
    */
@@ -135,7 +135,7 @@ export function useMeasuredGlyphMetrics(
 
   /**
    * If we have stale metrics from a previous measurement of this font,
-   * return them while re-measuring — avoids unmounting the slot tree.
+   * return them while re-measuring. Avoids unmounting the slot tree.
    */
   const staleMetrics = prevMetricsRef.current ?? metricsCache.get(baseKey) ?? null;
 

@@ -134,7 +134,7 @@ const ListHeader = ({
       Animated number transitions
     </Text>
 
-    {/* Showcase button — hidden on web (requires Skia) */}
+    {/* Showcase button, hidden on web (requires Skia) */}
     {!isWeb && (
       <RipplePressable
         onPress={onShowcase}
@@ -168,7 +168,7 @@ const ListHeader = ({
       </RipplePressable>
     )}
 
-    {/* RTL Showcase button — hidden on web (requires Skia) */}
+    {/* RTL Showcase button, hidden on web (requires Skia) */}
     {!isWeb && (
       <RipplePressable
         onPress={onRTLShowcase}
@@ -202,7 +202,7 @@ const ListHeader = ({
       </RipplePressable>
     )}
 
-    {/* Recording button — hidden on web (requires Skia) */}
+    {/* Recording button, hidden on web (requires Skia) */}
     {!isWeb && (
       <RipplePressable
         onPress={onRecording}

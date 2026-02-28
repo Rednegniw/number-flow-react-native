@@ -8,7 +8,7 @@ import { localeDigitValue } from "./numerals";
  * UI thread. Returns an array of SharedValues indexed by digit position
  * (0 = first digit, 1 = second digit, etc.), skipping non-digit characters.
  *
- * This enables zero-latency digit updates during chart scrubbing — the worklet
+ * This enables zero-latency digit updates during chart scrubbing: the worklet
  * writes directly to SharedValues without crossing the JS bridge.
  *
  * When sharedValue is empty (e.g., scrubbing ended), all slots are set to

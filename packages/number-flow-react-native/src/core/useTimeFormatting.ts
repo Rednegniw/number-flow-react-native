@@ -16,7 +16,7 @@ export function to12Hour(h: number): number {
  *
  * Each digit position gets a fixed semantic key (h10, h1, m10, m1, s10, s1)
  * regardless of the actual value. This ensures correct enter/exit animation
- * behavior — e.g. when hours go from 9→10, the h10 key *enters* (fades in)
+ * behavior, e.g. when hours go from 9→10, the h10 key *enters* (fades in)
  * rather than shifting all existing positions.
  */
 export function formatTimeToKeyedParts(
@@ -39,7 +39,7 @@ export function formatTimeToKeyedParts(
     const h10 = Math.floor(displayHours / 10);
     const h1 = displayHours % 10;
 
-    // Hours tens digit — only shown if >= 10 or padding is on
+    // Hours tens digit, only shown if >= 10 or padding is on
     if (h10 > 0 || padHours) {
       parts.push(digitPart("h10", h10));
     }

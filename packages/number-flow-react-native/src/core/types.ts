@@ -93,9 +93,9 @@ export interface GlyphMetrics {
   maxDigitWidth: number;
   /** Line height computed from font metrics: ceil(descent - ascent) */
   lineHeight: number;
-  /** Font ascent (negative value — distance above baseline) */
+  /** Font ascent (negative value, distance above baseline) */
   ascent: number;
-  /** Font descent (positive value — distance below baseline) */
+  /** Font descent (positive value, distance below baseline) */
   descent: number;
   /**
    * Per-character tight vertical bounds relative to the baseline.
@@ -134,7 +134,7 @@ export interface DigitConstraint {
  */
 export type DigitsProp = Record<number, DigitConstraint>;
 
-/** Value props — mutually exclusive: provide `value` (JS-driven) or `sharedValue` (worklet-driven), not both. */
+/** Value props, mutually exclusive: provide `value` (JS-driven) or `sharedValue` (worklet-driven), not both. */
 type SkiaNumberFlowValueProps =
   | {
       /** JS-thread numeric value. Mutually exclusive with sharedValue. */
@@ -157,7 +157,7 @@ interface SkiaNumberFlowBaseProps extends AnimationBehaviorProps {
   /** Force equal-width digits using percentile-based interpolation between min and max digit widths. Equivalent to `fontVariant: ['tabular-nums']` on native components. */
   tabularNums?: boolean;
 
-  /** SkFont instance from useFont(). Required — renders empty until font loads. */
+  /** SkFont instance from useFont(). Required; renders empty until font loads. */
   font: SkFont | null;
   /** Text color (Skia color string). Defaults to "#000000". */
   color?: string;

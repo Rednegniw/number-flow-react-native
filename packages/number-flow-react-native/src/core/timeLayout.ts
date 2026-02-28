@@ -128,7 +128,7 @@ export function computeTimeStringLayout(
     pushDigitGroup(chars, segments[0], MINUTE_KEYS, metrics);
   }
 
-  // AM/PM suffix — individual characters with value-dependent keys
+  // AM/PM suffix: individual characters with value-dependent keys
   if (ampmLabel) {
     pushChar(chars, "ampm-sp", " ", metrics);
     for (let i = 0; i < ampmLabel.length; i++) {

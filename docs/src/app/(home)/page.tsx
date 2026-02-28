@@ -31,7 +31,7 @@ export default function HomePage() {
         }}
       />
 
-      {/* Subtle accent gradient glow — full page, aimed at top-right */}
+      {/* Subtle accent gradient glow (full page, aimed at top-right) */}
       <div
         className="pointer-events-none fixed inset-0 z-0"
         style={{

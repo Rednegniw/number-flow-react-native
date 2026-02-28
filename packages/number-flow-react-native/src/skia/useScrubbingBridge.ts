@@ -50,7 +50,7 @@ export function useScrubbingBridge({
       // Reanimated fires on mount/re-subscribe even when nothing changed
       if (current === previous) return;
 
-      // Shared value cleared — notify JS once, then skip until it's set again
+      // Shared value cleared: notify JS once, then skip until it's set again
       if (!current) {
         if (prevWorkletDigitCount.value === -1) return;
 
