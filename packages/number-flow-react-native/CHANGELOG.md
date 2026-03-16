@@ -8,7 +8,7 @@
 
 ### Patch Changes
 
-- [`6c9888c`](https://github.com/Rednegniw/number-flow-react-native/commit/6c9888c8764f61f961d879cbb982d75a2054ff60) Thanks [@Rednegniw](https://github.com/Rednegniw)! - Skip placeholder phase on remount when glyph metrics are already cached, fixing a layout shift caused by native text kerning differing from measured char widths (#8)
+- [`6c9888c`](https://github.com/Rednegniw/number-flow-react-native/commit/6c9888c8764f61f961d879cbb982d75a2054ff60) Thanks [@marioprieta](https://github.com/marioprieta)! - Skip placeholder phase on remount when glyph metrics are already cached, fixing a layout shift caused by native text kerning differing from measured char widths (#8)
 
 ## 0.3.1
 
