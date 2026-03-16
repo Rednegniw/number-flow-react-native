@@ -166,7 +166,7 @@ export const NumberFlow = ({
   const maskBottom = adaptiveMask.bottom;
   const { expansionTop, expansionBottom } = adaptiveMask;
 
-  const [slotsReady, setSlotsReady] = useState(false);
+  const [slotsReady, setSlotsReady] = useState(!!metrics);
   const metricsReady = !!metrics;
 
   useEffect(() => {
