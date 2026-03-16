@@ -26,7 +26,7 @@ interface ModeBaseProps {
   format: Intl.NumberFormatOptions | undefined;
   locales: Intl.LocalesArgument | undefined;
   font: NonNullable<SkiaNumberFlowProps["font"]>;
-  color: string;
+  color: NonNullable<SkiaNumberFlowProps["color"]>;
   x: number;
   y: number;
   width: number;
@@ -66,7 +66,7 @@ interface RuntimeProps {
   layout: CharLayout[];
   metrics: GlyphMetrics;
   font: NonNullable<SkiaNumberFlowProps["font"]>;
-  color: string;
+  color: NonNullable<SkiaNumberFlowProps["color"]>;
   x: number;
   y: number;
   opacity: SkiaNumberFlowProps["opacity"];

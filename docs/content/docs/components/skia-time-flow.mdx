@@ -98,7 +98,7 @@ function SkiaClock() {
 | Prop | Type | Default | Description |
 |---|---|---|---|
 | `font` | `SkFont \| null` | **(required)** | Skia font instance from `useFont()` or `useSkiaFont()`. |
-| `color` | `string` | `"#000000"` | Text color as a Skia color string. |
+| `color` | `string \| SharedValue<string>` | `"#000000"` | Text color. Accepts a static string or a `SharedValue` for animated color transitions. |
 | `x` | `number` | `0` | X position within the Canvas. |
 | `y` | `number` | `0` | Y position (baseline). |
 | `width` | `number` | `0` | Available width for alignment. |

@@ -19,7 +19,7 @@ interface DigitSlotProps {
   targetX: number;
   charWidth: number;
   baseY: number;
-  color: string;
+  color: string | SharedValue<string>;
   font: NonNullable<SkiaNumberFlowProps["font"]>;
   spinTiming: TimingConfig;
   opacityTiming: TimingConfig;

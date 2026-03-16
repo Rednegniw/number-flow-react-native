@@ -21,7 +21,7 @@ interface SymbolSlotProps {
   targetX: number;
   baseY: number;
   ascent: number;
-  color: string;
+  color: string | SharedValue<string>;
   font: NonNullable<SkiaNumberFlowProps["font"]>;
   opacityTiming: TimingConfig;
   transformTiming: TimingConfig;

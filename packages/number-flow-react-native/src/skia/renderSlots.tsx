@@ -13,7 +13,7 @@ interface RenderSlotsParams {
   onExitComplete: (key: string) => void;
   metrics: GlyphMetrics;
   font: SkFont;
-  color: string;
+  color: string | SharedValue<string>;
   baseY: number;
   resolvedTrend: Trend;
   spinTiming: TimingConfig;

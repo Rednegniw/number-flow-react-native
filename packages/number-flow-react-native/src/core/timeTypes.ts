@@ -47,8 +47,8 @@ interface SkiaTimeFlowBaseProps extends AnimationBehaviorProps {
 
   /** SkFont instance from useFont(). Required; renders empty until font loads. */
   font: SkFont | null;
-  /** Text color (Skia color string). Defaults to "#000000". */
-  color?: string;
+  /** Text color. Accepts a static string or a SharedValue for animated color transitions. Defaults to "#000000". */
+  color?: string | SharedValue<string>;
   /** X position within the Canvas. Defaults to 0. */
   x?: number;
   /** Y position within the Canvas (baseline). Defaults to 0. */
