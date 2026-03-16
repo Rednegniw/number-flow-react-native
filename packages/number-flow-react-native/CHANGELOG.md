@@ -1,5 +1,15 @@
 # number-flow-react-native
 
+## 0.4.0
+
+### Minor Changes
+
+- [`9907018`](https://github.com/Rednegniw/number-flow-react-native/commit/9907018ec21e8b79287c587ce5e4bac0f3e79485) Thanks [@Rednegniw](https://github.com/Rednegniw)! - Accept `SharedValue<string>` for the `color` prop on `SkiaNumberFlow` and `SkiaTimeFlow`, enabling animated color transitions (#6)
+
+### Patch Changes
+
+- [`6c9888c`](https://github.com/Rednegniw/number-flow-react-native/commit/6c9888c8764f61f961d879cbb982d75a2054ff60) Thanks [@Rednegniw](https://github.com/Rednegniw)! - Skip placeholder phase on remount when glyph metrics are already cached, fixing a layout shift caused by native text kerning differing from measured char widths (#8)
+
 ## 0.3.1
 
 ### Patch Changes
