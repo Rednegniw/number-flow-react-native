@@ -1,5 +1,11 @@
 # number-flow-react-native
 
+## 0.4.1
+
+### Patch Changes
+
+- [`8804c81`](https://github.com/Rednegniw/number-flow-react-native/commit/8804c816b06adb86c48ac29ecd75807e63ae4589) Thanks [@Rednegniw](https://github.com/Rednegniw)! - Add dev-mode warnings when `value` is `NaN` or `Infinity`
+
 ## 0.4.0
 
 ### Minor Changes
