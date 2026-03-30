@@ -507,6 +507,9 @@ export const SkiaNumberFlow = ({
         "font is null. Pass a loaded SkFont from useFont(). Component renders empty until font loads.",
       );
     }
+    if (value !== undefined && !Number.isFinite(value)) {
+      warnOnce("skia-nf-non-finite", `value must be a finite number, got ${value}.`);
+    }
     if (value !== undefined && sharedValue !== undefined) {
       warnOnce("skia-nf-both", "Both value and sharedValue provided. Use one or the other.");
     }

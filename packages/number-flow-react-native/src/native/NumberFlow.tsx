@@ -53,6 +53,9 @@ export const NumberFlow = ({
   const { metrics, MeasureElement } = useMeasuredGlyphMetrics(nfStyle, formatChars, digitStrings);
 
   if (__DEV__) {
+    if (typeof value === "number" && !Number.isFinite(value)) {
+      warnOnce("nf-non-finite", `value must be a finite number, got ${value}.`);
+    }
     if (digits) {
       for (const [posStr, constraint] of Object.entries(digits)) {
         if (constraint.max < 1 || constraint.max > 9) {
