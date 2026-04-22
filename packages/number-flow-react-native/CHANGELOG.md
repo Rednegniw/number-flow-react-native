@@ -1,5 +1,11 @@
 # number-flow-react-native
 
+## 0.4.2
+
+### Patch Changes
+
+- [`11aaffe`](https://github.com/Rednegniw/number-flow-react-native/commit/11aaffef59c51cbd08a0bb6641938fb013821bca) Thanks [@Rednegniw](https://github.com/Rednegniw)! - Stop leaking `@shopify/react-native-skia` type imports into the `/native` and root entry points. `SkiaNumberFlowProps` and `SkiaTimeFlowProps` now live in `src/skia/types.ts` instead of `src/core/`, so consumers of `NumberFlow` and `TimeFlow` no longer need Skia installed to pass `tsc`. (#12)
+
 ## 0.4.1
 
 ### Patch Changes
