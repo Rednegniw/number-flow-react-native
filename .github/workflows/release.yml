@@ -27,7 +27,7 @@ jobs:
       - name: Install modern npm for OIDC trusted publishing
         run: |
           corepack enable
-          corepack prepare npm@latest --activate
+          corepack prepare npm@11.5.1 --activate
           npm --version
 
       - run: bun install --frozen-lockfile
