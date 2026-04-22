@@ -22,13 +22,10 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
 
-      - name: Install modern npm for OIDC trusted publishing
-        run: |
-          corepack enable
-          corepack prepare npm@11.5.1 --activate
-          npm --version
+      - name: Print npm version (must be 11.5.1+ for OIDC trusted publishing)
+        run: npm --version
 
       - run: bun install --frozen-lockfile
       - run: bun run build
