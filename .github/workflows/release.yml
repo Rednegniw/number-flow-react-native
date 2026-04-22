@@ -24,8 +24,11 @@ jobs:
         with:
           node-version: 22
 
-      - name: Upgrade npm for OIDC trusted publishing
-        run: npm install -g npm@latest
+      - name: Install modern npm for OIDC trusted publishing
+        run: |
+          corepack enable
+          corepack prepare npm@latest --activate
+          npm --version
 
       - run: bun install --frozen-lockfile
       - run: bun run build
