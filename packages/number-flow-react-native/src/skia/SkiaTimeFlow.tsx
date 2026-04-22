@@ -4,7 +4,6 @@ import { MASK_WIDTH_RATIO } from "../core/constants";
 import { resolveDirection, resolveTextAlign } from "../core/direction";
 import { computeKeyedLayout } from "../core/layout";
 import { computeTimeStringLayout } from "../core/timeLayout";
-import type { SkiaTimeFlowProps } from "../core/timeTypes";
 import { useAccessibilityAnnouncement } from "../core/useAccessibilityAnnouncement";
 import { useFlowPipeline } from "../core/useFlowPipeline";
 import { useTimeFormatting } from "../core/useTimeFormatting";
@@ -12,6 +11,7 @@ import { useWorkletFormatting } from "../core/useWorkletFormatting";
 import { TIME_DIGIT_COUNTS } from "../core/utils";
 import { warnOnce } from "../core/warnings";
 import { renderSlots } from "./renderSlots";
+import type { SkiaTimeFlowProps } from "./types";
 import { useGlyphMetrics } from "./useGlyphMetrics";
 
 export const SkiaTimeFlow = ({

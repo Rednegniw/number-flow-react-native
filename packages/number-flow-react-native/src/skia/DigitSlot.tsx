@@ -8,10 +8,11 @@ import {
 } from "react-native-reanimated";
 import { DIGIT_COUNT, SUPERSCRIPT_SCALE } from "../core/constants";
 import { getSuperscriptTransform } from "../core/superscript";
-import type { GlyphMetrics, SkiaNumberFlowProps, TimingConfig, Trend } from "../core/types";
+import type { GlyphMetrics, TimingConfig, Trend } from "../core/types";
 import { useAnimatedX } from "../core/useAnimatedX";
 import { useDigitAnimation } from "../core/useDigitAnimation";
 import { signedDigitOffset } from "../core/utils";
+import type { SkiaNumberFlowProps } from "./types";
 
 interface DigitSlotProps {
   metrics: GlyphMetrics;

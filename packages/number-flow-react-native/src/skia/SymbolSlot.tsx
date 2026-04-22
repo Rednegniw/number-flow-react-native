@@ -9,9 +9,10 @@ import {
   withTiming,
 } from "react-native-reanimated";
 import { getSuperscriptTransform } from "../core/superscript";
-import type { SkiaNumberFlowProps, TimingConfig } from "../core/types";
+import type { TimingConfig } from "../core/types";
 import { useAnimatedX } from "../core/useAnimatedX";
 import { useSlotOpacity } from "../core/useSlotOpacity";
+import type { SkiaNumberFlowProps } from "./types";
 
 // Timing for smooth prefix/suffix animation during scrubbing
 const WORKLET_X_ANIMATION_MS = 150;

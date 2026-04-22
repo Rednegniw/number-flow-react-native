@@ -6,18 +6,14 @@ import { resolveDirection, resolveTextAlign } from "../core/direction";
 import { getFormatCharacters, parseFormattedNumber } from "../core/intlHelpers";
 import { type CharLayout, computeKeyedLayout } from "../core/layout";
 import { detectNumberingSystem, getDigitStrings, getZeroCodePoint } from "../core/numerals";
-import type {
-  GlyphMetrics,
-  KeyedPart,
-  ResolvedTextAlign,
-  SkiaNumberFlowProps,
-} from "../core/types";
+import type { GlyphMetrics, KeyedPart, ResolvedTextAlign } from "../core/types";
 import { useAccessibilityAnnouncement } from "../core/useAccessibilityAnnouncement";
 import { useFlowPipeline } from "../core/useFlowPipeline";
 import { rawPartsToKeyedParts, useNumberFormatting } from "../core/useNumberFormatting";
 import { getDigitCount } from "../core/utils";
 import { warnOnce } from "../core/warnings";
 import { renderSlots } from "./renderSlots";
+import type { SkiaNumberFlowProps } from "./types";
 import { useGlyphMetrics } from "./useGlyphMetrics";
 import { useScrubbingBridge } from "./useScrubbingBridge";
 import { useScrubbingLayout } from "./useScrubbingLayout";
