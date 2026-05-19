@@ -213,8 +213,13 @@ async function fetchGitHubTraffic(): Promise<GitHubTrafficData | null> {
 function parsePostHogResults(data: unknown): unknown[][] {
   if (!isRecord(data)) return [];
 
-  if ("detail" in data || "error" in data) {
-    console.error("PostHog query error:", JSON.stringify(data));
+  if (typeof data.detail === "string") {
+    console.error("PostHog query error:", data.detail);
+    return [];
+  }
+
+  if (data.error != null) {
+    console.error("PostHog query error:", JSON.stringify(data.error));
     return [];
   }
 
