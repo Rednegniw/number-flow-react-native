@@ -1,0 +1,24 @@
+name: Issue Telegram Notification
+
+on:
+  issues:
+    types: [opened, reopened]
+
+permissions:
+  issues: read
+
+jobs:
+  notify:
+    name: Notify Telegram
+    if: github.event.issue.user.type != 'Bot'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Send issue to Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: bun run .github/scripts/issue-to-telegram.ts
