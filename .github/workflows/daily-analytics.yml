@@ -21,7 +21,9 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: /tmp/analytics-snapshot.json
-          key: analytics-snapshot
+          # Caches are immutable, so each run saves under a unique key and
+          # restore picks the most recent one via the prefix match.
+          key: analytics-snapshot-${{ github.run_id }}
           restore-keys: analytics-snapshot-
 
       - name: Run analytics script
@@ -41,4 +43,4 @@ jobs:
         if: always()
         with:
           path: /tmp/analytics-snapshot.json
-          key: analytics-snapshot
+          key: analytics-snapshot-${{ github.run_id }}

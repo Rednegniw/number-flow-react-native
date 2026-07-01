@@ -14,7 +14,8 @@ const DOCS_HOST = "number-flow-react-native.awingender.com";
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
-const GITHUB_TOKEN = process.env.ANALYTICS_GITHUB_TOKEN || process.env.GITHUB_TOKEN;
+const ANALYTICS_GITHUB_TOKEN = process.env.ANALYTICS_GITHUB_TOKEN;
+const DEFAULT_GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const POSTHOG_API_KEY = process.env.POSTHOG_PERSONAL_API_KEY;
 const POSTHOG_PROJECT_ID = process.env.POSTHOG_PROJECT_ID;
 const SNAPSHOT_PATH = process.env.SNAPSHOT_PATH ?? "/tmp/analytics-snapshot.json";
@@ -130,41 +131,51 @@ async function fetchNpmData(): Promise<NpmData | null> {
   }
 }
 
+function githubHeaders(token: string): Record<string, string> {
+  return {
+    Authorization: `Bearer ${token}`,
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+  };
+}
+
 async function fetchGitHubRepo(): Promise<GitHubRepoData | null> {
-  if (!GITHUB_TOKEN) {
+  // Repo stats only need the default GITHUB_TOKEN, so fall back to it when the PAT is rejected (e.g. expired).
+  const tokens = [
+    ...new Set([ANALYTICS_GITHUB_TOKEN, DEFAULT_GITHUB_TOKEN].filter((t): t is string => !!t)),
+  ];
+  if (tokens.length === 0) {
     console.error("GitHub token missing");
     return null;
   }
 
-  try {
-    const headers = {
-      Authorization: `Bearer ${GITHUB_TOKEN}`,
-      Accept: "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28",
-    };
-    const repo = await fetchJson(`https://api.github.com/repos/${REPO}`, { headers });
+  for (const token of tokens) {
+    try {
+      const repo = await fetchJson(`https://api.github.com/repos/${REPO}`, {
+        headers: githubHeaders(token),
+      });
 
-    if (!isRecord(repo)) return null;
+      if (!isRecord(repo)) return null;
 
-    return {
-      stars: Number(repo.stargazers_count ?? 0),
-      forks: Number(repo.forks_count ?? 0),
-      openIssues: Number(repo.open_issues_count ?? 0),
-    };
-  } catch (e) {
-    console.error("GitHub repo fetch failed:", e);
-    return null;
+      return {
+        stars: Number(repo.stargazers_count ?? 0),
+        forks: Number(repo.forks_count ?? 0),
+        openIssues: Number(repo.open_issues_count ?? 0),
+      };
+    } catch (e) {
+      console.error("GitHub repo fetch failed:", e);
+    }
   }
+
+  return null;
 }
 
 async function fetchGitHubTraffic(): Promise<GitHubTrafficData | null> {
-  if (!GITHUB_TOKEN) return null;
+  // Traffic endpoints require push access, which only the PAT has.
+  const token = ANALYTICS_GITHUB_TOKEN || DEFAULT_GITHUB_TOKEN;
+  if (!token) return null;
 
-  const headers = {
-    Authorization: `Bearer ${GITHUB_TOKEN}`,
-    Accept: "application/vnd.github+json",
-    "X-GitHub-Api-Version": "2022-11-28",
-  };
+  const headers = githubHeaders(token);
   const base = `https://api.github.com/repos/${REPO}/traffic`;
 
   let viewsBody: unknown;
@@ -191,7 +202,7 @@ async function fetchGitHubTraffic(): Promise<GitHubTrafficData | null> {
 
   if (!isRecord(viewsBody) && !isRecord(clonesBody) && parseReferrers(referrersBody).length === 0) {
     console.error(
-      "GitHub traffic unavailable. Set ANALYTICS_GITHUB_TOKEN (repo-scoped PAT) in Actions secrets.",
+      "GitHub traffic unavailable. Set or rotate ANALYTICS_GITHUB_TOKEN (repo-scoped PAT, watch the expiration date) in Actions secrets.",
     );
     return null;
   }
