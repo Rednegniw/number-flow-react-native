@@ -37,7 +37,14 @@ const SCENARIOS: ScenarioKind[] = [
   "mount",
 ];
 const RENDERERS: RendererKind[] = ["native", "skia"];
-const TICK_METRICS: (keyof RunStats)[] = ["medianMs", "p95Ms", "pctOverBudget", "jsDriftP95Ms"];
+/** Verdict metrics; all are "lower is better" so the sign test reads uniformly */
+const TICK_METRICS: (keyof RunStats)[] = [
+  "medianMs",
+  "p95Ms",
+  "maxMs",
+  "pctOverBudget",
+  "jsDriftP95Ms",
+];
 
 const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
@@ -191,10 +198,12 @@ export const BenchmarkScreen = () => {
         await delay(SETTLE_MS);
 
         recorder.start();
+        const windowStart = performance.now();
         const drifts = await runTicks(TICKS, TICK_MS, setTick);
+        const windowMs = performance.now() - windowStart;
         const frames = await recorder.stop();
 
-        records.push({ ...spec, stats: summarizeFrames(frames, drifts) });
+        records.push({ ...spec, stats: summarizeFrames(frames, drifts, windowMs) });
       }
 
       setActiveSpec(null);

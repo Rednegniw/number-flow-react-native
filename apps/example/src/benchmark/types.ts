@@ -25,8 +25,22 @@ export interface RunStats {
   /** UI-thread frame delta stats (tick scenarios only) */
   medianMs?: number;
   p95Ms?: number;
+  /**
+   * Longest single frame interval. p95 leaves the tail unbounded: a run can
+   * show p95 = 110ms while hiding multi-second stalls, so the worst frame is
+   * reported explicitly.
+   */
+  maxMs?: number;
   pctOverBudget?: number;
   frames?: number;
+  /**
+   * Frames actually produced per second of wall clock (frames / windowMs).
+   * This is the metric that answers "is it dropping frames": percentile
+   * metrics describe only the frames that WERE produced, so a UI thread
+   * stalling for seconds still reports a healthy median.
+   */
+  fps?: number;
+  windowMs?: number;
 
   /** JS event-loop lateness p95 (tick scenarios only) */
   jsDriftP95Ms?: number;

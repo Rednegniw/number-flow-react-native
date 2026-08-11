@@ -16,14 +16,21 @@ export function percentile(xs: number[], p: number): number {
 
 const FRAME_BUDGET_MS = 16.7;
 
-export function summarizeFrames(frameDeltas: number[], drifts: number[]): RunStats {
+export function summarizeFrames(
+  frameDeltas: number[],
+  drifts: number[],
+  windowMs: number,
+): RunStats {
   const overBudget = frameDeltas.filter((d) => d > FRAME_BUDGET_MS).length;
 
   return {
     medianMs: median(frameDeltas),
     p95Ms: percentile(frameDeltas, 95),
+    maxMs: frameDeltas.length > 0 ? Math.max(...frameDeltas) : 0,
     pctOverBudget: frameDeltas.length > 0 ? (100 * overBudget) / frameDeltas.length : 0,
     frames: frameDeltas.length,
+    fps: windowMs > 0 ? (1000 * frameDeltas.length) / windowMs : 0,
+    windowMs,
     jsDriftP95Ms: percentile(drifts, 95),
   };
 }
