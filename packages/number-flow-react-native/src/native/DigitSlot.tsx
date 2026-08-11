@@ -9,7 +9,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { DIGIT_COUNT, SUPERSCRIPT_SCALE } from "../core/constants";
 import { getSuperscriptTextStyle } from "../core/superscript";
-import type { GlyphMetrics, TimingConfig, Trend } from "../core/types";
+import type { GlyphMetrics, TimingConfig, TrendRef } from "../core/types";
 import { useAnimatedX } from "../core/useAnimatedX";
 import { useDigitAnimation } from "../core/useDigitAnimation";
 import { signedDigitOffset } from "../core/utils";
@@ -75,7 +75,7 @@ interface DigitSlotProps {
   spinTiming: TimingConfig;
   opacityTiming: TimingConfig;
   transformTiming: TimingConfig;
-  trend: Trend;
+  trendRef: TrendRef;
   entering: boolean;
   exiting: boolean;
   exitKey?: string;
@@ -98,7 +98,7 @@ export const DigitSlot = React.memo(
     spinTiming,
     opacityTiming,
     transformTiming,
-    trend,
+    trendRef,
     entering,
     exiting,
     exitKey,
@@ -131,7 +131,7 @@ export const DigitSlot = React.memo(
       digitValue,
       entering,
       exiting,
-      trend,
+      trendRef,
       spinTiming,
       opacityTiming,
       exitKey,

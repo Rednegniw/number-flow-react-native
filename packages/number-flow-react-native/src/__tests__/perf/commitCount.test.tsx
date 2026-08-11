@@ -26,7 +26,7 @@ beforeEach(() => {
  * identity each render. test.failing flips to a hard failure once the fix
  * lands, at which point remove the .failing modifier.
  */
-test.failing("updating one digit re-renders only that DigitSlot", async () => {
+test("updating one digit re-renders only that DigitSlot", async () => {
   seedSyntheticMetrics();
   const { rerender } = await render(<NumberFlow value={123} />);
 

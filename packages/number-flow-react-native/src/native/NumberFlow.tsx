@@ -8,18 +8,22 @@ import { computeKeyedLayout } from "../core/layout";
 import { detectNumberingSystem, getDigitStrings } from "../core/numerals";
 import { useFlowPipeline } from "../core/useFlowPipeline";
 import { useNumberFormatting } from "../core/useNumberFormatting";
+import { useShallowStableStyle } from "../core/useShallowStableStyle";
 import { getDigitCount } from "../core/utils";
 import { warnOnce } from "../core/warnings";
 import { GradientMask } from "./GradientMask";
 import { renderSlots } from "./renderSlots";
-import type { NumberFlowProps } from "./types";
+import type { NumberFlowProps, NumberFlowStyle } from "./types";
 import { useMeasuredGlyphMetrics } from "./useMeasuredGlyphMetrics";
+
+/** Shared default so an omitted style never changes identity across renders */
+const EMPTY_STYLE: NumberFlowStyle = {};
 
 export const NumberFlow = ({
   value,
   format,
   locales,
-  style: nfStyleProp = {},
+  style: rawStyleProp = EMPTY_STYLE,
   prefix = "",
   suffix = "",
   spinTiming,
@@ -36,6 +40,8 @@ export const NumberFlow = ({
   direction,
   mask,
 }: NumberFlowProps) => {
+  const nfStyleProp = useShallowStableStyle(rawStyleProp);
+
   const nfStyle = useMemo(() => {
     const { textAlign: _ta, ...rest } = nfStyleProp;
     return { ...rest, fontSize: nfStyleProp.fontSize ?? DEFAULT_FONT_SIZE };
@@ -106,7 +112,7 @@ export const NumberFlow = ({
     resolvedSpinTiming,
     resolvedOpacityTiming,
     resolvedTransformTiming,
-    resolvedTrend,
+    trendRef,
     spinGenerations,
     prevMap,
     isInitialRender,
@@ -227,7 +233,7 @@ export const NumberFlow = ({
     onExitComplete,
     metrics,
     textStyle,
-    resolvedTrend,
+    trendRef,
     spinTiming: resolvedSpinTiming,
     opacityTiming: resolvedOpacityTiming,
     transformTiming: resolvedTransformTiming,

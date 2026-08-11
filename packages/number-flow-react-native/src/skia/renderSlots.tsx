@@ -1,7 +1,7 @@
 import type { SkFont } from "@shopify/react-native-skia";
 import type { SharedValue } from "react-native-reanimated";
 import type { CharLayout } from "../core/layout";
-import type { GlyphMetrics, TimingConfig, Trend } from "../core/types";
+import type { GlyphMetrics, TimingConfig, Trend, TrendRef } from "../core/types";
 import { DigitSlot } from "./DigitSlot";
 import { SymbolSlot } from "./SymbolSlot";
 
@@ -15,6 +15,8 @@ interface RenderSlotsParams {
   font: SkFont;
   color: string | SharedValue<string>;
   baseY: number;
+  trendRef: TrendRef;
+  /** Plain trend forwarded to worklet-driven slots (shared-value mode only) */
   resolvedTrend: Trend;
   spinTiming: TimingConfig;
   opacityTiming: TimingConfig;
@@ -46,6 +48,7 @@ export function renderSlots({
   font,
   color,
   baseY,
+  trendRef,
   resolvedTrend,
   spinTiming,
   opacityTiming,
@@ -97,9 +100,10 @@ export function renderSlots({
               superscript={entry.superscript}
               targetX={entry.x}
               transformTiming={transformTiming}
-              trend={resolvedTrend}
+              trendRef={trendRef}
               workletDigitValue={wdv}
               workletLayout={workletLayout}
+              workletTrend={wdv ? resolvedTrend : undefined}
             />
           );
         }
@@ -151,7 +155,7 @@ export function renderSlots({
               superscript={entry.superscript}
               targetX={entry.x}
               transformTiming={transformTiming}
-              trend={resolvedTrend}
+              trendRef={trendRef}
             />
           );
         }

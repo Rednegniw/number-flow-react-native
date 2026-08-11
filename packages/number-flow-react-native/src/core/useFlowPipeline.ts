@@ -1,7 +1,7 @@
 import { useMemo, useRef } from "react";
 import type { CharLayout } from "./layout";
 import { computeAdaptiveMaskHeights, type MaskHeights } from "./mask";
-import type { GlyphMetrics, KeyedPart, TimingConfig, Trend, TrendProp } from "./types";
+import type { GlyphMetrics, KeyedPart, TimingConfig, Trend, TrendProp, TrendRef } from "./types";
 import { useAnimationLifecycle } from "./useAnimationLifecycle";
 import { useContinuousSpin } from "./useContinuousSpin";
 import { useLayoutDiff } from "./useLayoutDiff";
@@ -41,6 +41,12 @@ interface FlowPipelineOutput {
   resolvedOpacityTiming: TimingConfig;
   resolvedTransformTiming: TimingConfig;
   resolvedTrend: Trend;
+  /**
+   * Stable container for the latest resolved trend. Slots read it lazily
+   * (inside effects) instead of receiving the trend value as a prop, so a
+   * direction flip does not re-render slots whose digits did not change.
+   */
+  trendRef: TrendRef;
   spinGenerations: Map<string, number> | undefined;
 
   prevMap: Map<string, CharLayout>;
@@ -81,6 +87,13 @@ export function useFlowPipeline(input: FlowPipelineInput): FlowPipelineOutput {
   const resolvedTrend = resolveTrend(input.trend, prevValueRef.current, input.trendValue);
   prevValueRef.current = input.trendValue;
 
+  /**
+   * Render-time ref update (same pattern as prevValueRef above): child layout
+   * effects run before parent effects, so an effect-time update would be stale.
+   */
+  const trendRef = useRef<Trend>(resolvedTrend);
+  trendRef.current = resolvedTrend;
+
   // 3. Continuous spin
   const spinGenerations = useContinuousSpin(input.keyedParts, input.continuous, resolvedTrend);
 
@@ -119,6 +132,7 @@ export function useFlowPipeline(input: FlowPipelineInput): FlowPipelineOutput {
     resolvedOpacityTiming,
     resolvedTransformTiming,
     resolvedTrend,
+    trendRef,
     spinGenerations,
     prevMap,
     isInitialRender,

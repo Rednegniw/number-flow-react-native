@@ -31,6 +31,15 @@ export type Trend = -1 | 0 | 1;
 export type TrendProp = Trend | ((prev: number, next: number) => Trend);
 
 /**
+ * Stable container holding the latest resolved trend. Slots read it inside
+ * effects instead of receiving trend as a prop, keeping React.memo intact
+ * across direction flips.
+ */
+export interface TrendRef {
+  readonly current: Trend;
+}
+
+/**
  * Animation behavior props shared by all Flow components (NumberFlow, TimeFlow,
  * SkiaNumberFlow, SkiaTimeFlow). Controls how digit transitions behave.
  */
