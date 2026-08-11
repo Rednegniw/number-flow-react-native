@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
-import { StyleSheet, type TextStyle } from "react-native";
+import { StyleSheet, Text, type TextStyle } from "react-native";
 import Animated, {
   makeMutable,
   type SharedValue,
@@ -13,7 +13,28 @@ import { getSuperscriptTextStyle } from "../core/superscript";
 import type { GlyphMetrics, TimingConfig, TrendRef } from "../core/types";
 import { useAnimatedX } from "../core/useAnimatedX";
 import { useDigitAnimation } from "../core/useDigitAnimation";
-import { signedDigitOffset } from "../core/utils";
+import { normalizeWheelPosition, wheelStripDigit } from "../core/utils";
+import MaskedView from "./MaskedView";
+
+/**
+ * Extra digits rendered above and below the wheel's own range so the window
+ * always has neighbours to show, including across a wrap. The clip window is
+ * about 1.4 line-heights tall, so two of padding is comfortably enough.
+ */
+const STRIP_PAD = 2;
+
+/**
+ * Per-digit opacity fading exists only for installs without MaskedView, where
+ * it is the sole approximation of the edge gradient. When MaskedView is
+ * present the container gradient does the fade, and animating opacity per
+ * digit as well both double-faded the edges and put ~4 extra animated style
+ * updates per slot on every frame.
+ *
+ * Resolved once at module load, so the branch below can never flip mid-animation.
+ */
+const PER_DIGIT_FADE = MaskedView === null;
+
+const EMPTY_OPACITIES: SharedValue<number>[] = [];
 
 /**
  * Maps a digit's clamped scroll offset to an opacity value for edge fading.
@@ -39,38 +60,41 @@ function computeDigitOpacity(
   return (1 - absOffset) / (1 - fadeStart);
 }
 
-// Extracted as its own component so useAnimatedStyle respects Rules of Hooks
-interface DigitElementProps {
+interface StripDigitProps {
   digitString: string;
-  yValue: SharedValue<number>;
-  opacityValue: SharedValue<number>;
-  textStyle: DigitSlotProps["textStyle"];
+  top: number;
+  textStyle: TextStyle;
 }
 
 /**
- * A single Animated.Text per digit (transform and opacity animate directly
- * on the text node) instead of an Animated.View wrapping a Text: halves the
- * host-view count of every wheel.
+ * The common case: a plain Text at a fixed offset in the strip. The strip's
+ * single transform moves it, so this node has no animated style at all.
  */
-const DigitElement = React.memo(
-  ({ digitString, yValue, opacityValue, textStyle }: DigitElementProps) => {
-    const animatedStyle = useAnimatedStyle(
-      () => ({
-        transform: [{ translateY: yValue.value }],
-        opacity: opacityValue.value,
-      }),
-      [yValue, opacityValue],
-    );
+const StripDigit = React.memo(({ digitString, top, textStyle }: StripDigitProps) => (
+  <Text style={[styles.digitText, textStyle, { top }]}>{digitString}</Text>
+));
+
+StripDigit.displayName = "StripDigit";
+
+/** MaskedView-less fallback: same fixed offset, but opacity fades per digit */
+const FadingStripDigit = React.memo(
+  ({
+    digitString,
+    top,
+    textStyle,
+    opacityValue,
+  }: StripDigitProps & { opacityValue: SharedValue<number> }) => {
+    const animatedStyle = useAnimatedStyle(() => ({ opacity: opacityValue.value }), [opacityValue]);
 
     return (
-      <Animated.Text style={[styles.digitText, textStyle, animatedStyle]}>
+      <Animated.Text style={[styles.digitText, textStyle, { top }, animatedStyle]}>
         {digitString}
       </Animated.Text>
     );
   },
 );
 
-DigitElement.displayName = "DigitElement";
+FadingStripDigit.displayName = "FadingStripDigit";
 
 interface DigitSlotProps {
   metrics: GlyphMetrics;
@@ -120,9 +144,12 @@ export const DigitSlot = React.memo(
     const resolvedDigitStrings =
       digitStrings ?? Array.from({ length: resolvedDigitCount }, (_, i) => String(i));
 
-    // Superscript scaling: exponent digits/signs render smaller at the top of the line.
-    // Mask heights are zeroed for superscript: the container-level gradient doesn't cover
-    // the superscript position, so any buffer would show unmasked neighboring digits.
+    /**
+     * Superscript scaling: exponent digits/signs render smaller at the top of
+     * the line. Mask heights are zeroed for superscript: the container-level
+     * gradient doesn't cover the superscript position, so any buffer would
+     * show unmasked neighboring digits.
+     */
     const scale = superscript ? SUPERSCRIPT_SCALE : 1;
     const effectiveLH = metrics.lineHeight * scale;
     const effectiveMaskTop = superscript ? 0 : maskTop;
@@ -146,44 +173,51 @@ export const DigitSlot = React.memo(
       continuousSpinGeneration,
     });
 
+    const stripLength = resolvedDigitCount + 2 * STRIP_PAD;
+
     /**
-     * Per-digit Y transforms stored as makeMutable shared values.
-     * Each digit independently positions itself based on its signed
-     * modular distance from the virtual scroll position.
+     * The whole wheel is one strip translated by a single shared value, instead
+     * of every digit carrying its own animated transform. A spinning slot used
+     * to commit ~4 animated styles per frame (one for each digit crossing the
+     * window); it now commits exactly one.
+     *
+     * Digit at strip index i shows (i - STRIP_PAD) mod count and sits at a
+     * fixed offset of (i - STRIP_PAD) line-heights, so translating the strip to
+     * -position line-heights puts the digit for `position` in the window. When
+     * position wraps past the wheel's range the strip jumps by a whole turn,
+     * which is invisible because index i and index i + count render the same
+     * digit with the same neighbours.
      */
-    const [digitYValues] = useState(() =>
-      Array.from({ length: resolvedDigitCount }, (_, n) => {
-        const offset = signedDigitOffset(n, initialDigit, resolvedDigitCount);
-        const clamped = Math.max(-1.5, Math.min(1.5, offset));
-        return makeMutable(clamped * effectiveLH + effectiveMaskTop);
-      }),
+    const [stripY] = useState(() =>
+      makeMutable(
+        -normalizeWheelPosition(initialDigit, resolvedDigitCount) * effectiveLH + effectiveMaskTop,
+      ),
     );
 
-    // Per-digit opacity for edge fading (replaces container-level MaskedView)
     const [digitOpacities] = useState(() =>
-      Array.from({ length: resolvedDigitCount }, (_, n) => {
-        const offset = signedDigitOffset(n, initialDigit, resolvedDigitCount);
-        const clamped = Math.max(-1.5, Math.min(1.5, offset));
-        return makeMutable(
-          computeDigitOpacity(clamped, effectiveMaskTop, effectiveMaskBottom, effectiveLH),
-        );
-      }),
+      PER_DIGIT_FADE
+        ? Array.from({ length: stripLength }, (_, i) => {
+            const offset = i - STRIP_PAD - normalizeWheelPosition(initialDigit, resolvedDigitCount);
+            const clamped = Math.max(-1.5, Math.min(1.5, offset));
+            return makeMutable(
+              computeDigitOpacity(clamped, effectiveMaskTop, effectiveMaskBottom, effectiveLH),
+            );
+          })
+        : EMPTY_OPACITIES,
     );
 
-    /**
-     * Mirrors NumberFlow's CSS mod(): each digit n computes its signed
-     * offset from virtual position c, clamped to [-1.5, 1.5].
-     * Only the current digit (offset ~ 0) and its neighbors (offset ~ +/-1)
-     * are visible through the clip window. All others park just outside.
-     */
     useAnimatedReaction(
       () => currentDigitSV.value - animDelta.value,
       (c) => {
-        for (let n = 0; n < resolvedDigitCount; n++) {
-          const offset = signedDigitOffset(n, c, resolvedDigitCount);
+        const position = normalizeWheelPosition(c, resolvedDigitCount);
+        stripY.value = -position * effectiveLH + effectiveMaskTop;
+
+        if (!PER_DIGIT_FADE) return;
+
+        for (let i = 0; i < stripLength; i++) {
+          const offset = i - STRIP_PAD - position;
           const clamped = Math.max(-1.5, Math.min(1.5, offset));
-          digitYValues[n].value = clamped * effectiveLH + effectiveMaskTop;
-          digitOpacities[n].value = computeDigitOpacity(
+          digitOpacities[i].value = computeDigitOpacity(
             clamped,
             effectiveMaskTop,
             effectiveMaskBottom,
@@ -198,6 +232,7 @@ export const DigitSlot = React.memo(
         resolvedDigitCount,
         effectiveMaskTop,
         effectiveMaskBottom,
+        stripLength,
       ],
     );
 
@@ -209,9 +244,7 @@ export const DigitSlot = React.memo(
      *
      * Easing this value instead wrote a layout prop every frame, forcing a
      * Yoga relayout per slot per frame: measured as the dominant cost of a
-     * dense grid (a tabular-nums grid, whose widths never change, ran ~4.7x
-     * more frames per second than the same proportional grid). This writes it
-     * at most twice per value change.
+     * dense grid. This writes it at most twice per value change.
      *
      * Widening immediately cannot clip glyph ink mid-roll, and the settle at
      * the end is invisible because by then only the final digit is in the
@@ -236,9 +269,7 @@ export const DigitSlot = React.memo(
 
     /**
      * One wrapper view carries the slot transform, opacity, AND the clip
-     * (overflow hidden + width). Merging the former transform and clip
-     * wrappers saves a host view per slot; clipping behavior is unchanged
-     * because the old outer view sized itself to the clip view.
+     * (overflow hidden + width).
      */
     const animatedSlotStyle = useAnimatedStyle(
       () => ({
@@ -250,22 +281,49 @@ export const DigitSlot = React.memo(
       [animatedX, effectiveMaskTop, slotOpacity, expandedHeight, clipWidth],
     );
 
+    const stripStyle = useAnimatedStyle(
+      () => ({ transform: [{ translateY: stripY.value }] }),
+      [stripY],
+    );
+
     const digitElements = useMemo(
       () =>
-        Array.from({ length: resolvedDigitCount }, (_, n) => (
-          <DigitElement
-            digitString={resolvedDigitStrings[n]}
-            key={n}
-            textStyle={effectiveTextStyle}
-            yValue={digitYValues[n]}
-            opacityValue={digitOpacities[n]}
-          />
-        )),
-      [resolvedDigitCount, resolvedDigitStrings, digitYValues, digitOpacities, effectiveTextStyle],
+        Array.from({ length: stripLength }, (_, i) => {
+          const digitString =
+            resolvedDigitStrings[wheelStripDigit(i, STRIP_PAD, resolvedDigitCount)];
+          const top = (i - STRIP_PAD) * effectiveLH;
+
+          return PER_DIGIT_FADE ? (
+            <FadingStripDigit
+              digitString={digitString}
+              key={i}
+              opacityValue={digitOpacities[i]}
+              textStyle={effectiveTextStyle}
+              top={top}
+            />
+          ) : (
+            <StripDigit
+              digitString={digitString}
+              key={i}
+              textStyle={effectiveTextStyle}
+              top={top}
+            />
+          );
+        }),
+      [
+        stripLength,
+        resolvedDigitCount,
+        resolvedDigitStrings,
+        effectiveLH,
+        effectiveTextStyle,
+        digitOpacities,
+      ],
     );
 
     return (
-      <Animated.View style={[styles.slotClip, animatedSlotStyle]}>{digitElements}</Animated.View>
+      <Animated.View style={[styles.slotClip, animatedSlotStyle]}>
+        <Animated.View style={[styles.strip, stripStyle]}>{digitElements}</Animated.View>
+      </Animated.View>
     );
   },
 );
@@ -277,9 +335,13 @@ const styles = StyleSheet.create({
     position: "absolute",
     overflow: "hidden",
   },
-  digitText: {
+  strip: {
     position: "absolute",
     left: 0,
     top: 0,
+  },
+  digitText: {
+    position: "absolute",
+    left: 0,
   },
 });

@@ -30,8 +30,12 @@ test("host node count for $1,234.56 stays at its recorded baseline", async () =>
   const result = await render(<NumberFlow format={CURRENCY} value={1234.56} />);
 
   /**
-   * 146 before the finding-4 work; 77 after collapsing DigitElement to a
-   * single Animated.Text and merging the slot transform + clip wrappers.
+   * 146 originally; 77 after collapsing each digit to a single Animated.Text
+   * and merging the slot transform + clip wrappers; 107 after the wheel-strip
+   * change, which deliberately trades static nodes for animated ones. Each
+   * slot now holds a strip view plus digitCount + 4 plain Texts (padding for
+   * neighbours across a wrap) instead of digitCount animated Texts, so per
+   * frame a spinning slot commits one animated style rather than about four.
    */
-  expect(countNodes(result.toJSON() as JsonNode | JsonNode[])).toBe(77);
+  expect(countNodes(result.toJSON() as JsonNode | JsonNode[])).toBe(107);
 });
