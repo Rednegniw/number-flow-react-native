@@ -35,14 +35,37 @@ const TICK_METRICS: (keyof RunStats)[] = ["medianMs", "p95Ms", "pctOverBudget", 
 
 const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
+/**
+ * Best-effort report sink for automated runs: a listener on the host
+ * (simulator shares the host network) receives the JSON so results can be
+ * collected without driving the iOS share sheet. Silently ignored when no
+ * listener is running.
+ */
+function postReport(report: BenchmarkReport): void {
+  fetch("http://localhost:8090/report", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(report),
+  }).catch(() => {});
+}
+
+/**
+ * ABBA counterbalancing: within-pair order alternates each pair so slow
+ * drift (thermal, background noise) hits both variants symmetrically.
+ * A fixed A-then-B order would bias every pairwise delta the same way.
+ */
 function buildRunQueue(): RunSpec[] {
   const queue: RunSpec[] = [];
 
   for (const scenario of SCENARIOS) {
     for (const renderer of RENDERERS) {
       for (let pairIndex = 0; pairIndex < PAIRS; pairIndex++) {
-        queue.push({ scenario, renderer, variant: "current", pairIndex });
-        queue.push({ scenario, renderer, variant: "baseline", pairIndex });
+        const pair: RunSpec[] = [
+          { scenario, renderer, variant: "current", pairIndex },
+          { scenario, renderer, variant: "baseline", pairIndex },
+        ];
+        if (pairIndex % 2 === 1) pair.reverse();
+        queue.push(...pair);
       }
     }
   }
@@ -172,7 +195,9 @@ export const BenchmarkScreen = () => {
       await delay(COOLDOWN_MS);
     }
 
-    setReport(buildReport(records));
+    const finalReport = buildReport(records);
+    setReport(finalReport);
+    postReport(finalReport);
     setPhase("done");
   }, [recorder]);
 
