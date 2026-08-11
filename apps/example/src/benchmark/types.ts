@@ -1,11 +1,15 @@
 /**
- * "grid-tabular" is the stress grid with tabular-nums: digit widths never
- * change, so width/minWidth (layout) animations never fire. Comparing it
- * against "stress-grid" isolates layout-animation cost from transform and
- * opacity commit cost. Diagnostic only; proportional widths remain the
- * supported default.
+ * Diagnostic grid variants, both compared against "stress-grid" to attribute
+ * the native renderer's residual frame cost. Neither is a supported mode
+ * change: proportional widths and the mask stay on by default.
+ *
+ * "grid-tabular"  tabular-nums, so digit widths never change and the width /
+ *                 minWidth layout animations never fire: isolates Yoga
+ *                 relayout cost from transform and opacity commit cost.
+ * "grid-nomask"   mask={false}, so no MaskedView wraps each component:
+ *                 isolates the per-component offscreen composite cost.
  */
-export type ScenarioKind = "tick-single" | "stress-grid" | "grid-tabular" | "mount";
+export type ScenarioKind = "tick-single" | "stress-grid" | "grid-tabular" | "grid-nomask" | "mount";
 export type RendererKind = "native" | "skia";
 export type VariantKind = "current" | "baseline";
 export type Verdict = "improved" | "regressed" | "inconclusive";

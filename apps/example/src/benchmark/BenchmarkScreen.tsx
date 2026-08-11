@@ -29,7 +29,13 @@ const SETTLE_MS = 500;
 const COOLDOWN_MS = 800;
 const BASE_SEED = 0xc0ffee;
 
-const SCENARIOS: ScenarioKind[] = ["tick-single", "stress-grid", "grid-tabular", "mount"];
+const SCENARIOS: ScenarioKind[] = [
+  "tick-single",
+  "stress-grid",
+  "grid-tabular",
+  "grid-nomask",
+  "mount",
+];
 const RENDERERS: RendererKind[] = ["native", "skia"];
 const TICK_METRICS: (keyof RunStats)[] = ["medianMs", "p95Ms", "pctOverBudget", "jsDriftP95Ms"];
 

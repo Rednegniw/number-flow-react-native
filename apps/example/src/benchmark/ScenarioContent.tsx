@@ -28,6 +28,7 @@ export const ScenarioContent = ({ spec, values, fontLarge, fontSmall }: Scenario
   const SNF = isBaseline ? BaselineSkiaNumberFlow : SkiaNumberFlow;
   const isSingle = spec.scenario === "tick-single";
   const isTabular = spec.scenario === "grid-tabular";
+  const maskEnabled = spec.scenario !== "grid-nomask";
 
   if (spec.renderer === "native") {
     if (isSingle) {
@@ -42,7 +43,7 @@ export const ScenarioContent = ({ spec, values, fontLarge, fontSmall }: Scenario
       <View style={{ flexDirection: "row", flexWrap: "wrap", width: GRID_COLS * CELL_WIDTH }}>
         {values.map((v, i) => (
           <View key={i} style={{ width: CELL_WIDTH, height: CELL_HEIGHT }}>
-            <NF style={gridStyle} value={v} />
+            <NF mask={maskEnabled} style={gridStyle} value={v} />
           </View>
         ))}
       </View>
@@ -72,6 +73,7 @@ export const ScenarioContent = ({ spec, values, fontLarge, fontSmall }: Scenario
         <SNF
           font={fontSmall}
           key={i}
+          mask={maskEnabled}
           tabularNums={isTabular}
           value={cell.value}
           x={cell.x}
