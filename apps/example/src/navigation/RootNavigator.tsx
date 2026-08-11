@@ -19,6 +19,8 @@ const LazyRecordingDemo =
   Platform.OS === "web" ? undefined : require("../screens/RecordingDemoScreen").RecordingDemoScreen;
 const LazyBenchmark =
   Platform.OS === "web" ? undefined : require("../benchmark/BenchmarkScreen").BenchmarkScreen;
+const LazyVisualParity =
+  Platform.OS === "web" ? undefined : require("../benchmark/VisualParityScreen").VisualParityScreen;
 
 export const RootNavigator = () => (
   <Stack.Navigator
@@ -52,6 +54,13 @@ export const RootNavigator = () => (
     {LazyRecordingDemo && <Stack.Screen component={LazyRecordingDemo} name="RecordingDemo" />}
     {LazyBenchmark && (
       <Stack.Screen component={LazyBenchmark} name="Benchmark" options={{ title: "Benchmark" }} />
+    )}
+    {LazyVisualParity && (
+      <Stack.Screen
+        component={LazyVisualParity}
+        name="VisualParity"
+        options={{ headerShown: false }}
+      />
     )}
   </Stack.Navigator>
 );

@@ -1,4 +1,11 @@
-export type ScenarioKind = "tick-single" | "stress-grid" | "mount";
+/**
+ * "grid-tabular" is the stress grid with tabular-nums: digit widths never
+ * change, so width/minWidth (layout) animations never fire. Comparing it
+ * against "stress-grid" isolates layout-animation cost from transform and
+ * opacity commit cost. Diagnostic only; proportional widths remain the
+ * supported default.
+ */
+export type ScenarioKind = "tick-single" | "stress-grid" | "grid-tabular" | "mount";
 export type RendererKind = "native" | "skia";
 export type VariantKind = "current" | "baseline";
 export type Verdict = "improved" | "regressed" | "inconclusive";

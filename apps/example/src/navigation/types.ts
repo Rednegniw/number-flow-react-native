@@ -6,4 +6,5 @@ export type RootStackParamList = {
   RecordingList: undefined;
   RecordingDemo: { recordingKey: string };
   Benchmark: undefined;
+  VisualParity: undefined;
 };
