@@ -14,7 +14,8 @@
       "!**/.next",
       "!**/.source",
       "!**/android",
-      "!**/ios"
+      "!**/ios",
+      "!**/packages/number-flow-baseline"
     ]
   },
   "linter": {

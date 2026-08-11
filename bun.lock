@@ -1,6 +1,5 @@
 {
   "lockfileVersion": 1,
-  "configVersion": 1,
   "workspaces": {
     "": {
       "devDependencies": {
@@ -21,6 +20,7 @@
         "expo": "~54.0.33",
         "expo-font": "^14.0.11",
         "expo-status-bar": "~3.0.9",
+        "number-flow-baseline": "workspace:*",
         "number-flow-react-native": "workspace:*",
         "react": "19.1.0",
         "react-dom": "19.1.0",
@@ -73,9 +73,18 @@
         "typescript": "^5.9.3",
       },
     },
+    "packages/number-flow-baseline": {
+      "name": "number-flow-baseline",
+      "version": "0.0.0",
+      "peerDependencies": {
+        "react": ">=18",
+        "react-native": ">=0.73",
+        "react-native-reanimated": ">=3.0.0",
+      },
+    },
     "packages/number-flow-react-native": {
       "name": "number-flow-react-native",
-      "version": "0.2.0",
+      "version": "0.4.2",
       "devDependencies": {
         "@types/jest": "^30.0.0",
         "@types/react": "~19.1.0",
@@ -2305,6 +2314,8 @@
     "npm-to-yarn": ["npm-to-yarn@3.0.1", "", {}, "sha512-tt6PvKu4WyzPwWUzy/hvPFqn+uwXO0K1ZHka8az3NnrhWJDmSqI8ncWq0fkL0k/lmmi5tAC11FXwXuh0rFbt1A=="],
 
     "nullthrows": ["nullthrows@1.1.1", "", {}, "sha512-2vPPEi+Z7WqML2jZYddDIfy5Dqb0r2fze2zTxNNknZaFpVHU3mFB3R+DWeJWGVx0ecvttSGlJTI+WG+8Z4cDWw=="],
+
+    "number-flow-baseline": ["number-flow-baseline@workspace:packages/number-flow-baseline"],
 
     "number-flow-react-native": ["number-flow-react-native@workspace:packages/number-flow-react-native"],
 

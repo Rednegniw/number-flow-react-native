@@ -7,5 +7,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["example", "docs"]
+  "ignore": ["example", "docs", "number-flow-baseline"]
 }
