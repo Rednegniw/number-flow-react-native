@@ -107,6 +107,8 @@ pnpm add @shopify/react-native-skia
 
 For the best visual quality with the native renderer, install `@rednegniw/masked-view` to enable smooth gradient masking at digit edges. Without it, the native renderer falls back to per-digit opacity fading.
 
+If you already use `@expo/ui` (56.0.3+, Expo SDK 56), no extra package is needed: its `community/masked-view` component is picked up automatically as a fallback when `@rednegniw/masked-view` isn't installed.
+
 <Tabs items={['bun', 'npm', 'yarn', 'pnpm']}>
 <Tab value="bun">
 ```bash
@@ -133,7 +135,7 @@ pnpm add @rednegniw/masked-view
 
 
 <Callout type="warn">
-`@rednegniw/masked-view` requires a dev build (Expo Dev Client or bare RN). It won't work in Expo Go; the native renderer will automatically fall back to per-digit opacity fading in those environments.
+Both masked-view options require a dev build (Expo Dev Client or bare RN). They won't work in Expo Go; the native renderer will automatically fall back to per-digit opacity fading in those environments.
 </Callout>
 </Step>
 
@@ -148,3 +150,4 @@ pnpm add @rednegniw/masked-view
 | react-native-reanimated | >= 3.0.0 | Yes |
 | @shopify/react-native-skia | >= 2.0.0 | Only for Skia components |
 | @rednegniw/masked-view | >= 0.4.0 | Optional - smooth gradient masking for native renderer |
+| @expo/ui | >= 56.0.3 | Optional - alternative masked-view source (Expo projects only) |

@@ -1,8 +1,10 @@
 /**
  * Web stub for MaskedView. On native, MaskedView.tsx dynamically requires
- * @rednegniw/masked-view, but that package ships TypeScript non-null assertion
- * syntax in its .web.js file, crashing Metro's parser. This platform file
- * ensures the broken upstream code is never reached on web.
+ * @rednegniw/masked-view (whose .web.js ships TypeScript non-null assertion
+ * syntax that crashes Metro's parser) or @expo/ui/community/masked-view
+ * (whose web fallback renders children unmasked with a console warning).
+ * This platform file ensures neither is reached on web, where CSS
+ * mask-image handles gradient masking instead.
  *
  * NumberFlow and TimeFlow already handle MaskedView === null by falling back
  * to per-digit opacity fading.
