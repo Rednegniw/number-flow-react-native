@@ -13,6 +13,12 @@
       "types": "./src/index.ts",
       "default": "./src/index.ts"
     },
+    "./skia": {
+      "source": "./src/skia/index.ts",
+      "react-native": "./src/skia/index.ts",
+      "types": "./src/skia/index.ts",
+      "default": "./src/skia/index.ts"
+    },
     "./package.json": "./package.json"
   },
   "peerDependencies": {
