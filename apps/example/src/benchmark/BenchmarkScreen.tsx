@@ -63,16 +63,23 @@ function postReport(report: BenchmarkReport): void {
 }
 
 /**
- * ABBA counterbalancing: within-pair order alternates each pair so slow
- * drift (thermal, background noise) hits both variants symmetrically.
- * A fixed A-then-B order would bias every pairwise delta the same way.
+ * Ordering does two jobs:
+ *
+ * 1. ABBA counterbalancing within a pair, so slow drift (thermal, host noise)
+ *    hits both variants symmetrically. A fixed A-then-B order would bias
+ *    every pairwise delta the same way.
+ * 2. Pair index is the OUTER loop, so every scenario is sampled once per
+ *    round instead of running as a contiguous block. Blocked scenarios make
+ *    cross-scenario comparison invalid: whichever scenario runs last inherits
+ *    all accumulated drift (observed as grid-nomask alternately beating and
+ *    losing to stress-grid between runs).
  */
 function buildRunQueue(): RunSpec[] {
   const queue: RunSpec[] = [];
 
-  for (const scenario of SCENARIOS) {
-    for (const renderer of RENDERERS) {
-      for (let pairIndex = 0; pairIndex < PAIRS; pairIndex++) {
+  for (let pairIndex = 0; pairIndex < PAIRS; pairIndex++) {
+    for (const scenario of SCENARIOS) {
+      for (const renderer of RENDERERS) {
         const pair: RunSpec[] = [
           { scenario, renderer, variant: "current", pairIndex },
           { scenario, renderer, variant: "baseline", pairIndex },

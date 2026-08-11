@@ -5,6 +5,7 @@ import Animated, {
   type SharedValue,
   useAnimatedReaction,
   useAnimatedStyle,
+  withDelay,
   withTiming,
 } from "react-native-reanimated";
 import { DIGIT_COUNT, SUPERSCRIPT_SCALE } from "../core/constants";
@@ -202,35 +203,51 @@ export const DigitSlot = React.memo(
 
     const animatedX = useAnimatedX(targetX, exiting, transformTiming);
 
-    const [animatedClipWidth] = useState(() => makeMutable(charWidth));
+    /**
+     * Clip width covers BOTH the outgoing and incoming advance widths for the
+     * duration of the roll, then settles on the new width.
+     *
+     * Easing this value instead wrote a layout prop every frame, forcing a
+     * Yoga relayout per slot per frame: measured as the dominant cost of a
+     * dense grid (a tabular-nums grid, whose widths never change, ran ~4.7x
+     * more frames per second than the same proportional grid). This writes it
+     * at most twice per value change.
+     *
+     * Widening immediately cannot clip glyph ink mid-roll, and the settle at
+     * the end is invisible because by then only the final digit is in the
+     * window and the extra width holds no ink.
+     */
+    const [clipWidth] = useState(() => makeMutable(charWidth));
     const prevWidthRef = useRef(charWidth);
 
     useLayoutEffect(() => {
-      if (!exiting && prevWidthRef.current !== charWidth) {
-        prevWidthRef.current = charWidth;
-        animatedClipWidth.value = withTiming(charWidth, {
-          duration: transformTiming.duration,
-          easing: transformTiming.easing,
-        });
-      }
-    }, [charWidth, exiting, transformTiming, animatedClipWidth]);
+      if (exiting || prevWidthRef.current === charWidth) return;
+
+      const covering = Math.max(prevWidthRef.current, charWidth);
+      prevWidthRef.current = charWidth;
+      clipWidth.value = covering;
+
+      if (covering === charWidth) return;
+
+      clipWidth.value = withDelay(transformTiming.duration, withTiming(charWidth, { duration: 0 }));
+    }, [charWidth, exiting, transformTiming, clipWidth]);
 
     const expandedHeight = effectiveLH + effectiveMaskTop + effectiveMaskBottom;
 
     /**
      * One wrapper view carries the slot transform, opacity, AND the clip
-     * (overflow hidden + animated width). Merging the former transform and
-     * clip wrappers saves a host view per slot; clipping behavior is
-     * unchanged because the old outer view sized itself to the clip view.
+     * (overflow hidden + width). Merging the former transform and clip
+     * wrappers saves a host view per slot; clipping behavior is unchanged
+     * because the old outer view sized itself to the clip view.
      */
     const animatedSlotStyle = useAnimatedStyle(
       () => ({
         transform: [{ translateX: animatedX.value }, { translateY: -effectiveMaskTop }],
         opacity: slotOpacity.value,
         height: expandedHeight,
-        width: animatedClipWidth.value,
+        width: clipWidth.value,
       }),
-      [animatedX, effectiveMaskTop, slotOpacity, expandedHeight, animatedClipWidth],
+      [animatedX, effectiveMaskTop, slotOpacity, expandedHeight, clipWidth],
     );
 
     const digitElements = useMemo(
