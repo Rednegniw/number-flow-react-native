@@ -5,6 +5,7 @@ import { NumberFlow } from "number-flow-react-native";
 import { SkiaNumberFlow } from "number-flow-react-native/skia";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, Text, View } from "react-native";
+import { Easing } from "react-native-reanimated";
 import { INTER_FONT_ASSET } from "../theme/fonts";
 
 /**
@@ -21,7 +22,17 @@ export const PARITY_ROW_LEFT = 16;
 export const PARITY_ROW_WIDTH = 370;
 
 const FONT_SIZE = 34;
-const STEP_MS = 1200;
+
+/**
+ * 4x slow motion: variants can lag each other by a display frame or two when
+ * one canvas drops frames (that is a performance artifact, not a rendering
+ * difference). Slowing the animation makes a one-frame lag a negligible
+ * fraction of animation progress, so same-time comparison approximates
+ * same-state comparison. The diff script adds temporal alignment on top.
+ */
+const SLOW_SPIN = { duration: 3600, easing: Easing.inOut(Easing.ease) };
+const SLOW_OPACITY = { duration: 1800, easing: Easing.out(Easing.ease) };
+const STEP_MS = 4400;
 
 /**
  * Covers: single-digit roll up, roll down (trend flip), full carry
@@ -75,25 +86,55 @@ export const VisualParityScreen = () => {
     <View style={{ flex: 1, backgroundColor: "#FFFFFF" }}>
       {/* Row 0: current native */}
       <View style={rowStyle(0)}>
-        <NumberFlow style={{ fontSize: FONT_SIZE, color: "#000000" }} value={value} />
+        <NumberFlow
+          opacityTiming={SLOW_OPACITY}
+          spinTiming={SLOW_SPIN}
+          style={{ fontSize: FONT_SIZE, color: "#000000" }}
+          transformTiming={SLOW_SPIN}
+          value={value}
+        />
       </View>
 
       {/* Row 1: baseline native */}
       <View style={rowStyle(1)}>
-        <BaselineNumberFlow style={{ fontSize: FONT_SIZE, color: "#000000" }} value={value} />
+        <BaselineNumberFlow
+          opacityTiming={SLOW_OPACITY}
+          spinTiming={SLOW_SPIN}
+          style={{ fontSize: FONT_SIZE, color: "#000000" }}
+          transformTiming={SLOW_SPIN}
+          value={value}
+        />
       </View>
 
       {/* Row 2: current skia */}
       <View style={rowStyle(2)}>
         <Canvas style={{ width: PARITY_ROW_WIDTH, height: PARITY_ROW_HEIGHT }}>
-          <SkiaNumberFlow color="#000000" font={fontSkia} value={value} x={4} y={60} />
+          <SkiaNumberFlow
+            color="#000000"
+            font={fontSkia}
+            opacityTiming={SLOW_OPACITY}
+            spinTiming={SLOW_SPIN}
+            transformTiming={SLOW_SPIN}
+            value={value}
+            x={4}
+            y={60}
+          />
         </Canvas>
       </View>
 
       {/* Row 3: baseline skia */}
       <View style={rowStyle(3)}>
         <Canvas style={{ width: PARITY_ROW_WIDTH, height: PARITY_ROW_HEIGHT }}>
-          <BaselineSkiaNumberFlow color="#000000" font={fontSkia} value={value} x={4} y={60} />
+          <BaselineSkiaNumberFlow
+            color="#000000"
+            font={fontSkia}
+            opacityTiming={SLOW_OPACITY}
+            spinTiming={SLOW_SPIN}
+            transformTiming={SLOW_SPIN}
+            value={value}
+            x={4}
+            y={60}
+          />
         </Canvas>
       </View>
 
