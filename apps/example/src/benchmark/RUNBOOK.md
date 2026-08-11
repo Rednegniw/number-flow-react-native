@@ -21,6 +21,41 @@
   has drifted (check `git log packages/number-flow-baseline`), re-snapshot it
   from the commit you want to compare against before trusting results.
 
+### Check `windowMs` before believing any frame metric
+
+**Compare `windowMs` between the two variants first.** Every run drives the
+same fixed tick count, so `windowMs` is how long a build took to deliver
+identical work. If the two windows differ materially, the frame-distribution
+metrics (`medianMs`, `pctOverBudget`, `fps`) are measuring different
+instantaneous loads and cannot be compared.
+
+This is not hypothetical. On a 30-component native grid, one build delivered
+the workload in 5.8 s while the other needed 12.8 s, because the slower build's
+JS thread fell 7.5 s behind and could not dispatch ticks on schedule. Spreading
+the same animation over twice the wall clock halves the load, so the *slower*
+build reported the better frame rate (20.9 vs 15.8 fps) and the better median,
+while simultaneously showing 9x the JS-thread lateness and worse worst-case
+frames. Reading the frame rate alone would have inverted the conclusion.
+
+Metrics ranked by how much they survive this effect:
+
+1. `windowMs` and `jsDriftP95Ms`: workload-normalized, always comparable.
+2. `p95Ms` / `maxMs`: worst hitch when work does happen; usable with care.
+3. `medianMs` / `pctOverBudget` / `fps`: only when `windowMs` matches.
+
+Comparing the SAME scenario across two runs of different builds is valid when
+both runs show similar `windowMs` and `jsDriftP95Ms` (equal workload delivery).
+That is how the clip-width change was measured: 6.3 -> 15.8 fps with windows of
+5.93 s and 5.85 s respectively.
+
+### Scenario ordering
+
+Pair index is the outer loop, so each scenario is sampled once per round.
+Earlier revisions ran scenarios as contiguous blocks, which let the last
+scenario absorb all accumulated thermal and host drift: `grid-nomask` beat
+`stress-grid` in one run and lost badly in the next with no code change.
+Cross-scenario numbers from a blocked run are not trustworthy.
+
 ## Verifying no visual regression, frame by frame
 
 The Benchmark screen answers "is it faster". The Visual Parity screen answers

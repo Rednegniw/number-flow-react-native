@@ -37,13 +37,24 @@ const SCENARIOS: ScenarioKind[] = [
   "mount",
 ];
 const RENDERERS: RendererKind[] = ["native", "skia"];
-/** Verdict metrics; all are "lower is better" so the sign test reads uniformly */
+/**
+ * Verdict metrics; all are "lower is better" so the sign test reads uniformly.
+ *
+ * `windowMs` leads because it is the only workload-normalized measure: every
+ * run drives the same fixed tick count, so it answers "how long did this build
+ * take to deliver identical work". The frame-distribution metrics after it
+ * (median, over-budget, and fps in the raw stats) are only comparable BETWEEN
+ * VARIANTS when their windowMs matches. A build whose JS thread cannot keep up
+ * stretches its own window, diluting instantaneous load, and then reports a
+ * flattering median and frame rate for doing the same work more slowly.
+ */
 const TICK_METRICS: (keyof RunStats)[] = [
-  "medianMs",
+  "windowMs",
+  "jsDriftP95Ms",
   "p95Ms",
   "maxMs",
+  "medianMs",
   "pctOverBudget",
-  "jsDriftP95Ms",
 ];
 
 const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
