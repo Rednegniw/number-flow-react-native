@@ -1,5 +1,5 @@
 import { Group, rect, Text as SkiaText } from "@shopify/react-native-skia";
-import React, { useMemo, useState } from "react";
+import React, { useLayoutEffect, useMemo, useState } from "react";
 import {
   makeMutable,
   type SharedValue,
@@ -148,6 +148,23 @@ export const DigitSlot = React.memo(
       ? metrics.maxDigitWidth * SUPERSCRIPT_SCALE
       : metrics.maxDigitWidth;
 
+    /**
+     * The centering offset lives in a shared value rather than being read from
+     * `charWidth` inside the worklet.
+     *
+     * `useDerivedValue` without an explicit dependency array derives its effect
+     * dependencies from the worklet's captured closure values, so closing over
+     * a plain `charWidth` tore the mapper down and started a new one on every
+     * value change (proportional digit widths change constantly). Reading a
+     * shared value instead keeps the closure stable: the mapper registers once
+     * and simply recomputes when the value is written.
+     */
+    const [centeringOffset] = useState(() => makeMutable(charWidth / 2 - visualClipWidth / 2));
+
+    useLayoutEffect(() => {
+      centeringOffset.value = charWidth / 2 - visualClipWidth / 2;
+    }, [charWidth, visualClipWidth, centeringOffset]);
+
     const groupTransform = useDerivedValue(() => {
       const wl = workletLayout?.value;
       if (wl && slotIndex !== undefined && slotIndex < wl.length) {
@@ -155,8 +172,7 @@ export const DigitSlot = React.memo(
         const cx = slotWidth / 2 - visualClipWidth / 2;
         return [{ translateX: wl[slotIndex].x + cx }];
       }
-      const cx = charWidth / 2 - visualClipWidth / 2;
-      return [{ translateX: animatedX.value + cx }];
+      return [{ translateX: animatedX.value + centeringOffset.value }];
     });
 
     // Digit centering within the maxDigitWidth clip (font-metric only, static)
