@@ -29,5 +29,9 @@ test("host node count for $1,234.56 stays at its recorded baseline", async () =>
   seedSyntheticMetrics(CURRENCY);
   const result = await render(<NumberFlow format={CURRENCY} value={1234.56} />);
 
-  expect(countNodes(result.toJSON() as JsonNode | JsonNode[])).toBe(146);
+  /**
+   * 146 before the finding-4 work; 77 after collapsing DigitElement to a
+   * single Animated.Text and merging the slot transform + clip wrappers.
+   */
+  expect(countNodes(result.toJSON() as JsonNode | JsonNode[])).toBe(77);
 });

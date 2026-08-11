@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
-import { StyleSheet, Text, type TextStyle } from "react-native";
+import { StyleSheet, type TextStyle } from "react-native";
 import Animated, {
   makeMutable,
   type SharedValue,
@@ -46,6 +46,11 @@ interface DigitElementProps {
   textStyle: DigitSlotProps["textStyle"];
 }
 
+/**
+ * A single Animated.Text per digit (transform and opacity animate directly
+ * on the text node) instead of an Animated.View wrapping a Text: halves the
+ * host-view count of every wheel.
+ */
 const DigitElement = React.memo(
   ({ digitString, yValue, opacityValue, textStyle }: DigitElementProps) => {
     const animatedStyle = useAnimatedStyle(
@@ -57,9 +62,9 @@ const DigitElement = React.memo(
     );
 
     return (
-      <Animated.View style={[styles.digitView, animatedStyle]}>
-        <Text style={textStyle}>{digitString}</Text>
-      </Animated.View>
+      <Animated.Text style={[styles.digitText, textStyle, animatedStyle]}>
+        {digitString}
+      </Animated.Text>
     );
   },
 );
@@ -210,23 +215,22 @@ export const DigitSlot = React.memo(
       }
     }, [charWidth, exiting, transformTiming, animatedClipWidth]);
 
-    const animatedStyle = useAnimatedStyle(
+    const expandedHeight = effectiveLH + effectiveMaskTop + effectiveMaskBottom;
+
+    /**
+     * One wrapper view carries the slot transform, opacity, AND the clip
+     * (overflow hidden + animated width). Merging the former transform and
+     * clip wrappers saves a host view per slot; clipping behavior is
+     * unchanged because the old outer view sized itself to the clip view.
+     */
+    const animatedSlotStyle = useAnimatedStyle(
       () => ({
         transform: [{ translateX: animatedX.value }, { translateY: -effectiveMaskTop }],
         opacity: slotOpacity.value,
-      }),
-      [animatedX, effectiveMaskTop, slotOpacity],
-    );
-
-    const expandedHeight = effectiveLH + effectiveMaskTop + effectiveMaskBottom;
-
-    const animatedClipStyle = useAnimatedStyle(
-      () => ({
-        overflow: "hidden" as const,
         height: expandedHeight,
         width: animatedClipWidth.value,
       }),
-      [expandedHeight, animatedClipWidth],
+      [animatedX, effectiveMaskTop, slotOpacity, expandedHeight, animatedClipWidth],
     );
 
     const digitElements = useMemo(
@@ -244,9 +248,7 @@ export const DigitSlot = React.memo(
     );
 
     return (
-      <Animated.View style={[styles.absolute, animatedStyle]}>
-        <Animated.View style={animatedClipStyle}>{digitElements}</Animated.View>
-      </Animated.View>
+      <Animated.View style={[styles.slotClip, animatedSlotStyle]}>{digitElements}</Animated.View>
     );
   },
 );
@@ -254,10 +256,11 @@ export const DigitSlot = React.memo(
 DigitSlot.displayName = "DigitSlot";
 
 const styles = StyleSheet.create({
-  absolute: {
+  slotClip: {
     position: "absolute",
+    overflow: "hidden",
   },
-  digitView: {
+  digitText: {
     position: "absolute",
     left: 0,
     top: 0,

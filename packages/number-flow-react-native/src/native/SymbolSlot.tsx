@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Text, type TextStyle } from "react-native";
+import type { TextStyle } from "react-native";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import { SUPERSCRIPT_SCALE } from "../core/constants";
 import { getSuperscriptTextStyle } from "../core/superscript";
@@ -60,10 +60,20 @@ export const SymbolSlot = React.memo(
       [animatedX, slotOpacity],
     );
 
+    /**
+     * Single Animated.Text (no wrapper view): transform and opacity animate
+     * directly on the text node, halving this slot's host-view count.
+     */
     return (
-      <Animated.View style={[{ position: "absolute", height: effectiveHeight }, animatedStyle]}>
-        <Text style={effectiveTextStyle}>{char}</Text>
-      </Animated.View>
+      <Animated.Text
+        style={[
+          { position: "absolute", height: effectiveHeight },
+          effectiveTextStyle,
+          animatedStyle,
+        ]}
+      >
+        {char}
+      </Animated.Text>
     );
   },
 );
