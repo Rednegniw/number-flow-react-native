@@ -90,17 +90,27 @@ export const NumberFlow = ({
   const layout = useMemo(() => {
     if (!metrics) return [];
 
-    // Skip layout when container hasn't measured yet and alignment needs width.
-    // Without this guard, center/right alignment computes with width=0,
-    // then re-computes after onLayout, causing a visible slide-in animation.
+    /**
+     * Skip layout when container hasn't measured yet and alignment needs
+     * width. Without this guard, center/right alignment computes with
+     * width=0, then re-computes after onLayout, causing a visible slide-in.
+     */
     if (containerWidth === 0 && textAlign !== "left") return [];
 
     if (keyedParts.length === 0) return [];
-    return computeKeyedLayout(keyedParts, metrics, containerWidth, textAlign, {
+    const computed = computeKeyedLayout(keyedParts, metrics, containerWidth, textAlign, {
       localeDigitStrings: digitStrings,
       rawCharsWithBidi: rawChars,
       direction: resolvedDir,
     });
+
+    if (__DEV__ && globalThis.__NF_TRACE) {
+      globalThis.__NF_TRACE.push({
+        t: Date.now(),
+        msg: `layout cw=${containerWidth} ${computed.map((e) => `${e.key}:${e.char}@${e.x.toFixed(1)}w${e.width.toFixed(1)}`).join(" ")}`,
+      });
+    }
+    return computed;
   }, [metrics, keyedParts, containerWidth, textAlign, digitStrings, rawChars, resolvedDir]);
 
   // On web, all children are position:'absolute' so the container has 0 intrinsic

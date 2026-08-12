@@ -2,6 +2,17 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { makeMutable, type SharedValue, withTiming } from "react-native-reanimated";
 import type { TimingConfig } from "./types";
 
+declare global {
+  var __NF_TRACE: { t: number; msg: string }[] | undefined;
+}
+
+/** Dev-only trace: set globalThis.__NF_TRACE = [] in a debugger to record */
+function trace(msg: string): void {
+  if (__DEV__ && globalThis.__NF_TRACE) {
+    globalThis.__NF_TRACE.push({ t: Date.now(), msg });
+  }
+}
+
 /**
  * We use makeMutable (via useState) instead of useSharedValue because
  * useSharedValue's cleanup calls cancelAnimation.
@@ -17,6 +28,9 @@ export function useAnimatedX(
 
   useLayoutEffect(() => {
     if (!exiting && prevXRef.current !== targetX) {
+      trace(
+        `animatedX ${prevXRef.current} -> ${targetX} (${hasAnimatedRef.current ? "animate" : "SNAP"})`,
+      );
       prevXRef.current = targetX;
 
       if (!hasAnimatedRef.current) {

@@ -141,7 +141,7 @@ export const VisualParityScreen = () => {
   const buttonStyle = (offset: number) =>
     ({
       position: "absolute",
-      top: PARITY_ROW_TOP + 4 * PARITY_ROW_HEIGHT + 60 + offset,
+      top: PARITY_ROW_TOP + 5 * PARITY_ROW_HEIGHT + 60 + offset,
       left: PARITY_ROW_LEFT,
       backgroundColor: "#0A0A0A",
       borderRadius: 10,
@@ -169,6 +169,13 @@ export const VisualParityScreen = () => {
       {/* Row 3: comparison skia */}
       <View style={rowStyle(3)}>
         <SkiaRow baseline={compareIsBaseline} font={fontSkia} value={value} />
+      </View>
+
+      {/* Row 4: plain Text ground truth (updates instantly, no animation) */}
+      <View style={rowStyle(4)}>
+        <Text style={{ fontSize: FONT_SIZE, color: "#000000" }}>
+          {value.toLocaleString("en-US")}
+        </Text>
       </View>
 
       {/* Controls, positioned below all diffed rows */}
