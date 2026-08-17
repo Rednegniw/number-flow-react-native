@@ -52,12 +52,24 @@ export const SymbolSlot = React.memo(
 
     const animatedX = useAnimatedX(targetX, exiting, transformTiming);
 
+    /**
+     * The animated style sits last in the style array, so user-provided
+     * opacity/transform from the text style must be composed in rather than
+     * overridden: opacity multiplies (matching the old wrapper-view nesting)
+     * and the slot translation applies before any user transform.
+     */
+    const userOpacity =
+      typeof effectiveTextStyle.opacity === "number" ? effectiveTextStyle.opacity : 1;
+    const userTransform = Array.isArray(effectiveTextStyle.transform)
+      ? effectiveTextStyle.transform
+      : [];
+
     const animatedStyle = useAnimatedStyle(
       () => ({
-        transform: [{ translateX: animatedX.value }],
-        opacity: slotOpacity.value,
+        transform: [{ translateX: animatedX.value }, ...userTransform],
+        opacity: slotOpacity.value * userOpacity,
       }),
-      [animatedX, slotOpacity],
+      [animatedX, slotOpacity, userOpacity, userTransform],
     );
 
     /**

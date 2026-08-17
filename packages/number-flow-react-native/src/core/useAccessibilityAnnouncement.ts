@@ -2,16 +2,17 @@ import { useEffect, useRef } from "react";
 import { AccessibilityInfo } from "react-native";
 
 /**
- * Screen-reader state is a device-level setting, so it is queried once per
- * process and kept current by a single subscription, rather than re-queried
- * on every announcement.
+ * Screen-reader state is a device-level setting: it is queried once per
+ * process, kept current by a single `screenReaderChanged` subscription, and
+ * cached so announcements do not pay an async native call per value change
+ * (a grid of 30 components ticking at 10Hz issued ~300 of them per second).
  *
- * `isScreenReaderEnabled()` is an async native call. Querying it per label
- * change meant one native round trip per component per value change: a grid of
- * 30 Skia components ticking at 10Hz issued ~300 of them per second, all to
- * re-read a setting that almost never changes.
+ * The cache is tri-state. While it is `null` (initial query still in flight,
+ * or it rejected), each announcement falls back to querying directly so no
+ * update is ever dropped; once a definitive answer exists the cached value
+ * gates announcements synchronously.
  */
-let screenReaderEnabled = false;
+let screenReaderEnabled: boolean | null = null;
 let tracking = false;
 
 function trackScreenReader(): void {
@@ -28,6 +29,20 @@ function trackScreenReader(): void {
   AccessibilityInfo.addEventListener("screenReaderChanged", (enabled) => {
     screenReaderEnabled = enabled;
   });
+}
+
+function announce(label: string): void {
+  if (screenReaderEnabled === null) {
+    AccessibilityInfo.isScreenReaderEnabled()
+      .then((enabled) => {
+        screenReaderEnabled = enabled;
+        if (enabled) AccessibilityInfo.announceForAccessibility(label);
+      })
+      .catch(() => {});
+    return;
+  }
+
+  if (screenReaderEnabled) AccessibilityInfo.announceForAccessibility(label);
 }
 
 /**
@@ -50,8 +65,6 @@ export function useAccessibilityAnnouncement(label: string | undefined): void {
     }
 
     if (!label) return;
-    if (!screenReaderEnabled) return;
-
-    AccessibilityInfo.announceForAccessibility(label);
+    announce(label);
   }, [label]);
 }

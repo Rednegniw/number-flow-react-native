@@ -84,7 +84,13 @@ const FadingStripDigit = React.memo(
     textStyle,
     opacityValue,
   }: StripDigitProps & { opacityValue: SharedValue<number> }) => {
-    const animatedStyle = useAnimatedStyle(() => ({ opacity: opacityValue.value }), [opacityValue]);
+    /** Compose with a user-provided opacity instead of overriding it */
+    const userOpacity = typeof textStyle.opacity === "number" ? textStyle.opacity : 1;
+
+    const animatedStyle = useAnimatedStyle(
+      () => ({ opacity: opacityValue.value * userOpacity }),
+      [opacityValue, userOpacity],
+    );
 
     return (
       <Animated.Text style={[styles.digitText, textStyle, { top }, animatedStyle]}>
