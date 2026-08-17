@@ -238,6 +238,26 @@ export const BenchmarkScreen = () => {
     if (report) Share.share({ message: JSON.stringify(report, null, 2) });
   }, [report]);
 
+  /**
+   * Steady-state profiling workload: the skia stress grid ticking forever at
+   * TICK_MS, so a CPU profile samples a stable regime instead of the suite's
+   * settle/cooldown phases.
+   */
+  const startSoak = useCallback(() => {
+    setPhase("running");
+    setProgress("soak: skia grid (reload app to stop)");
+    matrixRef.current = makeValueMatrix(BASE_SEED, TICKS + 1, GRID_COUNT);
+    setTick(0);
+    setMounted(true);
+    setActiveSpec({ scenario: "stress-grid", renderer: "skia", variant: "current", pairIndex: 0 });
+
+    let i = 0;
+    setInterval(() => {
+      i = (i + 1) % (TICKS + 1);
+      setTick(i);
+    }, TICK_MS);
+  }, []);
+
   const values = activeSpec ? matrixRef.current[Math.min(tick, TICKS)] : [0];
 
   return (
@@ -259,7 +279,11 @@ export const BenchmarkScreen = () => {
 
       {/* Controls (DemoButton has no disabled prop, so hide it while running) */}
       {phase !== "running" ? (
-        <DemoButton label="Run full suite" onPress={runAll} />
+        <>
+          <DemoButton label="Run full suite" onPress={runAll} />
+          <View style={{ height: 8 }} />
+          <DemoButton label="Soak: skia grid (endless ticks)" onPress={startSoak} />
+        </>
       ) : (
         <Text style={{ fontFamily: FONT_REGULAR, color: colors.textSecondary, marginTop: 8 }}>
           {progress}
