@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Text, type TextStyle } from "react-native";
+import type { TextStyle } from "react-native";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import { SUPERSCRIPT_SCALE } from "../core/constants";
 import { getSuperscriptTextStyle } from "../core/superscript";
@@ -52,18 +52,40 @@ export const SymbolSlot = React.memo(
 
     const animatedX = useAnimatedX(targetX, exiting, transformTiming);
 
+    /**
+     * The animated style sits last in the style array, so user-provided
+     * opacity/transform from the text style must be composed in rather than
+     * overridden: opacity multiplies (matching the old wrapper-view nesting)
+     * and the slot translation applies before any user transform.
+     */
+    const userOpacity =
+      typeof effectiveTextStyle.opacity === "number" ? effectiveTextStyle.opacity : 1;
+    const userTransform = Array.isArray(effectiveTextStyle.transform)
+      ? effectiveTextStyle.transform
+      : [];
+
     const animatedStyle = useAnimatedStyle(
       () => ({
-        transform: [{ translateX: animatedX.value }],
-        opacity: slotOpacity.value,
+        transform: [{ translateX: animatedX.value }, ...userTransform],
+        opacity: slotOpacity.value * userOpacity,
       }),
-      [animatedX, slotOpacity],
+      [animatedX, slotOpacity, userOpacity, userTransform],
     );
 
+    /**
+     * Single Animated.Text (no wrapper view): transform and opacity animate
+     * directly on the text node, halving this slot's host-view count.
+     */
     return (
-      <Animated.View style={[{ position: "absolute", height: effectiveHeight }, animatedStyle]}>
-        <Text style={effectiveTextStyle}>{char}</Text>
-      </Animated.View>
+      <Animated.Text
+        style={[
+          { position: "absolute", height: effectiveHeight },
+          effectiveTextStyle,
+          animatedStyle,
+        ]}
+      >
+        {char}
+      </Animated.Text>
     );
   },
 );

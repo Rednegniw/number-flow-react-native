@@ -1,6 +1,6 @@
 import { Group, LinearGradient, Paint, Rect as SkiaRect, vec } from "@shopify/react-native-skia";
-import { useMemo } from "react";
-import { type SharedValue, useDerivedValue } from "react-native-reanimated";
+import { useLayoutEffect, useMemo, useState } from "react";
+import { makeMutable, type SharedValue, useDerivedValue } from "react-native-reanimated";
 import { MASK_WIDTH_RATIO } from "../core/constants";
 import { resolveDirection, resolveTextAlign } from "../core/direction";
 import { getFormatCharacters, parseFormattedNumber } from "../core/intlHelpers";
@@ -112,6 +112,7 @@ function SkiaNumberFlowRuntime({
     resolvedOpacityTiming,
     resolvedTransformTiming,
     resolvedTrend,
+    trendRef,
     spinGenerations,
     prevMap,
     isInitialRender,
@@ -147,14 +148,33 @@ function SkiaNumberFlowRuntime({
     layout.length > 0 ? layout.reduce((max, entry) => Math.max(max, entry.x + entry.width), 0) : 0;
 
   /**
+   * Content bounds and mask geometry are held in shared values so the derived
+   * values below capture a stable closure.
+   *
+   * `useDerivedValue` without an explicit dependency array builds its effect
+   * dependencies from captured closure values, so closing over these plain
+   * numbers (which change on every value tick, and again whenever the adaptive
+   * mask resizes) destroyed and recreated the mappers each time. Reading shared
+   * values keeps registration one-time and turns an update into a recompute.
+   */
+  const [maskGeometry] = useState(() =>
+    makeMutable({ left: staticContentLeft, right: staticContentRight, maskWidth, x }),
+  );
+
+  useLayoutEffect(() => {
+    maskGeometry.value = { left: staticContentLeft, right: staticContentRight, maskWidth, x };
+  }, [staticContentLeft, staticContentRight, maskWidth, x, maskGeometry]);
+
+  /**
    * Animated mask bounds that track workletLayout during scrubbing.
    * When workletLayout has different bounds (proportional digit widths),
    * the mask expands to avoid clipping entering/exiting content.
    * In value mode (no workletLayout), falls through to static bounds.
    */
   const maskBounds = useDerivedValue(() => {
-    let left = staticContentLeft;
-    let right = staticContentRight;
+    const geom = maskGeometry.value;
+    let left = geom.left;
+    let right = geom.right;
 
     const wl = workletLayout?.value;
     if (wl && wl.length > 0) {
@@ -166,12 +186,12 @@ function SkiaNumberFlowRuntime({
     }
 
     const cw = right - left;
-    const tw = cw + 2 * maskWidth;
+    const tw = cw + 2 * geom.maskWidth;
     return {
-      maskLeft: x + left - maskWidth,
-      maskRight: x + right + maskWidth,
+      maskLeft: geom.x + left - geom.maskWidth,
+      maskRight: geom.x + right + geom.maskWidth,
       totalWidth: tw,
-      hRatio: tw > 0 ? maskWidth / tw : 0,
+      hRatio: tw > 0 ? geom.maskWidth / tw : 0,
     };
   });
 
@@ -183,9 +203,17 @@ function SkiaNumberFlowRuntime({
   const maskY = baseY + metrics.ascent - expansionTop;
   const maskTotalHeight = metrics.lineHeight + expansionTop + expansionBottom;
 
+  // Vertical mask extent, also shared-value backed to keep the closure stable
+  const [maskVertical] = useState(() => makeMutable({ y: maskY, height: maskTotalHeight }));
+
+  useLayoutEffect(() => {
+    maskVertical.value = { y: maskY, height: maskTotalHeight };
+  }, [maskY, maskTotalHeight, maskVertical]);
+
   const hMaskRect = useDerivedValue(() => {
     const b = maskBounds.value;
-    return { x: b.maskLeft, y: maskY, width: b.totalWidth, height: maskTotalHeight };
+    const v = maskVertical.value;
+    return { x: b.maskLeft, y: v.y, width: b.totalWidth, height: v.height };
   });
   const hGradientStart = useDerivedValue(() => vec(maskBounds.value.maskLeft, 0));
   const hGradientEnd = useDerivedValue(() => vec(maskBounds.value.maskRight, 0));
@@ -213,6 +241,7 @@ function SkiaNumberFlowRuntime({
         font,
         color,
         baseY,
+        trendRef,
         resolvedTrend,
         spinTiming: resolvedSpinTiming,
         opacityTiming: resolvedOpacityTiming,

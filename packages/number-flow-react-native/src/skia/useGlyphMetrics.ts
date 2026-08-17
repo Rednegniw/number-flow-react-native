@@ -4,6 +4,15 @@ import { MEASURABLE_CHARS } from "../core/constants";
 import type { GlyphMetrics } from "../core/types";
 
 /**
+ * Measuring one font costs ~77 `measureText` JSI calls plus glyph-width
+ * lookups. The result depends only on the font and the character set, so it
+ * is shared across every component using that font instead of being redone
+ * per instance (the native renderer caches the same way via `metricsCache`).
+ * A WeakMap keyed by the SkFont lets the entry go when the font does.
+ */
+const skiaMetricsCache = new WeakMap<SkFont, Map<string, GlyphMetrics>>();
+
+/**
  * Pre-computes glyph width lookup table and line metrics from an SkFont.
  * Runs once on font load. All measurements use advance widths (not bounding boxes)
  * for correct text layout spacing.
@@ -23,6 +32,11 @@ export function useGlyphMetrics(
 ): GlyphMetrics | null {
   return useMemo(() => {
     if (!font) return null;
+
+    const cacheKey = `${additionalChars ?? ""}|${localeDigitStrings?.join("") ?? ""}|${tabularNums ? 1 : 0}`;
+    let perFont = skiaMetricsCache.get(font);
+    const cached = perFont?.get(cacheKey);
+    if (cached) return cached;
 
     /**
      * Combine base chars with any additional chars from prefix/suffix so
@@ -82,7 +96,7 @@ export function useGlyphMetrics(
       charBounds[char] = { top: rect.y, bottom: rect.y + rect.height };
     }
 
-    return {
+    const result: GlyphMetrics = {
       charWidths,
       maxDigitWidth,
       lineHeight,
@@ -90,5 +104,13 @@ export function useGlyphMetrics(
       descent: metrics.descent,
       charBounds,
     };
+
+    if (!perFont) {
+      perFont = new Map();
+      skiaMetricsCache.set(font, perFont);
+    }
+    perFont.set(cacheKey, result);
+
+    return result;
   }, [font, additionalChars, localeDigitStrings, tabularNums]);
 }

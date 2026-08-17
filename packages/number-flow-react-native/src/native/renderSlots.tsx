@@ -1,6 +1,6 @@
 import type { TextStyle } from "react-native";
 import type { CharLayout } from "../core/layout";
-import type { GlyphMetrics, TimingConfig, Trend } from "../core/types";
+import type { GlyphMetrics, TimingConfig, TrendRef } from "../core/types";
 import { DigitSlot } from "./DigitSlot";
 import { SymbolSlot } from "./SymbolSlot";
 
@@ -12,7 +12,7 @@ interface RenderSlotsParams {
   onExitComplete: (key: string) => void;
   metrics: GlyphMetrics;
   textStyle: TextStyle;
-  resolvedTrend: Trend;
+  trendRef: TrendRef;
   spinTiming: TimingConfig;
   opacityTiming: TimingConfig;
   transformTiming: TimingConfig;
@@ -38,7 +38,7 @@ export function renderSlots({
   onExitComplete,
   metrics,
   textStyle,
-  resolvedTrend,
+  trendRef,
   spinTiming,
   opacityTiming,
   transformTiming,
@@ -77,7 +77,7 @@ export function renderSlots({
               targetX={entry.x}
               textStyle={textStyle}
               transformTiming={transformTiming}
-              trend={resolvedTrend}
+              trendRef={trendRef}
             />
           );
         }
@@ -123,7 +123,7 @@ export function renderSlots({
               targetX={entry.x}
               textStyle={textStyle}
               transformTiming={transformTiming}
-              trend={resolvedTrend}
+              trendRef={trendRef}
             />
           );
         }

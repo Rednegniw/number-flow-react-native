@@ -153,3 +153,26 @@ export function getDigitCount(
   const constraint = digits[pos];
   return constraint ? constraint.max + 1 : DIGIT_COUNT;
 }
+
+/**
+ * Wraps a virtual wheel position into [0, digitCount). The wheel position is
+ * continuous and unbounded (it accumulates roll deltas), so it must be folded
+ * back into one turn before being used as a strip offset.
+ */
+export function normalizeWheelPosition(c: number, digitCount: number): number {
+  "worklet";
+
+  return ((c % digitCount) + digitCount) % digitCount;
+}
+
+/**
+ * Digit value shown at strip index `i` of a wheel rendered with `pad` extra
+ * digits above and below its own range: (i - pad) mod digitCount.
+ *
+ * The padding lets the window show neighbours at any position, including
+ * across a wrap. Because index i and index i + digitCount resolve to the same
+ * value, jumping the strip by a whole turn is invisible.
+ */
+export function wheelStripDigit(i: number, pad: number, digitCount: number): number {
+  return (((i - pad) % digitCount) + digitCount) % digitCount;
+}

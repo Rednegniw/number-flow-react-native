@@ -95,7 +95,7 @@
     "prepare": "bob build",
     "prepublishOnly": "tsc --noEmit && jest",
     "check-types": "tsc --noEmit",
-    "test": "jest",
+    "test": "jest && jest -c jest.component.config.js",
     "lint": "biome check .",
     "lint:fix": "biome check --write ."
   },
@@ -105,10 +105,14 @@
     "react-native-reanimated": ">=3.0.0"
   },
   "devDependencies": {
+    "@react-native/babel-preset": "0.81.5",
+    "@testing-library/react-native": "14.0.1",
     "@types/jest": "^30.0.0",
     "@types/react": "~19.1.0",
+    "babel-jest": "^30.4.1",
     "jest": "^30.0.0",
     "react-native-builder-bob": "^0.40.18",
+    "test-renderer": "^1",
     "ts-jest": "^29.4.6",
     "typescript": "~5.9.2"
   },

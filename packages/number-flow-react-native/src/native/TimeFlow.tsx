@@ -6,12 +6,17 @@ import { resolveDirection, resolveTextAlign } from "../core/direction";
 import { computeKeyedLayout } from "../core/layout";
 import type { TimeFlowProps } from "../core/timeTypes";
 import { useFlowPipeline } from "../core/useFlowPipeline";
+import { useShallowStableStyle } from "../core/useShallowStableStyle";
 import { useTimeFormatting } from "../core/useTimeFormatting";
 import { TIME_DIGIT_COUNTS } from "../core/utils";
 import { warnOnce } from "../core/warnings";
 import { GradientMask } from "./GradientMask";
 import { renderSlots } from "./renderSlots";
+import type { NumberFlowStyle } from "./types";
 import { useMeasuredGlyphMetrics } from "./useMeasuredGlyphMetrics";
+
+/** Shared default so an omitted style never changes identity across renders */
+const EMPTY_STYLE: NumberFlowStyle = {};
 
 export const TimeFlow = ({
   hours,
@@ -22,7 +27,7 @@ export const TimeFlow = ({
   timezoneOffset,
   is24Hour = true,
   padHours = true,
-  style: nfStyleProp = {},
+  style: rawStyleProp = EMPTY_STYLE,
   spinTiming,
   opacityTiming,
   transformTiming,
@@ -36,6 +41,8 @@ export const TimeFlow = ({
   direction,
   mask,
 }: TimeFlowProps) => {
+  const nfStyleProp = useShallowStableStyle(rawStyleProp);
+
   const nfStyle = useMemo(() => {
     const { textAlign: _ta, ...rest } = nfStyleProp;
     return { ...rest, fontSize: nfStyleProp.fontSize ?? DEFAULT_FONT_SIZE };
@@ -137,7 +144,7 @@ export const TimeFlow = ({
     resolvedSpinTiming,
     resolvedOpacityTiming,
     resolvedTransformTiming,
-    resolvedTrend,
+    trendRef,
     spinGenerations,
     prevMap,
     isInitialRender,
@@ -245,7 +252,7 @@ export const TimeFlow = ({
     onExitComplete,
     metrics,
     textStyle,
-    resolvedTrend,
+    trendRef,
     spinTiming: resolvedSpinTiming,
     opacityTiming: resolvedOpacityTiming,
     transformTiming: resolvedTransformTiming,

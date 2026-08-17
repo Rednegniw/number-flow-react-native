@@ -1,5 +1,5 @@
-import { Group, Paint, rect, Text as SkiaText } from "@shopify/react-native-skia";
-import React, { useMemo, useState } from "react";
+import { Group, rect, Text as SkiaText } from "@shopify/react-native-skia";
+import React, { useLayoutEffect, useMemo, useState } from "react";
 import {
   makeMutable,
   type SharedValue,
@@ -8,7 +8,7 @@ import {
 } from "react-native-reanimated";
 import { DIGIT_COUNT, SUPERSCRIPT_SCALE } from "../core/constants";
 import { getSuperscriptTransform } from "../core/superscript";
-import type { GlyphMetrics, TimingConfig, Trend } from "../core/types";
+import type { GlyphMetrics, TimingConfig, Trend, TrendRef } from "../core/types";
 import { useAnimatedX } from "../core/useAnimatedX";
 import { useDigitAnimation } from "../core/useDigitAnimation";
 import { signedDigitOffset } from "../core/utils";
@@ -25,7 +25,9 @@ interface DigitSlotProps {
   spinTiming: TimingConfig;
   opacityTiming: TimingConfig;
   transformTiming: TimingConfig;
-  trend: Trend;
+  trendRef: TrendRef;
+  /** Plain trend for the worklet-driven reaction; only set in shared-value mode */
+  workletTrend?: Trend;
   entering: boolean;
   exiting: boolean;
   exitKey?: string;
@@ -53,7 +55,8 @@ export const DigitSlot = React.memo(
     spinTiming,
     opacityTiming,
     transformTiming,
-    trend,
+    trendRef,
+    workletTrend,
     entering,
     exiting,
     exitKey,
@@ -76,7 +79,8 @@ export const DigitSlot = React.memo(
       digitValue,
       entering,
       exiting,
-      trend,
+      trendRef,
+      workletTrend,
       spinTiming,
       opacityTiming,
       exitKey,
@@ -115,7 +119,19 @@ export const DigitSlot = React.memo(
         for (let n = 0; n < resolvedDigitCount; n++) {
           const offset = signedDigitOffset(n, c, resolvedDigitCount);
           const clamped = Math.max(-1.5, Math.min(1.5, offset));
-          digitYTransforms[n].value = [{ translateY: clamped * lh }];
+          const translateY = clamped * lh;
+
+          /**
+           * Skip parked digits: a fresh array write always re-notifies
+           * Reanimated's mappers (object identity defeats the same-value
+           * short-circuit), so during a spin only digits whose clamped
+           * position actually moved get a new transform. Digits parked at
+           * the +/-1.5 boundary stay silent.
+           */
+          const sv = digitYTransforms[n];
+          if (sv.value[0].translateY !== translateY) {
+            sv.value = [{ translateY }];
+          }
         }
       },
       [currentDigitSV, animDelta, metrics.lineHeight, resolvedDigitCount],
@@ -132,6 +148,23 @@ export const DigitSlot = React.memo(
       ? metrics.maxDigitWidth * SUPERSCRIPT_SCALE
       : metrics.maxDigitWidth;
 
+    /**
+     * The centering offset lives in a shared value rather than being read from
+     * `charWidth` inside the worklet.
+     *
+     * `useDerivedValue` without an explicit dependency array derives its effect
+     * dependencies from the worklet's captured closure values, so closing over
+     * a plain `charWidth` tore the mapper down and started a new one on every
+     * value change (proportional digit widths change constantly). Reading a
+     * shared value instead keeps the closure stable: the mapper registers once
+     * and simply recomputes when the value is written.
+     */
+    const [centeringOffset] = useState(() => makeMutable(charWidth / 2 - visualClipWidth / 2));
+
+    useLayoutEffect(() => {
+      centeringOffset.value = charWidth / 2 - visualClipWidth / 2;
+    }, [charWidth, visualClipWidth, centeringOffset]);
+
     const groupTransform = useDerivedValue(() => {
       const wl = workletLayout?.value;
       if (wl && slotIndex !== undefined && slotIndex < wl.length) {
@@ -139,8 +172,7 @@ export const DigitSlot = React.memo(
         const cx = slotWidth / 2 - visualClipWidth / 2;
         return [{ translateX: wl[slotIndex].x + cx }];
       }
-      const cx = charWidth / 2 - visualClipWidth / 2;
-      return [{ translateX: animatedX.value + cx }];
+      return [{ translateX: animatedX.value + centeringOffset.value }];
     });
 
     // Digit centering within the maxDigitWidth clip (font-metric only, static)
@@ -168,8 +200,6 @@ export const DigitSlot = React.memo(
         ),
       [baseY, metrics, effectiveMaskTop, effectiveMaskBottom],
     );
-
-    const opacityPaint = useMemo(() => <Paint opacity={slotOpacity} />, [slotOpacity]);
 
     /**
      * Each digit gets its own Group transform driven by the position
@@ -207,8 +237,14 @@ export const DigitSlot = React.memo(
 
     const clipContent = <Group clip={clipRect}>{digitElements}</Group>;
 
+    /**
+     * Group opacity multiplies into each child's paint at draw time; unlike
+     * layer={<Paint opacity/>} it needs no saveLayer (offscreen texture) per
+     * slot per frame. Visually identical here because the digits inside a
+     * slot never overlap.
+     */
     return (
-      <Group layer={opacityPaint} transform={groupTransform}>
+      <Group opacity={slotOpacity} transform={groupTransform}>
         {superscriptTransform ? (
           <Group transform={superscriptTransform}>{clipContent}</Group>
         ) : (

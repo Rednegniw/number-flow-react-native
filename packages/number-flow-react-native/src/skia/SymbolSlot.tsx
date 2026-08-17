@@ -1,4 +1,4 @@
-import { Group, Paint, Text as SkiaText } from "@shopify/react-native-skia";
+import { Group, Text as SkiaText } from "@shopify/react-native-skia";
 import React, { useMemo, useState } from "react";
 import {
   Easing,
@@ -103,12 +103,15 @@ export const SymbolSlot = React.memo(
       [superscript, baseY, ascent],
     );
 
-    const opacityPaint = useMemo(() => <Paint opacity={slotOpacity} />, [slotOpacity]);
-
     const textElement = <SkiaText color={color} font={font} text={char} x={0} y={baseY} />;
 
+    /**
+     * Group opacity multiplies into the child paint at draw time: no
+     * saveLayer per slot per frame (the slot draws a single glyph, so
+     * layered and per-draw opacity are visually identical).
+     */
     return (
-      <Group layer={opacityPaint} transform={groupTransform}>
+      <Group opacity={slotOpacity} transform={groupTransform}>
         {superscriptTransform ? (
           <Group transform={superscriptTransform}>{textElement}</Group>
         ) : (

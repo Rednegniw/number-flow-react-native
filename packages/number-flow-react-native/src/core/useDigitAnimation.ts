@@ -7,7 +7,7 @@ import {
   withTiming,
 } from "react-native-reanimated";
 import { DIGIT_COUNT } from "./constants";
-import type { TimingConfig, Trend } from "./types";
+import type { TimingConfig, Trend, TrendRef } from "./types";
 import { useSlotOpacity } from "./useSlotOpacity";
 import { computeRollDelta } from "./utils";
 
@@ -21,7 +21,14 @@ interface UseDigitAnimationParams {
   digitValue: number;
   entering: boolean;
   exiting: boolean;
-  trend: Trend;
+  /** Read lazily inside effects so trend flips never re-render parked slots */
+  trendRef: TrendRef;
+  /**
+   * Plain trend value captured by the worklet-driven reaction (JS refs are
+   * unreadable from the UI thread). Only meaningful alongside
+   * workletDigitValue; auto-resolved trend is constant 0 in that mode.
+   */
+  workletTrend?: Trend;
   spinTiming: TimingConfig;
   opacityTiming: TimingConfig;
   exitKey?: string;
@@ -51,7 +58,8 @@ export function useDigitAnimation({
   digitValue,
   entering,
   exiting,
-  trend,
+  trendRef,
+  workletTrend = 0,
   spinTiming,
   opacityTiming,
   exitKey,
@@ -74,7 +82,7 @@ export function useDigitAnimation({
 
   const handleExitingStart = useCallback(() => {
     if (prevDigitRef.current !== 0) {
-      const delta = computeRollDelta(prevDigitRef.current, 0, trend, resolvedDigitCount);
+      const delta = computeRollDelta(prevDigitRef.current, 0, trendRef.current, resolvedDigitCount);
       prevDigitRef.current = 0;
       currentDigitSV.value = 0;
       animDelta.value = delta;
@@ -83,7 +91,7 @@ export function useDigitAnimation({
         easing: spinTiming.easing,
       });
     }
-  }, [trend, spinTiming, animDelta, currentDigitSV, resolvedDigitCount]);
+  }, [trendRef, spinTiming, animDelta, currentDigitSV, resolvedDigitCount]);
 
   const slotOpacity = useSlotOpacity({
     entering,
@@ -97,7 +105,12 @@ export function useDigitAnimation({
   useLayoutEffect(() => {
     const workletActive = workletDigitValue !== undefined && workletDigitValue.value >= 0;
     if (!exiting && !workletActive && prevDigitRef.current !== digitValue) {
-      const delta = computeRollDelta(prevDigitRef.current, digitValue, trend, resolvedDigitCount);
+      const delta = computeRollDelta(
+        prevDigitRef.current,
+        digitValue,
+        trendRef.current,
+        resolvedDigitCount,
+      );
       prevDigitRef.current = digitValue;
       currentDigitSV.value = digitValue;
       animDelta.value = delta;
@@ -110,7 +123,7 @@ export function useDigitAnimation({
     digitValue,
     exiting,
     workletDigitValue,
-    trend,
+    trendRef,
     spinTiming,
     animDelta,
     currentDigitSV,
@@ -138,7 +151,7 @@ export function useDigitAnimation({
     if (exiting || entering) return;
 
     // Full wheel rotation: e.g. 10 * 1 = spin up 10, or 6 * -1 = spin down 6 (for s10)
-    const delta = resolvedDigitCount * trend;
+    const delta = resolvedDigitCount * trendRef.current;
     if (delta === 0) return;
 
     // Accumulate onto any in-flight animation, then ease back to 0
@@ -151,7 +164,7 @@ export function useDigitAnimation({
     continuousSpinGeneration,
     exiting,
     entering,
-    trend,
+    trendRef,
     spinTiming,
     resolvedDigitCount,
     animDelta,
@@ -169,7 +182,7 @@ export function useDigitAnimation({
       const prev = currentDigitSV.value;
       if (prev === current) return;
 
-      const delta = computeRollDelta(prev, current, trend, resolvedDigitCount);
+      const delta = computeRollDelta(prev, current, workletTrend, resolvedDigitCount);
       currentDigitSV.value = current;
 
       /**
@@ -185,7 +198,7 @@ export function useDigitAnimation({
 
       runOnJS(syncFromWorklet)(current);
     },
-    [workletDigitValue, spinTiming, trend, resolvedDigitCount],
+    [workletDigitValue, spinTiming, workletTrend, resolvedDigitCount],
   );
 
   return { initialDigit, animDelta, currentDigitSV, slotOpacity };
