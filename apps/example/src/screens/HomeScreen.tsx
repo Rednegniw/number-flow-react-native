@@ -107,14 +107,10 @@ const ListHeader = ({
   onShowcase,
   onRTLShowcase,
   onRecording,
-  onBenchmark,
-  onVisualParity,
 }: {
   onShowcase: () => void;
   onRTLShowcase: () => void;
   onRecording: () => void;
-  onBenchmark: () => void;
-  onVisualParity: () => void;
 }) => (
   <Animated.View entering={FadeIn.duration(300)} style={{ paddingHorizontal: 4, paddingBottom: 4 }}>
     <Text
@@ -239,74 +235,6 @@ const ListHeader = ({
         </Text>
       </RipplePressable>
     )}
-
-    {/* Benchmark button, hidden on web (requires Skia) */}
-    {!isWeb && (
-      <RipplePressable
-        onPress={onBenchmark}
-        style={{
-          backgroundColor: "#0A0A0A",
-          borderRadius: 14,
-          padding: 16,
-          marginTop: 10,
-        }}
-      >
-        <Text
-          style={{
-            fontSize: 16,
-            fontFamily: FONT_SEMIBOLD,
-            color: "#FFFFFF",
-          }}
-        >
-          Benchmark
-        </Text>
-        <Text
-          style={{
-            fontSize: 13,
-            fontFamily: FONT_REGULAR,
-            color: "#9CA3AF",
-            marginTop: 4,
-            lineHeight: 18,
-          }}
-        >
-          A/B performance suite: current vs frozen baseline
-        </Text>
-      </RipplePressable>
-    )}
-
-    {/* Visual parity button, hidden on web (requires Skia) */}
-    {!isWeb && (
-      <RipplePressable
-        onPress={onVisualParity}
-        style={{
-          backgroundColor: "#0A0A0A",
-          borderRadius: 14,
-          padding: 16,
-          marginTop: 10,
-        }}
-      >
-        <Text
-          style={{
-            fontSize: 16,
-            fontFamily: FONT_SEMIBOLD,
-            color: "#FFFFFF",
-          }}
-        >
-          Visual Parity
-        </Text>
-        <Text
-          style={{
-            fontSize: 13,
-            fontFamily: FONT_REGULAR,
-            color: "#9CA3AF",
-            marginTop: 4,
-            lineHeight: 18,
-          }}
-        >
-          Frame-by-frame diff harness: current vs frozen baseline
-        </Text>
-      </RipplePressable>
-    )}
   </Animated.View>
 );
 
@@ -338,8 +266,6 @@ export const HomeScreen = ({ navigation }: Props) => {
       keyExtractor={keyExtractor}
       ListHeaderComponent={
         <ListHeader
-          onBenchmark={() => navigation.navigate("Benchmark")}
-          onVisualParity={() => navigation.navigate("VisualParity")}
           onRTLShowcase={() => navigation.navigate("RTLShowcase")}
           onRecording={() => navigation.navigate("RecordingList")}
           onShowcase={() => navigation.navigate("Showcase")}

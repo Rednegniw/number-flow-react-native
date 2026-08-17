@@ -5,6 +5,4 @@ export type RootStackParamList = {
   RTLShowcase: undefined;
   RecordingList: undefined;
   RecordingDemo: { recordingKey: string };
-  Benchmark: undefined;
-  VisualParity: undefined;
 };
