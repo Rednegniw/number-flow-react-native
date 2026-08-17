@@ -4,7 +4,7 @@ description: How to get the most out of animated number transitions
 full: true
 ---
 
-You shouldn't need to think about performance in most cases, since the library handles the heavy lifting internally. This page covers what's already optimized for you and a few situations where you can help.
+You shouldn't need to think about performance in most cases, since the library handles the heavy lifting internally. This page covers what's already optimized for you, how to choose between the renderers and update modes, and a few situations where you can help.
 
 ## What's already handled
 
@@ -32,45 +32,38 @@ That said, defining format objects as constants is still good practice for reada
 const currencyFormat = { style: 'currency', currency: 'USD' } as const;
 ```
 
+### Style objects and parent re-renders
+
+Inline `style` objects are stabilized by content, so a parent re-render (or a new object literal on every render) doesn't re-render any digit slots. When the value changes, only the slots whose digits actually changed commit; the rest bail out. Wrapping `NumberFlow` in `React.memo` is not necessary.
+
+```tsx
+// Fine: neither the inline style nor parent re-renders reach the slots
+<NumberFlow value={value} style={{ fontSize: 32, color: '#111' }} />
+```
+
+### One animated node per digit wheel
+
+The native renderer animates each rolling digit column as a single translated strip, so a spinning slot costs one animated style update per frame regardless of how many digits the wheel holds. Glyph metrics are measured once per font and shared across all components using it, in both renderers.
+
 ### Progressive mount (Native renderer)
 
 Native components (`NumberFlow`, `TimeFlow`) render a plain `Text` element on the first frame, then swap to the full animated slot tree on the next frame via `requestAnimationFrame`. This avoids the cost of instantiating all the animated hooks during the initial mount, so the component appears instantly without a blank flash.
 
 Skia components don't need this, since canvas rendering doesn't have the same view hierarchy overhead.
 
-### Memoized child slots
-
-Individual digit and symbol slots are wrapped in `React.memo`, so when the parent re-renders but a slot's props haven't changed, it bails out early. Layout computations, glyph metrics, and format keys are all memoized internally too.
-
 ### Reduce Motion
 
 When the device's "Reduce Motion" setting is on (and `respectMotionPreference` is `true`, which is the default), all animation durations collapse to zero. Transitions become instant; values snap to their final position without interpolation across multiple frames.
 
-## When you should optimize
+## Choosing a renderer and update mode
 
-### Frequent parent re-renders
+The renderers have different scaling behavior under load. As a rule of thumb:
 
-`NumberFlow` doesn't use `React.memo` at the top level, so it re-renders whenever its parent does. The internal memoization keeps this cheap when the value hasn't changed, but if your parent is re-rendering very frequently (e.g. on every gesture frame), wrapping the number in `memo` avoids the overhead entirely:
+- **A handful of components, occasional updates:** either renderer. The native renderer runs a single ticking component at full frame rate.
+- **Many components animating at once (dashboards, tables, price grids):** prefer `SkiaNumberFlow` inside a single `Canvas`. One canvas drawing many numbers keeps the UI thread at full frame rate where the equivalent native view trees start dropping frames.
+- **High-frequency updates (gestures, sensors, timers at ~100ms or faster), especially across many components:** use `SkiaNumberFlow` with the `sharedValue` prop. This is the only mode whose per-update cost does not go through React at all.
 
-```tsx
-const MemoizedPrice = React.memo(function MemoizedPrice({ value }: { value: number }) {
-  return (
-    <NumberFlow
-      value={value}
-      format={currencyFormat}
-      style={style}
-    />
-  );
-});
-```
-
-### Many simultaneous instances
-
-If you're rendering a lot of animated numbers at once (dashboards, tables, charts), prefer `SkiaNumberFlow` inside a single `Canvas`. A single canvas with multiple Skia components is lighter than the equivalent number of native View trees since everything draws on one surface.
-
-### High-frequency value updates
-
-When the value changes at high frequency (gesture-driven scrubbing, sensor data, timers faster than ~100ms), use `SkiaNumberFlow` with the `sharedValue` prop. This keeps digit updates on the UI thread entirely, bypassing React re-renders:
+The reason `sharedValue` mode exists is structural. When the `value` prop changes, React commits, and React Native Skia re-records the canvas's drawing tree and hands it to the UI runtime synchronously on the JS thread. That cost is per canvas, per commit. It is cheap in isolation, but it grows with the number of canvases and the update rate: profiling a grid of 30 Skia components ticking at 10Hz shows the JS thread spending most of its time in that synchronous handoff, falling behind the tick rate even while the UI thread renders at a steady frame rate. Driving the same workload through `sharedValue` produces zero React commits per update, so none of that work happens.
 
 ```tsx
 const formatted = useDerivedValue(() => `${speed.value.toFixed(0)}`);
@@ -80,9 +73,9 @@ const formatted = useDerivedValue(() => `${speed.value.toFixed(0)}`);
 
 Note that `sharedValue` expects a `SharedValue<string>` (a pre-formatted string), not a number. You're responsible for formatting in the worklet.
 
-Without `sharedValue`, each value change goes through a React re-render on the JS thread, which adds latency and can drop frames during fast gestures.
+In this mode, the library pre-allocates a pool of 20 `SharedValue` slots at mount time. Digit extraction happens entirely on the UI thread via `useAnimatedReaction`, writing directly to these pre-allocated values without crossing the JS bridge.
 
-In scrubbing mode, the library pre-allocates a pool of 20 `SharedValue` slots at mount time. Digit extraction happens entirely on the UI thread via `useAnimatedReaction`, writing directly to these pre-allocated values without crossing the JS bridge.
+## When you should optimize
 
 ### Timing config objects
 
