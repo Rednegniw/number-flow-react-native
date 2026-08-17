@@ -87,7 +87,9 @@ All props from `AnimationBehaviorProps` are supported: `trend`, `animated`, `res
 
 ## Worklet Scrubbing
 
-When using `sharedValue`, the component updates on the UI thread with zero JS bridge overhead. This is ideal for gesture-driven scenarios:
+When using `sharedValue`, the component updates on the UI thread with zero JS bridge overhead. This is ideal for gesture-driven scenarios.
+
+It is also the right mode for high-frequency updates across many components: each `value` prop change costs a React commit plus a synchronous canvas re-record on the JS thread, which falls behind when many components tick quickly, while `sharedValue` updates produce no React commits at all. See [Performance Tips](/docs/guides/performance-tips#choosing-a-renderer-and-update-mode) for how to choose.
 
 ```tsx
 import { View } from 'react-native';
