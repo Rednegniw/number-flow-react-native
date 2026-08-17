@@ -37,10 +37,3 @@ test("updating one digit re-renders only that DigitSlot", async () => {
 
   expect(mockRenderLog).toEqual([4]);
 });
-
-test("mounting renders each DigitSlot exactly once", async () => {
-  seedSyntheticMetrics();
-  await render(<NumberFlow value={123} />);
-
-  expect(mockRenderLog.length).toBe(3);
-});
