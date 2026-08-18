@@ -17,12 +17,15 @@ export function cacheKey(
   style: {
     fontFamily?: string;
     fontSize: number;
-    fontVariant?: string[];
+    // react-native 0.87 widened TextStyle["fontVariant"] to also accept a plain string
+    fontVariant?: readonly string[] | string;
     fontWeight?: string | number;
   },
   additionalChars?: string,
 ): string {
-  const variant = style.fontVariant?.join(",") ?? "";
+  const variant = Array.isArray(style.fontVariant)
+    ? style.fontVariant.join(",")
+    : (style.fontVariant ?? "");
   const weight = style.fontWeight ?? "";
   const base = `${style.fontFamily}:${style.fontSize}:${variant}:${weight}`;
   return additionalChars ? `${base}:${additionalChars}` : base;
