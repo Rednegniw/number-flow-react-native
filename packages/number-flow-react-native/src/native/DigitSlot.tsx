@@ -292,12 +292,34 @@ export const DigitSlot = React.memo(
       [stripY],
     );
 
+    /**
+     * Real dimensions for the strip. A view whose layout metrics are exactly
+     * {0,0,0,0} is indistinguishable from a recycled RCTViewComponentView's
+     * reset metrics (prepareForRecycle stores zeroed metrics, not the
+     * EmptyLayoutMetrics sentinel), so Fabric skips the frame assignment at
+     * mount and the view keeps the recycled donor's frame - digits then draw
+     * displaced or outside the clip window until the next React commit.
+     * Sizing the strip to its digit column (offset up by the pad, digits at
+     * non-negative tops inside) guarantees non-zero metrics. Width must be
+     * maxDigitWidth, not an arbitrary token: absolutely-positioned digit
+     * texts measure against the strip as their containing block, and a
+     * narrower box would wrap or clip wide glyphs.
+     */
+    const stripBoxStyle = useMemo(
+      () => ({
+        top: -STRIP_PAD * effectiveLH,
+        width: metrics.maxDigitWidth,
+        height: stripLength * effectiveLH,
+      }),
+      [effectiveLH, stripLength, metrics.maxDigitWidth],
+    );
+
     const digitElements = useMemo(
       () =>
         Array.from({ length: stripLength }, (_, i) => {
           const digitString =
             resolvedDigitStrings[wheelStripDigit(i, STRIP_PAD, resolvedDigitCount)];
-          const top = (i - STRIP_PAD) * effectiveLH;
+          const top = i * effectiveLH;
 
           return PER_DIGIT_FADE ? (
             <FadingStripDigit
@@ -328,7 +350,9 @@ export const DigitSlot = React.memo(
 
     return (
       <Animated.View style={[styles.slotClip, animatedSlotStyle]}>
-        <Animated.View style={[styles.strip, stripStyle]}>{digitElements}</Animated.View>
+        <Animated.View style={[styles.strip, stripBoxStyle, stripStyle]}>
+          {digitElements}
+        </Animated.View>
       </Animated.View>
     );
   },
@@ -344,7 +368,6 @@ const styles = StyleSheet.create({
   strip: {
     position: "absolute",
     left: 0,
-    top: 0,
   },
   digitText: {
     position: "absolute",
