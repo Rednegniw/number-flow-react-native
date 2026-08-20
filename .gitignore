@@ -15,6 +15,10 @@ coverage/
 .claude/
 .playwright-mcp/
 
+# Agent working docs — not part of the library
+/plans/
+/specs/
+
 # Temp screenshots (root-level only, not docs assets)
 /*.png
 /*.jpeg
