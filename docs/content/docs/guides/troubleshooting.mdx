@@ -1,0 +1,29 @@
+---
+title: Troubleshooting
+description: Fixes for known build and runtime issues
+full: true
+---
+
+## iOS linker error: `DebugStringConvertible` / `Sealable` undefined symbols (RN 0.84+)
+
+On React Native 0.84 and newer, iOS links against a prebuilt React core framework by default. Its Release flavor is compiled with `NDEBUG`, which removes debug-only C++ symbols like `facebook::react::DebugStringConvertible` and `facebook::react::Sealable`. When the prebuilt core on disk doesn't match your build configuration (stale `Pods/` state, an interrupted build, or a CocoaPods cache carrying over an old extraction), every Fabric library built from source fails to link with errors like:
+
+```
+Undefined symbols for architecture arm64:
+  "facebook::react::Sealable::Sealable()", referenced from:
+      facebook::react::NFMaskedViewProps::NFMaskedViewProps() in libNFMaskedView.a(NFMaskedViewComponentView.o)
+```
+
+This is not specific to `@rednegniw/masked-view`: the same error hits any from-source Fabric component (it's just often the first one in an otherwise JS-only app). To fix it, reset the pods state so the correct core flavor is re-extracted:
+
+```bash
+cd ios
+rm -rf Pods build
+pod install
+```
+
+Then clean the build folder in Xcode (Product > Clean Build Folder) and rebuild.
+
+<Callout type="warn">
+Don't work around this by defining `REACT_NATIVE_PRODUCTION=1` in your Podfile. It silences the linker error but creates an ABI mismatch in `ViewProps` that crashes at runtime. Also make sure your Podfile calls `react_native_post_install(installer, ...)` in `post_install`; it aligns compiler flags with the prebuilt core in Release builds.
+</Callout>
