@@ -1,5 +1,11 @@
 # number-flow-react-native
 
+## 0.5.2
+
+### Patch Changes
+
+- [#28](https://github.com/Rednegniw/number-flow-react-native/pull/28) [`da07729`](https://github.com/Rednegniw/number-flow-react-native/commit/da0772962c866297f1a2a452c7c5f109f22b97e6) Thanks [@Rednegniw](https://github.com/Rednegniw)! - Accept a string `fontVariant` from React Native 0.87 `TextStyle` when building the glyph-metrics cache key, instead of assuming an array and calling `.join()` (#24)
+
 ## 0.5.1
 
 ### Patch Changes
