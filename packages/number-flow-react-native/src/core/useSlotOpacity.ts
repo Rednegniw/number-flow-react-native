@@ -48,7 +48,16 @@ export function useSlotOpacity({
         },
         (finished) => {
           "worklet";
-          if (finished && onExitComplete && exitKey) {
+          // Report completion even when the animation did NOT finish. An
+          // interrupted withTiming reports `finished: false`, and gating the
+          // callback on it leaks the slot: `useLayoutDiff` keeps the key in
+          // `exitingRef` until `onExitComplete` fires, so the exiting glyph stays
+          // mounted on top of the live one indefinitely.
+          //
+          // Pruning unconditionally is safe because `useLayoutDiff` deletes any
+          // key present in the current layout during its diff, so a slot that has
+          // re-entered is never removed by this path.
+          if (onExitComplete && exitKey) {
             runOnJS(onExitComplete)(exitKey);
           }
         },
