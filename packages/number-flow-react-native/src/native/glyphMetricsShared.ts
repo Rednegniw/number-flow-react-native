@@ -8,11 +8,15 @@ export function buildCharSet(additionalChars?: string): string {
 }
 
 /**
- * Key: "fontFamily:fontSize", Value: measured GlyphMetrics.
+ * Key: built by `cacheKey`, Value: measured GlyphMetrics.
  * Once measured for a given font config, subsequent mounts return instantly.
  */
 export const metricsCache = new Map<string, import("../core/types").GlyphMetrics>();
 
+/**
+ * Native text is laid out at the system font scale (Dynamic Type, Android font
+ * size), so `fontScale` is part of the key: changing it must re-measure.
+ */
 export function cacheKey(
   style: {
     fontFamily?: string;
@@ -22,12 +26,13 @@ export function cacheKey(
     fontWeight?: string | number;
   },
   additionalChars?: string,
+  fontScale = 1,
 ): string {
   const variant = Array.isArray(style.fontVariant)
     ? style.fontVariant.join(",")
     : (style.fontVariant ?? "");
   const weight = style.fontWeight ?? "";
-  const base = `${style.fontFamily}:${style.fontSize}:${variant}:${weight}`;
+  const base = `${style.fontFamily}:${style.fontSize}:${variant}:${weight}:${fontScale}`;
   return additionalChars ? `${base}:${additionalChars}` : base;
 }
 

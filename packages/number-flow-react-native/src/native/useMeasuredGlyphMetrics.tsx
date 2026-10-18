@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useReducer, useRef } from "react";
-import { Text, type TextStyle } from "react-native";
+import { Text, type TextStyle, useWindowDimensions } from "react-native";
 import type { GlyphMetrics } from "../core/types";
 import { buildCharSet, cacheKey, estimateCharBounds, metricsCache } from "./glyphMetricsShared";
 
@@ -108,7 +108,8 @@ export function useMeasuredGlyphMetrics(
   MeasureElement: React.ReactElement | null;
 } {
   const charSet = useMemo(() => buildCharSet(additionalChars), [additionalChars]);
-  const key = cacheKey(style, additionalChars);
+  const { fontScale } = useWindowDimensions();
+  const key = cacheKey(style, additionalChars, fontScale);
   const cached = metricsCache.get(key);
   const [, forceUpdate] = useReducer((n: number) => n + 1, 0);
 
@@ -117,7 +118,7 @@ export function useMeasuredGlyphMetrics(
    * returning null (and unmounting all slots) when additionalChars
    * changes and triggers an async re-measurement.
    */
-  const baseKey = cacheKey(style);
+  const baseKey = cacheKey(style, undefined, fontScale);
   const prevMetricsRef = useRef<GlyphMetrics | null>(null);
   if (cached) prevMetricsRef.current = cached;
 
