@@ -1,3 +1,4 @@
+import { Dimensions } from "react-native";
 import { DEFAULT_FONT_SIZE } from "../../core/constants";
 import { getFormatCharacters } from "../../core/intlHelpers";
 import type { GlyphMetrics } from "../../core/types";
@@ -32,5 +33,8 @@ export function seedSyntheticMetrics(
     charBounds,
   };
 
-  metricsCache.set(cacheKey({ fontSize: DEFAULT_FONT_SIZE }, formatChars), metrics);
+  metricsCache.set(
+    cacheKey({ fontSize: DEFAULT_FONT_SIZE }, formatChars, Dimensions.get("window").fontScale),
+    metrics,
+  );
 }
